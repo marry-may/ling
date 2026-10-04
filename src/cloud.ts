@@ -1,4 +1,5 @@
 import type { BookFile, KnownWords, SavedWord } from './domain'
+import { normalizeProfile, type Profile } from './profile'
 import { supabase } from './supabase'
 
 const BOOK_BUCKET = 'book-files'
@@ -131,7 +132,7 @@ export async function uploadGuestLibrary(ownerId: string, books: BookFile[], wor
   for (const book of books) {
     const bookKey = makeKey(book)
     if (book.format === 'DEMO' || book.cloudContentPath || existingBooksByKey.has(bookKey)) continue
-    const copy = { ...book, id: crypto.randomUUID(), format: 'TXT' }
+    const copy = { ...book, id: crypto.randomUUID() }
     const textFile = new File([book.content], `${book.title}.txt`, { type: 'text/plain' })
     await uploadAccountBook(ownerId, copy, textFile)
     existingBooksByKey.add(bookKey)
@@ -190,4 +191,16 @@ export async function downloadAccountBookContent(path: string): Promise<string> 
   const { data, error } = await getClient().storage.from(BOOK_BUCKET).download(path)
   if (error) throw error
   return data.text()
+}
+
+/** The study profile lives in the account's user metadata, so it needs no table of its own. */
+export async function getAccountProfile(): Promise<Profile> {
+  const { data, error } = await getClient().auth.getUser()
+  if (error) throw error
+  return normalizeProfile(data.user.user_metadata?.ling_profile)
+}
+
+export async function saveAccountProfile(profile: Profile): Promise<void> {
+  const { error } = await getClient().auth.updateUser({ data: { ling_profile: profile } })
+  if (error) throw error
 }

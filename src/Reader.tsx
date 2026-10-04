@@ -4,7 +4,7 @@ import type { BookFile, SavedWord } from './domain'
 import { getLanguage, speak } from './languages'
 import { MAX_LEVEL, schedule, setLevel } from './srs'
 import { cleanWord, countWords, paginate, sentenceAt, tokenize, wordKey, type Token } from './text'
-import { translateWord } from './translate'
+import { translateWord, type TranslationGroup } from './translate'
 
 type Panel = {
   word: string
@@ -12,7 +12,7 @@ type Panel = {
   context: string
   loading: boolean
   failed: boolean
-  variants: string[]
+  groups: TranslationGroup[]
   draft: string
 }
 
@@ -99,12 +99,12 @@ export function Reader({ book, words, known, onBack, onOpenWords, onPageChange, 
       context: sentenceAt(paragraph, token.start),
       loading: true,
       failed: false,
-      variants: [],
+      groups: [],
       draft: savedByKey.get(key)?.translation ?? '',
     })
     try {
-      const variants = await translateWord(word, book.language)
-      setPanel((current) => current?.key === key ? { ...current, loading: false, variants, draft: current.draft || variants[0] || '' } : current)
+      const groups = await translateWord(word, book.language)
+      setPanel((current) => current?.key === key ? { ...current, loading: false, groups, draft: current.draft || groups[0]?.variants[0] || '' } : current)
     } catch {
       setPanel((current) => current?.key === key ? { ...current, loading: false, failed: true } : current)
     }
@@ -214,8 +214,13 @@ export function Reader({ book, words, known, onBack, onOpenWords, onPageChange, 
             {panel.context && <p className="translation-context">{tokenize(panel.context).map((token, index) => token.key === panel.key ? <mark key={index}>{token.text}</mark> : token.text)}</p>}
             {panel.loading
               ? <div className="translation-loading"><LoaderCircle size={17} className="spin" /> Ищем перевод...</div>
-              : panel.variants.length
-                ? <div className="variant-list">{panel.variants.map((variant) => <button className={panel.draft === variant ? 'variant selected' : 'variant'} key={variant} onClick={() => setPanel({ ...panel, draft: variant })}>{variant}</button>)}</div>
+              : panel.groups.length
+                ? <div className="variant-groups">{panel.groups.map((group) => (
+                  <div className="variant-list" key={group.pos || 'main'}>
+                    {group.pos && <span className="variant-pos">{group.pos}</span>}
+                    {group.variants.map((variant) => <button className={panel.draft === variant ? 'variant selected' : 'variant'} key={variant} onClick={() => setPanel({ ...panel, draft: variant })}>{variant}</button>)}
+                  </div>
+                ))}</div>
                 : <p className="translation-result">{panel.failed ? 'Нет соединения со словарём' : 'Перевод не найден'}</p>}
             <label className="translation-input">Твой перевод<input value={panel.draft} placeholder="Впиши свой вариант" onChange={(event) => setPanel({ ...panel, draft: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter') saveTranslation() }} /></label>
             <div className="status-row" role="group" aria-label="Насколько хорошо знаешь слово">

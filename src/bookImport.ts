@@ -1,4 +1,6 @@
 import { unzipSync } from 'fflate'
+import { detectLanguage } from './languages'
+import { countWords } from './text'
 
 export type ParsedBook = { content: string; title?: string; author?: string; language?: string }
 
@@ -19,9 +21,14 @@ function parseXml(source: string): XMLDocument {
   return document
 }
 
-export async function readBookFile(file: File): Promise<ParsedBook> {
+type ReadOptions = { fallbackLanguage: string; onProgress: (message: string) => void }
+
+export async function readBookFile(file: File, { fallbackLanguage, onProgress }: ReadOptions): Promise<ParsedBook> {
   const extension = file.name.split('.').pop()?.toLowerCase()
-  if (extension === 'txt' || extension === 'md') return { content: await file.text() }
+  if (extension === 'txt' || extension === 'md') {
+    const content = await file.text()
+    return { content, language: detectLanguage(content.slice(0, 20000)) }
+  }
 
   if (extension === 'pdf') {
     const [pdfjs, { default: workerSrc }] = await Promise.all([
@@ -36,7 +43,13 @@ export async function readBookFile(file: File): Promise<ParsedBook> {
       const content = await page.getTextContent()
       pages.push(content.items.map((item) => 'str' in item ? item.str : '').join(' '))
     }
-    return { content: pages.join('\n\n') }
+    const text = pages.join('\n\n')
+    // PDFs from scanners or "Print to PDF" often have no text layer: the letters are images or outlines.
+    if (countWords(text) < pdf.numPages * 5) {
+      const { recognizePdf } = await import('./ocr')
+      return recognizePdf(pdf, fallbackLanguage, onProgress)
+    }
+    return { content: text, language: detectLanguage(text.slice(0, 20000)) }
   }
 
   if (extension === 'epub') {
