@@ -23,9 +23,10 @@ async function fetchAllRows<T>(fetchRange: (from: number, to: number) => Promise
 
 export async function getAccountBooks(ownerId: string): Promise<BookFile[]> {
   const client = getClient()
+  // All columns, so that the folder columns are simply absent until their migration has been applied.
   const { data, error } = await client
     .from('books')
-    .select('id, title, author, format, language, progress, original_path, content_path')
+    .select('*')
     .eq('owner_id', ownerId)
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -40,7 +41,33 @@ export async function getAccountBooks(ownerId: string): Promise<BookFile[]> {
     content: '',
     cloudOriginalPath: row.original_path,
     cloudContentPath: row.content_path,
+    collectionId: row.collection_id ?? undefined,
+    collectionTitle: row.collection_title ?? undefined,
+    part: row.part ?? undefined,
+    partCount: row.part_count ?? undefined,
   }))
+}
+
+export const PARTS_MIGRATION_MESSAGE = 'Большая книга сохранена на устройстве. Чтобы она загрузилась в аккаунт, выполни в Supabase миграцию 20261005090000_book_parts.sql.'
+
+function bookRow(ownerId: string, book: BookFile, originalPath: string, contentPath: string) {
+  return {
+    id: book.id,
+    owner_id: ownerId,
+    title: book.title,
+    author: book.author,
+    format: book.format,
+    language: book.language,
+    progress: book.progress,
+    original_path: originalPath,
+    content_path: contentPath,
+    // Only parts of split books use the folder columns, so ordinary books upload even before the migration.
+    ...(book.collectionId ? { collection_id: book.collectionId, collection_title: book.collectionTitle, part: book.part, part_count: book.partCount } : {}),
+  }
+}
+
+function textBlob(text: string) {
+  return new Blob([text], { type: 'text/plain;charset=utf-8' })
 }
 
 export async function getAccountWords(ownerId: string): Promise<SavedWord[]> {
@@ -89,7 +116,7 @@ export async function uploadAccountBook(ownerId: string, book: BookFile, origina
   })
   if (originalUpload.error) throw originalUpload.error
 
-  const contentUpload = await bucket.upload(contentPath, new Blob([book.content], { type: 'text/plain;charset=utf-8' }), {
+  const contentUpload = await bucket.upload(contentPath, textBlob(book.content), {
     contentType: 'text/plain;charset=utf-8',
     upsert: true,
   })
@@ -98,36 +125,54 @@ export async function uploadAccountBook(ownerId: string, book: BookFile, origina
     throw contentUpload.error
   }
 
-  const { error } = await client.from('books').insert({
-    id: book.id,
-    owner_id: ownerId,
-    title: book.title,
-    author: book.author,
-    format: book.format,
-    language: book.language,
-    progress: book.progress,
-    original_path: originalPath,
-    content_path: contentPath,
-  })
+  const { error } = await client.from('books').insert(bookRow(ownerId, book, originalPath, contentPath))
   if (error) {
     await bucket.remove([originalPath, contentPath])
-    throw error
+    throw error.code === 'PGRST204' ? new Error(PARTS_MIGRATION_MESSAGE) : error
   }
 
   return { ...book, cloudOriginalPath: originalPath, cloudContentPath: contentPath }
 }
 
-export async function deleteAccountBook(ownerId: string, book: BookFile): Promise<void> {
+/** Uploads the parts of a split book into one storage folder; the original file is stored once for all parts. */
+export async function uploadAccountCollection(ownerId: string, parts: BookFile[], originalFile: File): Promise<BookFile[]> {
   const client = getClient()
-  const { error } = await client.from('books').delete().eq('owner_id', ownerId).eq('id', book.id)
+  const bucket = client.storage.from(BOOK_BUCKET)
+  const folder = `${ownerId}/${parts[0].collectionId}`
+  const extension = originalFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin'
+  const originalPath = `${folder}/source.${extension}`
+  const uploaded: string[] = []
+  try {
+    const originalUpload = await bucket.upload(originalPath, originalFile, { contentType: originalFile.type || 'application/octet-stream', upsert: true })
+    if (originalUpload.error) throw originalUpload.error
+    uploaded.push(originalPath)
+    const contentPaths = parts.map((part) => `${folder}/part-${String(part.part).padStart(3, '0')}.txt`)
+    for (const [index, part] of parts.entries()) {
+      const upload = await bucket.upload(contentPaths[index], textBlob(part.content), { contentType: 'text/plain;charset=utf-8', upsert: true })
+      if (upload.error) throw upload.error
+      uploaded.push(contentPaths[index])
+    }
+    const { error } = await client.from('books').insert(parts.map((part, index) => bookRow(ownerId, part, originalPath, contentPaths[index])))
+    if (error) throw error.code === 'PGRST204' ? new Error(PARTS_MIGRATION_MESSAGE) : error
+    return parts.map((part, index) => ({ ...part, cloudOriginalPath: originalPath, cloudContentPath: contentPaths[index] }))
+  } catch (error) {
+    if (uploaded.length) await bucket.remove(uploaded)
+    throw error
+  }
+}
+
+/** Deletes books with their stored files; pass all parts of a split book, since they share the original file. */
+export async function deleteAccountBooks(ownerId: string, books: BookFile[]): Promise<void> {
+  const client = getClient()
+  const { error } = await client.from('books').delete().eq('owner_id', ownerId).in('id', books.map((book) => book.id))
   if (error) throw error
-  const paths = [book.cloudOriginalPath, book.cloudContentPath].filter((path): path is string => Boolean(path))
-  if (paths.length) await client.storage.from(BOOK_BUCKET).remove(paths)
+  const paths = new Set(books.flatMap((book) => [book.cloudOriginalPath, book.cloudContentPath]).filter((path): path is string => Boolean(path)))
+  if (paths.size) await client.storage.from(BOOK_BUCKET).remove(Array.from(paths))
 }
 
 export async function uploadGuestLibrary(ownerId: string, books: BookFile[], words: SavedWord[], known: KnownWords): Promise<void> {
   const existingBooks = await getAccountBooks(ownerId)
-  const makeKey = (book: Pick<BookFile, 'title' | 'author' | 'format'>) => `${book.title.trim().toLowerCase()}|${book.author.trim().toLowerCase()}|${book.format}`
+  const makeKey = (book: Pick<BookFile, 'title' | 'author' | 'format' | 'collectionTitle'>) => `${book.collectionTitle?.trim().toLowerCase() ?? ''}|${book.title.trim().toLowerCase()}|${book.author.trim().toLowerCase()}|${book.format}`
   const existingBooksByKey = new Set(existingBooks.map(makeKey))
   for (const book of books) {
     const bookKey = makeKey(book)

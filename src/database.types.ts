@@ -12,6 +12,10 @@ export type Database = {
           progress: number
           original_path: string
           content_path: string
+          collection_id: string | null
+          collection_title: string | null
+          part: number | null
+          part_count: number | null
           created_at: string
         }
         Insert: {
@@ -24,6 +28,10 @@ export type Database = {
           progress?: number
           original_path: string
           content_path: string
+          collection_id?: string | null
+          collection_title?: string | null
+          part?: number | null
+          part_count?: number | null
           created_at?: string
         }
         Update: {

@@ -9,6 +9,11 @@ export type BookFile = {
   page?: number
   cloudOriginalPath?: string
   cloudContentPath?: string
+  /** Set on each part of a book that was too long and was split; all parts share one folder. */
+  collectionId?: string
+  collectionTitle?: string
+  part?: number
+  partCount?: number
 }
 
 export type SavedWord = {
@@ -26,3 +31,8 @@ export type SavedWord = {
 
 /** Words marked as known without being saved, grouped by language code. */
 export type KnownWords = Record<string, string[]>
+
+/** The title of the whole book, for parts of a split book as well. */
+export function bookTitleOf(book: Pick<BookFile, 'title' | 'collectionTitle'>): string {
+  return book.collectionTitle ?? book.title
+}

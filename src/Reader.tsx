@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Bookmark, Check, ChevronLeft, ChevronRight, LoaderCircle, Sparkles, Volume2, X } from 'lucide-react'
-import type { BookFile, SavedWord } from './domain'
+import { bookTitleOf, type BookFile, type SavedWord } from './domain'
 import { getLanguage, speak } from './languages'
 import { MAX_LEVEL, schedule, setLevel } from './srs'
 import { cleanWord, countWords, paginate, sentenceAt, tokenize, wordKey, type Token } from './text'
@@ -21,6 +21,8 @@ type ReaderProps = {
   words: SavedWord[]
   known: Set<string>
   onBack: () => void
+  /** Present when the book is a part of a split book and a later part exists. */
+  onNextPart?: () => void
   onOpenWords: () => void
   onPageChange: (page: number, pageCount: number) => void
   onSaveWord: (word: SavedWord) => Promise<void>
@@ -29,7 +31,7 @@ type ReaderProps = {
 
 const LEVELS = Array.from({ length: MAX_LEVEL }, (_, index) => index + 1)
 
-export function Reader({ book, words, known, onBack, onOpenWords, onPageChange, onSaveWord, onMarkKnown }: ReaderProps) {
+export function Reader({ book, words, known, onBack, onNextPart, onOpenWords, onPageChange, onSaveWord, onMarkKnown }: ReaderProps) {
   const [panel, setPanel] = useState<Panel | null>(null)
   const [busy, setBusy] = useState(false)
   const textRef = useRef<HTMLDivElement>(null)
@@ -56,7 +58,8 @@ export function Reader({ book, words, known, onBack, onOpenWords, onPageChange, 
     return Array.from(keys)
   }, [pageTokens, savedByKey, known])
 
-  const bookWordCount = useMemo(() => words.filter((word) => word.bookTitle === book.title).length, [words, book.title])
+  const title = bookTitleOf(book)
+  const bookWordCount = useMemo(() => words.filter((word) => word.bookTitle === title).length, [words, title])
 
   function goTo(nextPage: number) {
     if (nextPage < 0 || nextPage >= pageCount || nextPage === page) return
@@ -118,7 +121,7 @@ export function Reader({ book, words, known, onBack, onOpenWords, onPageChange, 
       id: crypto.randomUUID(),
       word: current.word.toLowerCase(),
       translation,
-      bookTitle: book.title,
+      bookTitle: title,
       language: book.language,
       context: current.context,
       level: 1,
@@ -162,13 +165,14 @@ export function Reader({ book, words, known, onBack, onOpenWords, onPageChange, 
     <>
       <header className="reader-topbar">
         <button className="icon-button back-button" onClick={onBack} aria-label="Назад в библиотеку"><ArrowLeft size={19} /></button>
-        <div className="reader-heading"><span>ЧТЕНИЕ</span><strong>{book.title}</strong></div>
+        <div className="reader-heading"><span>{book.part ? `ЧАСТЬ ${book.part} ИЗ ${book.partCount}` : 'ЧТЕНИЕ'}</span><strong>{title}</strong></div>
         <div className="reader-tools"><button className="quiet-button" onClick={onOpenWords}><Bookmark size={16} /> <span>Мои слова</span></button></div>
       </header>
       <section className="reader-layout">
         <article className="reading-column">
           <div className="reading-meta"><span>{book.author}</span><span>{languageName.toUpperCase()}</span><span>{book.format}</span></div>
-          <h1 className="book-title">{book.title}</h1>
+          <h1 className="book-title">{title}</h1>
+          {book.part && <p className="part-subtitle">{book.title}</p>}
           <div className="reading-hint">
             <span className="legend legend-new">новое</span>
             <span className="legend legend-learning">изучаю</span>
@@ -193,7 +197,9 @@ export function Reader({ book, words, known, onBack, onOpenWords, onPageChange, 
               <span>Страница {page + 1} из {pageCount}</span>
               {newKeys.length > 0
                 ? <button className="finish-page" onClick={() => void finishPage()} disabled={busy}><Check size={16} />{isLastPage ? `Знаю все новые (${newKeys.length})` : `Знаю новые (${newKeys.length}) и дальше`}</button>
-                : <button className="icon-button" onClick={() => goTo(page + 1)} disabled={isLastPage} aria-label="Следующая страница"><ChevronRight size={19} /></button>}
+                : isLastPage && onNextPart
+                  ? <button className="finish-page" onClick={onNextPart}>Следующая часть <ChevronRight size={16} /></button>
+                  : <button className="icon-button" onClick={() => goTo(page + 1)} disabled={isLastPage} aria-label="Следующая страница"><ChevronRight size={19} /></button>}
             </div>
           )}
           <div className="reading-footer"><span>{totalWords.toLocaleString('ru-RU')} слов</span><span>{book.progress}% прочитано</span></div>

@@ -1,8 +1,13 @@
 export type Token = { text: string; start: number; key: string }
 
 const PAGE_WORDS = 220
+/** Books longer than this are split into parts of about PART_WORDS words (roughly 35 reader pages each). */
+const SPLIT_THRESHOLD = 12000
+const PART_WORDS = 8000
 const SPLIT_PATTERN = /(\s+|[^\p{L}\p{N}'’-]+)/u
 const SENTENCE_PATTERN = /[^.!?…]+(?:[.!?…]+["'»”’)\]]*|$)\s*/gu
+
+export type Section = { title?: string; content: string }
 
 /** Lowercased dictionary form of a word as it appears in text. */
 export function wordKey(raw: string): string {
@@ -80,4 +85,66 @@ export function paginate(content: string): string[][] {
   }
   if (page.length) pages.push(page)
   return pages
+}
+
+function pieceTitle(section: Section, index: number): string | undefined {
+  if (!section.title || index === 0) return section.title
+  return `${section.title} (продолжение)`
+}
+
+/** Cuts a section that is longer than one part into paragraph-aligned pieces. */
+function cutSection(section: Section): Section[] {
+  if (countWords(section.content) <= PART_WORDS) return [section]
+  const pieces: Section[] = []
+  let chunk: string[] = []
+  let chunkWords = 0
+  for (const paragraph of section.content.split(/\n\s*\n/)) {
+    const words = countWords(paragraph)
+    if (chunk.length && chunkWords + words > PART_WORDS) {
+      pieces.push({ title: pieceTitle(section, pieces.length), content: chunk.join('\n\n') })
+      chunk = []
+      chunkWords = 0
+    }
+    chunk.push(paragraph)
+    chunkWords += words
+  }
+  if (chunk.length) pieces.push({ title: pieceTitle(section, pieces.length), content: chunk.join('\n\n') })
+  return pieces
+}
+
+/**
+ * Splits a long book into parts, keeping chapters (sections) whole where possible. Short books come back as
+ * a single part. Each part is titled after the first chapter it contains.
+ */
+export function splitIntoParts(sections: Section[]): Section[] {
+  const usable = sections.filter((section) => section.content.trim())
+  const total = usable.reduce((sum, section) => sum + countWords(section.content), 0)
+  if (total <= SPLIT_THRESHOLD) return [{ content: usable.map((section) => section.content).join('\n\n') }]
+
+  const parts: Section[] = []
+  let current: Section | null = null
+  let currentWords = 0
+  for (const piece of usable.flatMap(cutSection)) {
+    const words = countWords(piece.content)
+    if (current && currentWords + words > PART_WORDS * 1.15) {
+      parts.push(current)
+      current = null
+    }
+    if (!current) {
+      current = { title: piece.title, content: piece.content }
+      currentWords = words
+      continue
+    }
+    current.title ??= piece.title
+    current.content += `\n\n${piece.content}`
+    currentWords += words
+  }
+  if (current) parts.push(current)
+  // A small remainder reads better as the end of the previous part.
+  const last = parts.at(-1)
+  if (parts.length > 1 && last && countWords(last.content) < PART_WORDS / 4) {
+    parts.pop()
+    parts[parts.length - 1].content += `\n\n${last.content}`
+  }
+  return parts
 }

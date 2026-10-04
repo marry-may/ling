@@ -1,8 +1,9 @@
 import { unzipSync } from 'fflate'
 import { detectLanguage } from './languages'
-import { countWords } from './text'
+import { countWords, type Section } from './text'
 
-export type ParsedBook = { content: string; title?: string; author?: string; language?: string }
+/** `sections` holds the chapters of an EPUB, used to split long books along chapter boundaries. */
+export type ParsedBook = { content: string; title?: string; author?: string; language?: string; sections?: Section[] }
 
 function resolveArchivePath(base: string, relative: string): string {
   const segments = `${base}/${decodeURIComponent(relative.split(/[?#]/, 1)[0])}`.replace(/\\/g, '/').split('/')
@@ -68,20 +69,22 @@ export async function readBookFile(file: File, { fallbackLanguage, onProgress }:
     const manifest = new Map(manifestItems.map((item) => [item.getAttribute('id') ?? '', item.getAttribute('href') ?? '']))
     const basePath = packagePath.split('/').slice(0, -1).join('/')
     const spine = Array.from(packageDocument.getElementsByTagName('itemref'))
-    const chapters = spine.map((item) => {
+    const chapters = spine.map((item): Section | null => {
       const href = manifest.get(item.getAttribute('idref') ?? '')
-      if (!href) return ''
+      if (!href) return null
       const chapterData = entries[resolveArchivePath(basePath, href)]
-      if (!chapterData) return ''
+      if (!chapterData) return null
       const chapter = parseXml(new TextDecoder().decode(chapterData))
       const body = chapter.getElementsByTagName('body').item(0)
-      if (!body) return ''
+      if (!body) return null
       const blocks = Array.from(body.querySelectorAll('h1,h2,h3,h4,p,li,blockquote'))
         .map((element) => element.textContent?.replace(/\s+/g, ' ').trim() ?? '')
         .filter(Boolean)
-      return (blocks.length ? blocks.join('\n\n') : body.textContent ?? '').trim()
+      const heading = body.querySelector('h1,h2,h3')?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) || undefined
+      return { title: heading, content: (blocks.length ? blocks.join('\n\n') : body.textContent ?? '').trim() }
     })
-    return { content: chapters.filter(Boolean).join('\n\n'), title, author, language }
+    const sections = chapters.filter((chapter): chapter is Section => Boolean(chapter?.content))
+    return { content: sections.map((chapter) => chapter.content).join('\n\n'), title, author, language, sections }
   }
 
   throw new Error('Поддерживаются TXT, MD, EPUB и PDF.')
