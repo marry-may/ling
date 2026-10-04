@@ -118,6 +118,7 @@
   font-size: 11px;
 }
 .main-area {
+  position: relative;
   min-width: 0;
   max-width: 1320px;
   width: 100%;
@@ -1036,24 +1037,6 @@
   color: #82908a;
   background: var(--canvas);
 }
-.account-entry {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  margin-top: 14px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 10px;
-  text-align: left;
-  background: white;
-  cursor: pointer;
-}
-.account-entry:hover {
-  border-color: #bfd0c2;
-  background: #f8fbf8;
-}
-.account-avatar,
 .account-panel-icon {
   display: grid;
   place-items: center;
@@ -1063,22 +1046,6 @@
   border-radius: 50%;
   color: var(--green);
   background: #eaf1eb;
-}
-.account-entry > span:last-child {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
-.account-entry strong {
-  overflow: hidden;
-  color: #43564b;
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.account-entry small {
-  color: #97a29b;
-  font-size: 9px;
 }
 .account-scrim {
   align-items: center;
@@ -2389,6 +2356,107 @@ button.word-initial:hover {
     display: none;
   }
 }
+
+/* Account: top-right entry and the welcome screen */
+.account-corner {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  right: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 260px;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 50px;
+  padding: 3px 14px 3px 3px;
+  color: #43564b;
+  background: #ffffffe6;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.account-corner:hover {
+  border-color: #bfd0c2;
+  background: #f8fbf8;
+}
+.account-corner-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--green);
+  background: #eaf1eb;
+  font: 600 13px var(--serif);
+}
+.account-corner.signed-in .account-corner-avatar {
+  color: white;
+  background: var(--green);
+}
+.account-corner-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.welcome {
+  display: grid;
+  justify-items: center;
+  max-width: 440px;
+  margin: 7vh auto 0;
+  text-align: center;
+  animation: appear 0.4s ease-out both;
+}
+.welcome .eyebrow {
+  margin-top: 22px;
+}
+.welcome h1 {
+  margin: 12px 0 10px;
+  color: var(--ink);
+  font: 500 40px/1.1 var(--serif);
+}
+.welcome > p {
+  margin: 0 0 26px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.welcome-card {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 22px;
+  background: white;
+  text-align: left;
+  box-shadow: 0 14px 40px #14241d0d;
+}
+.welcome-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  margin-bottom: 4px;
+}
+.welcome-tabs button {
+  justify-content: center;
+}
+.welcome-skip {
+  margin-top: 18px;
+}
+@media (max-width: 760px) {
+  .account-corner {
+    top: 14px;
+    right: 16px;
+    padding-right: 3px;
+  }
+  .account-corner-label {
+    display: none;
+  }
+  .welcome h1 {
+    font-size: 32px;
+  }
+}
 @media (min-width: 1200px) {
   .book-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -2474,7 +2542,7 @@ button.word-initial:hover {
     bottom: 0;
     left: 0;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     min-height: calc(64px + env(safe-area-inset-bottom));
     padding: 5px 16px env(safe-area-inset-bottom);
     border-top: 1px solid #e5ebe6;

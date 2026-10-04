@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "ios:add": "cap add ios",
     "ios:sync": "npm run build && cap sync ios",
-    "ios:open": "cap open ios"
+    "ios:open": "cap open ios",
+    "db:migrate": "bash scripts/db-migrate.sh"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.3",

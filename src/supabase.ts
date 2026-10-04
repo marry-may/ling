@@ -14,3 +14,9 @@ export const supabase = cloudEnabled
       },
     })
   : null
+
+/**
+ * Where links in auth emails lead. The published site is used even when signing up from a dev server or the
+ * iOS app, whose own addresses cannot open the link. Supabase must list it under Auth → URL Configuration.
+ */
+export const siteUrl = import.meta.env.VITE_SITE_URL?.trim() || `${window.location.origin}${window.location.pathname}`

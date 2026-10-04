@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { ArrowLeft, BookOpen, Bookmark, CalendarDays, Check, ChevronDown, Cloud, Dumbbell, FilePlus2, Flame, Library, LoaderCircle, LogOut, Plus, Sparkles, Trash2, UserRound, X } from 'lucide-react'
+import { ArrowLeft, BookOpen, Bookmark, CalendarDays, Check, ChevronDown, Cloud, Dumbbell, FilePlus2, Flame, Library, LoaderCircle, LogOut, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
+import { AccountButton, AuthForm, WelcomeScreen, type AuthFormProps, type AuthMode } from './Account'
 import { readBookFile } from './bookImport'
 import { deleteAccountBooks, deleteAccountKnownWord, deleteAccountWord, downloadAccountBookContent, getAccountBooks, getAccountKnownWords, getAccountProfile, getAccountWords, saveAccountKnownWords, saveAccountProfile, saveAccountWords, PARTS_MIGRATION_MESSAGE, updateAccountProgress, uploadAccountBook, uploadAccountCollection, uploadGuestLibrary } from './cloud'
 import { bookTitleOf, type BookFile, type KnownWords, type SavedWord } from './domain'
@@ -10,13 +11,14 @@ import { currentStreak, EMPTY_PROFILE, lastWeek, mergeProfiles, normalizeProfile
 import { Reader } from './Reader'
 import { isDue, normalizeWord } from './srs'
 import { loadCollection, saveCollection } from './storage'
-import { cloudEnabled, supabase } from './supabase'
+import { cloudEnabled, siteUrl, supabase } from './supabase'
 import { splitIntoParts, wordKey } from './text'
 import { Training } from './Training'
 import { WordsPage } from './WordsPage'
 import './App.css'
 
 const LANGUAGE_STORAGE_KEY = 'ling-study-language'
+const WELCOME_SKIPPED_KEY = 'ling-welcome-skipped'
 
 const sampleBook: BookFile = {
   id: 'sample',
@@ -26,6 +28,14 @@ const sampleBook: BookFile = {
   language: 'en',
   progress: 0,
   content: `Every morning, Clara climbed the narrow stairs to the top of the lighthouse. The sea was still and silver beneath the early sun, and the gulls circled above the quiet harbor. She kept a notebook by the window, filling it with small observations: the weather, the ships, and the changing color of the water.\n\nOn the first day of spring, Clara noticed a tiny boat drifting beyond the rocks. She raised the brass telescope and saw a bright red scarf waving from its deck. Without hesitation, she called the harbor station and watched the rescue boat hurry across the bay. By sunset, the stranger was safe, and the lighthouse glowed warmly against the darkening sky.`,
+}
+
+function readWelcomeSkipped(): boolean {
+  try {
+    return localStorage.getItem(WELCOME_SKIPPED_KEY) === '1'
+  } catch {
+    return false
+  }
 }
 
 function readStudyLanguage(): string | null {
@@ -205,7 +215,8 @@ function App() {
   const [dataScope, setDataScope] = useState('anonymous')
   const [accountUser, setAccountUser] = useState<User | null>(null)
   const [accountOpen, setAccountOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [authMode, setAuthMode] = useState<AuthMode>('signin')
+  const [welcomeSkipped, setWelcomeSkipped] = useState(readWelcomeSkipped)
   const [authEmail, setAuthEmail] = useState('')
   const [authPassword, setAuthPassword] = useState('')
   const [authMessage, setAuthMessage] = useState('')
@@ -333,10 +344,10 @@ function App() {
     try {
       const result = authMode === 'signin'
         ? await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword })
-        : await supabase.auth.signUp({ email: authEmail.trim(), password: authPassword })
+        : await supabase.auth.signUp({ email: authEmail.trim(), password: authPassword, options: { emailRedirectTo: siteUrl } })
       if (result.error) throw result.error
       if (!result.data.session || !result.data.user) {
-        setAuthMessage('Проверь почту: отправили ссылку для подтверждения аккаунта.')
+        setAuthMessage(`Проверь почту ${authEmail.trim()}: мы отправили ссылку для подтверждения. Она откроет ${new URL(siteUrl).host}, и ты сразу войдёшь в аккаунт.`)
         return
       }
 
@@ -604,9 +615,36 @@ function App() {
   const noticeBar = notice && <div className="notice-bar" role="status">{notice}<button onClick={() => setNotice('')} aria-label="Скрыть уведомление"><X size={15} /></button></div>
 
   const onboarding = !activeBook && !activeLanguages.length
+  const showWelcome = cloudEnabled && !accountUser && !welcomeSkipped
+  const openAccount = () => {
+    setAuthMessage('')
+    setAccountOpen(true)
+  }
+  const authForm: AuthFormProps = {
+    mode: authMode,
+    email: authEmail,
+    password: authPassword,
+    busy: authBusy,
+    message: authMessage,
+    onModeChange: (mode) => {
+      setAuthMode(mode)
+      setAuthMessage('')
+    },
+    onEmailChange: setAuthEmail,
+    onPasswordChange: setAuthPassword,
+    onSubmit: (event) => void handleAuthSubmit(event),
+  }
+  const skipWelcome = () => {
+    setWelcomeSkipped(true)
+    try {
+      localStorage.setItem(WELCOME_SKIPPED_KEY, '1')
+    } catch {
+      // The welcome screen just shows again next time.
+    }
+  }
 
   return (
-    <div className={onboarding ? 'app-shell onboarding-mode' : 'app-shell'}>
+    <div className={showWelcome || onboarding ? 'app-shell onboarding-mode' : 'app-shell'}>
       <aside className="sidebar">
         <a className="brand" href="#library" onClick={showLibrary} aria-label="Ling, библиотека">
           <span className="brand-mark"><BookOpen size={19} strokeWidth={2.2} /></span>
@@ -621,15 +659,14 @@ function App() {
         <div className="sidebar-bottom">
           <button className="streak-badge" onClick={showLibrary}><Flame size={17} /><span><strong>{streak} {daysLabel(streak)}</strong><small>подряд · {getLanguage(studyLanguage).name}</small></span></button>
           <span className="side-footnote">Читай. Замечай. Запоминай.</span>
-          <button className="account-entry" onClick={() => { setAuthMessage(''); setAccountOpen(true) }}>
-            <span className="account-avatar"><UserRound size={17} /></span>
-            <span><strong>{accountUser?.email ?? (cloudEnabled ? 'Войти в аккаунт' : 'Аккаунт Ling')}</strong><small>{accountUser ? 'Библиотека синхронизируется' : cloudEnabled ? 'Вход и регистрация' : 'Облако не настроено'}</small></span>
-          </button>
         </div>
       </aside>
 
       <main className="main-area">
-        {onboarding ? (
+        {!showWelcome && !activeBook && <AccountButton user={accountUser} onClick={openAccount} />}
+        {showWelcome ? (
+          <WelcomeScreen form={authForm} onSkip={skipWelcome} />
+        ) : onboarding ? (
           <LanguagePicker onPick={addLanguage} />
         ) : activeBook ? (
           <>
@@ -716,9 +753,9 @@ function App() {
         )}
       </main>
 
-      <nav className="mobile-nav" aria-label="Основная навигация"><button className={!activeBook && view === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>Библиотека</span></button><button className={!activeBook && view === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>Тренировка</span>{dueCount > 0 && <i />}</button><button className={!activeBook && view === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>Слова</span></button><button className="mobile-nav-item" onClick={() => { setAuthMessage(''); setAccountOpen(true) }}><UserRound size={20} /><span>Аккаунт</span></button></nav>
+      <nav className="mobile-nav" aria-label="Основная навигация"><button className={!activeBook && view === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>Библиотека</span></button><button className={!activeBook && view === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>Тренировка</span>{dueCount > 0 && <i />}</button><button className={!activeBook && view === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>Слова</span></button></nav>
       {languageDialogOpen && <LanguagePicker exclude={activeLanguages} onPick={addLanguage} onClose={() => setLanguageDialogOpen(false)} />}
-      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label="Аккаунт Ling" onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label="Закрыть"><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? 'Аккаунт подключён' : 'Твоя библиотека везде'}</h2>{!cloudEnabled ? <div className="cloud-setup-note"><p>Подключи проект Supabase, чтобы включить вход и синхронизацию книг.</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> Книги и слова привязаны к аккаунту</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? 'Выходим...' : 'Выйти из аккаунта'}</button></div> : <form className="auth-form" onSubmit={(event) => void handleAuthSubmit(event)}><label>Электронная почта<input type="email" autoComplete="email" required value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} /></label><label>Пароль<input type="password" autoComplete={authMode === 'signin' ? 'current-password' : 'new-password'} minLength={8} required value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} /></label><button className="primary-action auth-submit" type="submit" disabled={authBusy}>{authBusy ? <LoaderCircle size={16} className="spin" /> : <UserRound size={16} />}{authBusy ? 'Подключаем...' : authMode === 'signin' ? 'Войти' : 'Создать аккаунт'}</button><button className="auth-mode-toggle" type="button" onClick={() => { setAuthMode(authMode === 'signin' ? 'signup' : 'signin'); setAuthMessage('') }}>{authMode === 'signin' ? 'Первый раз в Ling? Создать аккаунт' : 'Уже есть аккаунт? Войти'}</button></form>}{authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
+      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label="Аккаунт Ling" onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label="Закрыть"><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? 'Аккаунт подключён' : 'Твоя библиотека везде'}</h2>{!cloudEnabled ? <div className="cloud-setup-note"><p>Подключи проект Supabase, чтобы включить вход и синхронизацию книг.</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> Книги и слова привязаны к аккаунту</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? 'Выходим...' : 'Выйти из аккаунта'}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
     </div>
   )
 }
