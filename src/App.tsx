@@ -5,7 +5,7 @@ import { AdminPage } from './AdminPage'
 import { isAdmin, trackPageView } from './analytics'
 import { AccountButton, AuthForm, WelcomeScreen, type AuthFormProps, type AuthMode } from './Account'
 import { readBookFile } from './bookImport'
-import { findCatalogBook, loadCatalogChapters, shelfCopies, type CatalogBook } from './catalog'
+import { catalogBookOf, coverUrl, findCatalogBook, loadCatalogChapters, shelfCopies, type CatalogBook } from './catalog'
 import { CatalogPage } from './CatalogPage'
 import { deleteAccountBooks, deleteAccountKnownWord, deleteAccountWord, downloadAccountBookContent, getAccountBooks, getAccountKnownWords, getAccountProfile, getAccountWords, saveAccountKnownWords, saveAccountProfile, saveAccountWords, PARTS_MIGRATION_MESSAGE, updateAccountProgress, uploadAccountBook, uploadAccountCollection, uploadGuestLibrary } from './cloud'
 import { bookTitleOf, type BookFile, type KnownWords, type SavedWord } from './domain'
@@ -921,7 +921,7 @@ function App() {
                     const progress = folderProgress(item.parts)
                     return (
                       <div className={`book-slot cover-${coverIndex(item.id)}`} key={item.id}>
-                        <button className="book-card" onClick={() => setOpenCollection(item.id)}><div className="book-cover is-folder"><span className="cover-stamp">{item.parts.length} {partsLabel(item.parts.length).toUpperCase()}</span><BookOpen size={25} strokeWidth={1.5} /><div className="cover-lines"><span /><span /><span /></div><span className="cover-title">{bookTitleOf(first)}</span><span className="cover-author">{first.author}</span></div><div className="book-card-info"><div className="book-card-title">{bookTitleOf(first)}</div><div className="book-card-author">Часть {currentPart(item.parts).part} из {item.parts.length}</div><div className="book-card-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{progress > 0 ? `${progress}%` : 'Ещё не начато'}</small></div></div></button>
+                        <button className="book-card" onClick={() => setOpenCollection(item.id)}><ShelfCover book={first} folder={`${item.parts.length} ${partsLabel(item.parts.length).toUpperCase()}`} /><div className="book-card-info"><div className="book-card-title">{bookTitleOf(first)}</div><div className="book-card-author">Часть {currentPart(item.parts).part} из {item.parts.length}</div><div className="book-card-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{progress > 0 ? `${progress}%` : 'Ещё не начато'}</small></div></div></button>
                         <button className="delete-book" onClick={() => void deleteBooks(item.parts)} aria-label={`Удалить книгу ${bookTitleOf(first)}`}><Trash2 size={15} /></button>
                       </div>
                     )
@@ -929,7 +929,7 @@ function App() {
                   const { book } = item
                   return (
                     <div className={`book-slot cover-${coverIndex(book.id)}`} key={book.id}>
-                      <button className="book-card" onClick={() => void openBook(book)}><div className="book-cover"><span className="cover-stamp">{book.format}</span><BookOpen size={25} strokeWidth={1.5} /><div className="cover-lines"><span /><span /><span /></div><span className="cover-title">{book.title}</span><span className="cover-author">{book.author}</span></div><div className="book-card-info"><div className="book-card-title">{book.title}</div><div className="book-card-author">{book.author}</div><div className="book-card-progress"><span><i style={{ width: `${book.progress}%` }} /></span><small>{book.progress > 0 ? `${book.progress}%` : 'Ещё не начато'}</small></div></div></button>
+                      <button className="book-card" onClick={() => void openBook(book)}><ShelfCover book={book} /><div className="book-card-info"><div className="book-card-title">{book.title}</div><div className="book-card-author">{book.author}</div><div className="book-card-progress"><span><i style={{ width: `${book.progress}%` }} /></span><small>{book.progress > 0 ? `${book.progress}%` : 'Ещё не начато'}</small></div></div></button>
                       <button className="delete-book" onClick={() => void deleteBooks([book])} aria-label={`Удалить книгу ${book.title}`}><Trash2 size={15} /></button>
                     </div>
                   )
@@ -952,15 +952,25 @@ function App() {
 type FolderViewProps = { parts: BookFile[]; onBack: () => void; onOpen: (part: BookFile) => void; onDelete: () => void }
 
 /** A split book: its parts in order, each with its own progress. */
+/** A book's cover on the shelf: the scanned cover of a Ling Library book, otherwise a drawn one. */
+function ShelfCover({ book, folder }: { book: BookFile; folder?: string }) {
+  const title = bookTitleOf(book)
+  const image = coverUrl(catalogBookOf(title, book.language))
+  const className = folder ? 'book-cover is-folder' : 'book-cover'
+  if (image) return <div className={`${className} has-image`}><img className="cover-image" src={image} alt="" loading="lazy" /></div>
+  return <div className={className}><span className="cover-stamp">{folder ?? book.format}</span><BookOpen size={25} strokeWidth={1.5} /><div className="cover-lines"><span /><span /><span /></div><span className="cover-title">{title}</span><span className="cover-author">{book.author}</span></div>
+}
+
 function FolderView({ parts, onBack, onOpen, onDelete }: FolderViewProps) {
   const first = parts[0]
   const progress = folderProgress(parts)
   const current = currentPart(parts)
+  const cover = coverUrl(catalogBookOf(bookTitleOf(first), first.language))
   return (
     <section className="folder-view">
       <button className="quiet-button folder-back" onClick={onBack}><ArrowLeft size={16} /> Библиотека</button>
       <header className="folder-header">
-        <div className={`folder-cover cover-${coverIndex(first.collectionId ?? first.id)}`}><div className="book-cover is-folder"><BookOpen size={22} strokeWidth={1.5} /></div></div>
+        <div className={`folder-cover cover-${coverIndex(first.collectionId ?? first.id)}`}>{cover ? <div className="book-cover is-folder has-image"><img className="cover-image" src={cover} alt="" /></div> : <div className="book-cover is-folder"><BookOpen size={22} strokeWidth={1.5} /></div>}</div>
         <div className="folder-info">
           <span className="eyebrow">ПАПКА · {parts.length} {partsLabel(parts.length).toUpperCase()} · {first.format}</span>
           <h1>{bookTitleOf(first)}</h1>

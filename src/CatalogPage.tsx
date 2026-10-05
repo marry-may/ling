@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowLeft, BookOpen, Check, ExternalLink, LoaderCircle, Plus } from 'lucide-react'
-import { CATALOG, catalogPageUrl, DIFFICULTY_LABELS, readingTime, shelfCopies, type CatalogBook } from './catalog'
+import { CATALOG, catalogPageUrl, coverUrl, DIFFICULTY_LABELS, readingTime, shelfCopies, type CatalogBook } from './catalog'
 import type { BookFile } from './domain'
 import { getLanguage } from './languages'
 
@@ -28,6 +28,8 @@ function shelfProgress(copies: BookFile[]): number {
 }
 
 function Cover({ book }: { book: CatalogBook }) {
+  const image = coverUrl(book)
+  if (image) return <div className="book-cover has-image"><img className="cover-image" src={image} alt="" loading="lazy" /></div>
   return (
     <div className="book-cover"><span className="cover-stamp">{book.language.toUpperCase()}</span><BookOpen size={25} strokeWidth={1.5} /><div className="cover-lines"><span /><span /><span /></div><span className="cover-title">{book.title}</span><span className="cover-author">{book.author}</span></div>
   )

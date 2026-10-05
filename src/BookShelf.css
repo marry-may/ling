@@ -1,0 +1,522 @@
+/* The moving shelf of Ling Library books on the landing page (src/BookShelf.tsx).
+ * Each book is a box seen spine first: the spine is its front face, the cover its right side. The open book turns
+ * the box by 90° so the cover faces the reader. Book colours are part of the drawing and stay the same in both themes. */
+.shelf {
+  --turn-time: 0.85s;
+  --turn: var(--turn-time) cubic-bezier(0.65, 0, 0.25, 1);
+  width: 100%;
+  margin-top: 36px;
+}
+.shelf-viewport {
+  position: relative;
+  height: 430px;
+  overflow: hidden;
+  perspective: 4200px;
+  touch-action: pan-y;
+  user-select: none;
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+}
+.shelf-viewport::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--s-e3eae5);
+  content: "";
+}
+.shelf-track {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  height: calc(100% - 10px);
+  transform-style: preserve-3d;
+  transition: transform var(--turn);
+  will-change: transform;
+}
+.shelf-book {
+  position: relative;
+  display: block;
+  flex: none;
+  transform-style: preserve-3d;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    width var(--turn),
+    margin var(--turn),
+    rotate var(--turn),
+    translate 0.25s ease;
+}
+.shelf-book:not(.is-open):hover {
+  translate: 0 -10px;
+}
+.shelf-book:focus-visible {
+  outline: none;
+}
+.shelf-book:focus-visible .shelf-spine,
+.shelf-book:focus-visible .shelf-cover {
+  outline: 3px solid var(--s-ee7967);
+  outline-offset: 2px;
+}
+.shelf-book-3d {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 100%;
+  transform: translateZ(calc(var(--cover) / -2));
+  transform-style: preserve-3d;
+  transition: transform var(--turn);
+}
+.shelf-book.is-open .shelf-book-3d {
+  transform: translateZ(calc(var(--spine) / -2)) rotateY(-90deg);
+}
+.shelf-spine,
+.shelf-cover {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--bg);
+  backface-visibility: hidden;
+}
+.is-jumping .shelf-track,
+.is-jumping .shelf-book,
+.is-jumping .shelf-book-3d {
+  transition: none;
+}
+
+/* Spines */
+.shelf-spine {
+  left: calc(var(--spine) / -2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: var(--spine);
+  padding: 12px 0 10px;
+  border-radius: 2px;
+  box-shadow:
+    inset 2px 0 0 #ffffff2e,
+    inset -3px 0 0 #00000024;
+  transform: translateZ(calc(var(--cover) / 2));
+}
+.shelf-spine-title,
+.shelf-spine-author {
+  max-height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: rotate(180deg);
+  writing-mode: vertical-rl;
+}
+.shelf-spine-title {
+  min-height: 0;
+  /* --fit shrinks long titles so more of them fit on the spine. */
+  font-size: min(calc(var(--spine) * 0.4), 17px, var(--fit, 17px));
+  line-height: 1;
+}
+.shelf-spine-author {
+  flex: none;
+  max-height: 34%;
+  font-size: min(calc(var(--spine) * 0.24), 10px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+.spine-layout-serif .shelf-spine-title {
+  font-family: var(--serif);
+  font-weight: 500;
+}
+.spine-layout-caps .shelf-spine-title {
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.spine-layout-banded {
+  padding-top: 0;
+}
+.spine-layout-banded .shelf-spine-title {
+  font-family: var(--serif);
+  font-style: italic;
+}
+.shelf-spine-band {
+  flex: none;
+  width: 100%;
+  height: 7%;
+  background: var(--accent);
+}
+.shelf-spine-band:last-of-type {
+  height: 3%;
+  margin-top: -4px;
+}
+
+/* Covers: drawn, sized by the cover width (cqw) */
+.shelf-cover {
+  left: calc(var(--cover) / -2);
+  display: flex;
+  flex-direction: column;
+  width: var(--cover);
+  /* cqw would measure the page here: the cover is its own container, so its padding uses the cover width. */
+  padding: calc(var(--cover) * 0.09);
+  border-radius: 2px 6px 6px 2px;
+  container-type: inline-size;
+  box-shadow: inset 7px 0 0 #00000026;
+  transform: rotateY(90deg) translateZ(calc(var(--spine) / 2));
+  /* A closed book's cover is its side: hidden, or it shows in the gaps between spines. It shows at once when the
+     book starts to turn and stays until a closing book has turned back. */
+  visibility: hidden;
+  transition: visibility 0s linear var(--turn-time);
+}
+.shelf-book.is-open .shelf-cover {
+  visibility: visible;
+  transition-delay: 0s;
+  box-shadow:
+    inset 7px 0 0 #00000026,
+    0 22px 44px #14241d33;
+}
+.shelf-cover-title {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  font: 500 11.5cqw/1.05 var(--serif);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+.shelf-cover-author {
+  font-size: 4.8cqw;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+.shelf-cover-meta {
+  font-size: 4.2cqw;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  opacity: 0.7;
+}
+
+.cover-layout-frame {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.shelf-cover-frame {
+  position: absolute;
+  inset: 5cqw;
+  border: 0.9cqw double currentColor;
+  opacity: 0.45;
+}
+.cover-layout-frame .shelf-cover-author {
+  margin-bottom: auto;
+  padding-top: 4cqw;
+}
+.cover-layout-frame .shelf-cover-meta {
+  margin-top: auto;
+  padding-bottom: 4cqw;
+}
+
+.cover-layout-type .shelf-cover-title {
+  margin-top: 7cqw;
+  font: 800 13.5cqw/0.95 "DM Sans", sans-serif;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  -webkit-line-clamp: 6;
+}
+.cover-layout-circle {
+  align-items: center;
+  text-align: center;
+}
+.shelf-cover-sun {
+  display: grid;
+  place-items: center;
+  width: 70cqw;
+  aspect-ratio: 1;
+  margin-top: 2cqw;
+  border-radius: 50%;
+  background: var(--accent);
+  /* The drawing sits on the accent disc, so accent and background swap. */
+  --art-a: var(--bg);
+  --art-b: var(--accent);
+}
+.shelf-cover-sun .shelf-art {
+  width: 74%;
+}
+.cover-layout-circle .shelf-cover-title {
+  margin: auto 0 4cqw;
+}
+
+.cover-layout-bands .shelf-cover-title {
+  margin-top: 6cqw;
+  font-size: 13cqw;
+}
+.shelf-cover-bands {
+  display: grid;
+  gap: 2.5cqw;
+  margin: auto -9cqw -9cqw;
+  padding-bottom: 9cqw;
+}
+.shelf-cover-bands i {
+  height: 6cqw;
+  background: var(--accent);
+}
+.shelf-cover-bands i:nth-child(2) {
+  background: var(--ink);
+  opacity: 0.85;
+}
+
+.cover-layout-pattern {
+  justify-content: flex-end;
+  gap: 6cqw;
+}
+.shelf-cover-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 54cqw;
+  aspect-ratio: 1;
+  margin-bottom: auto;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.shelf-cover-badge .shelf-art {
+  width: 76%;
+}
+.shelf-cover-pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--accent);
+  opacity: 0.6;
+}
+.shelf-cover-label {
+  position: relative;
+  display: grid;
+  gap: 4cqw;
+  padding: 7cqw;
+  color: var(--bg);
+  background: var(--ink);
+}
+.cover-layout-pattern .shelf-cover-title {
+  font-size: 10.5cqw;
+}
+
+.cover-layout-split {
+  flex-direction: row;
+  padding: 0;
+}
+.shelf-cover-strip {
+  display: grid;
+  flex: none;
+  place-items: end center;
+  width: 24cqw;
+  padding-bottom: 9cqw;
+  color: var(--bg);
+  background: var(--accent);
+}
+.shelf-cover-strip span {
+  font-size: 6cqw;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  transform: rotate(180deg);
+  writing-mode: vertical-rl;
+}
+.shelf-cover-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 5cqw;
+  padding: 9cqw 8cqw;
+}
+.cover-layout-split .shelf-cover-title {
+  font-size: 11cqw;
+}
+
+/* Caption under the shelf */
+.shelf-caption {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  max-width: 620px;
+  margin: 28px auto 0;
+  text-align: center;
+}
+.shelf-caption > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.shelf-caption strong {
+  overflow: hidden;
+  color: var(--t-20352f);
+  font: italic 500 24px/1.25 var(--display, var(--serif));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shelf-caption span {
+  color: var(--t-82908a);
+  font-size: 13px;
+}
+.shelf-caption a {
+  margin-top: 6px;
+  color: var(--t-315b4d);
+  font-size: 14px;
+  font-weight: 600;
+}
+.shelf-arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--s-dce6de);
+  border-radius: 50%;
+  color: var(--t-315b4d);
+  background: var(--s-ffffff);
+  cursor: pointer;
+}
+.shelf-arrow:hover {
+  border-color: var(--s-9fbfad);
+}
+
+@media (max-width: 640px) {
+  .shelf-viewport {
+    height: 320px;
+    mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  }
+  .shelf-caption strong {
+    font-size: 19px;
+    white-space: normal;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shelf {
+    --turn-time: 0.2s;
+    --turn: var(--turn-time) ease;
+  }
+}
+
+/* Cover illustrations (src/coverArt.tsx), coloured from the book's palette */
+.shelf-art {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+.shelf-art .fa { fill: var(--art-a, var(--accent)); }
+.shelf-art .fi { fill: var(--art-i, var(--ink)); }
+.shelf-art .fb { fill: var(--art-b, var(--bg)); }
+.shelf-art .sa,
+.shelf-art .si,
+.shelf-art .sb {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+.shelf-art .sa { stroke: var(--art-a, var(--accent)); }
+.shelf-art .si { stroke: var(--art-i, var(--ink)); }
+.shelf-art .sb { stroke: var(--art-b, var(--bg)); }
+.shelf-art .thin { stroke-width: 1.6; }
+.shelf-art .thick { stroke-width: 5; }
+.shelf-art .thicker { stroke-width: 8; }
+.cover-layout-frame .shelf-art {
+  width: 60cqw;
+  margin: 2cqw 0 5cqw;
+}
+.cover-layout-type .shelf-art {
+  align-self: flex-end;
+  width: 46cqw;
+  margin: auto 0 4cqw;
+}
+.cover-layout-bands .shelf-art {
+  align-self: flex-end;
+  width: 42cqw;
+  margin: auto 0 3cqw;
+}
+.cover-layout-bands .shelf-cover-bands {
+  margin-top: 0;
+}
+.cover-layout-split .shelf-art {
+  width: 52cqw;
+  margin-bottom: auto;
+}
+.cover-layout-split .shelf-cover-body {
+  justify-content: flex-start;
+}
+.cover-layout-split .shelf-cover-title {
+  margin-top: auto;
+}
+
+/* Long titles step down a size so they fit beside the drawing. */
+.shelf-cover.is-long .shelf-cover-title {
+  font-size: 9.5cqw;
+  hyphens: auto;
+}
+.cover-layout-type.is-long .shelf-cover-title {
+  font-size: 10.5cqw;
+}
+.cover-layout-split.is-long .shelf-art {
+  width: 40cqw;
+}
+
+/* Micro-animations of the open book's drawing (m-* in src/coverArt.tsx) */
+.shelf-art [class*="m-"] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.shelf-art [style*="transform-origin"] {
+  transform-box: view-box;
+}
+.shelf-book.is-open .m-bob { animation: art-bob 3.2s ease-in-out infinite; }
+.shelf-book.is-open .m-bob-late { animation: art-bob 3.2s ease-in-out -1.6s infinite; }
+.shelf-book.is-open .m-swing { animation: art-swing 3.6s ease-in-out infinite; }
+.shelf-book.is-open .m-sway { animation: art-swing 5s ease-in-out infinite; }
+.shelf-book.is-open .m-spin { animation: art-spin 4s linear infinite; }
+.shelf-book.is-open .m-spin-slow { animation: art-spin 9s linear infinite; }
+.shelf-book.is-open .m-twinkle { animation: art-twinkle 2.4s ease-in-out infinite; }
+.shelf-book.is-open .m-flicker { animation: art-flicker 1.6s ease-in-out infinite; transform-origin: bottom; }
+.shelf-book.is-open .m-pulse { animation: art-pulse 2.8s ease-in-out infinite; }
+.shelf-book.is-open .m-beat { animation: art-beat 1.6s ease-in-out infinite; }
+.shelf-book.is-open .m-glow { animation: art-pulse 4s ease-in-out infinite; }
+.shelf-book.is-open .m-blink { animation: art-blink 4.5s ease-in-out infinite; }
+.shelf-book.is-open .m-look { animation: art-look 5s ease-in-out infinite; }
+.shelf-book.is-open .m-grow { animation: art-grow 3.5s ease-in-out infinite; }
+.shelf-book.is-open .m-stretch { animation: art-grow 4s ease-in-out infinite; }
+.shelf-book.is-open .m-wiggle { animation: art-wiggle 0.9s ease-in-out infinite; }
+.shelf-book.is-open .m-rise { animation: art-rise 2.6s ease-in infinite; }
+.shelf-book.is-open .m-rise:nth-child(odd) { animation-delay: -1.3s; }
+.shelf-book.is-open .m-drift { animation: art-drift 6s ease-in-out infinite; }
+.shelf-book.is-open .m-write { animation: art-write 1.8s ease-in-out infinite; }
+.shelf-book.is-open .m-flip { animation: art-flip 6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+
+@keyframes art-bob { 50% { transform: translateY(-5%); } }
+@keyframes art-swing { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes art-spin { to { transform: rotate(360deg); } }
+@keyframes art-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.75); } }
+@keyframes art-flicker { 0%, 100% { transform: scale(1, 1); } 30% { transform: scale(0.92, 1.08); } 60% { transform: scale(1.06, 0.94); } }
+@keyframes art-pulse { 50% { opacity: 0.7; transform: scale(0.96); } }
+@keyframes art-beat { 0%, 40%, 100% { transform: scale(1); } 20% { transform: scale(1.1); } 30% { transform: scale(0.97); } }
+@keyframes art-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes art-look { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-12%); } 60% { transform: translateX(12%); } }
+@keyframes art-grow { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(1.35); } }
+@keyframes art-wiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(3deg); } }
+@keyframes art-rise { 0% { opacity: 0; transform: translateY(40%); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-160%); } }
+@keyframes art-drift { 50% { transform: translateX(6%); } }
+@keyframes art-write { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-4deg) translateX(-2%); } 75% { transform: rotate(3deg) translateX(2%); } }
+@keyframes art-flip { 0%, 40% { transform: rotate(0); } 50%, 90% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf-art * {
+    animation: none !important;
+  }
+}

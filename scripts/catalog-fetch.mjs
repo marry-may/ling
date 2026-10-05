@@ -4,6 +4,10 @@
 //   node scripts/catalog-fetch.mjs            all books
 //   node scripts/catalog-fetch.mjs immensee   one book
 //
+// Covers are picked by hand: catalog/covers/<slug>.jpg is the edition's scan from Gutenberg
+// (cache/epub/<id>/images/cover.jpg, 480 px wide) and the book gets "cover": true in books.json. Books whose
+// Gutenberg cover is a generated pattern keep the drawn cover.
+//
 // Each rule says where the text starts and ends and what a chapter heading looks like. `titleNext` means the
 // chapter title is the paragraph after the heading (e.g. "-I-" followed by "Perdido"). Optional:
 //   occurrence    the text starts at this match of `start` (the first ones are a table of contents)

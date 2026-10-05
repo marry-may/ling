@@ -13,6 +13,8 @@ export type CatalogBook = {
   language: string
   difficulty: 'easy' | 'medium' | 'hard'
   description: Record<'ru' | 'uk' | 'en', string>
+  /** The edition's own cover is in catalog/covers/<slug>.jpg (a scan from Project Gutenberg). */
+  cover?: boolean
   words: number
   chapters: number
 }
@@ -23,6 +25,16 @@ export const DIFFICULTY_LABELS: Record<CatalogBook['difficulty'], string> = { ea
 
 export function findCatalogBook(slug: string): CatalogBook | undefined {
   return CATALOG.find((book) => book.slug === slug)
+}
+
+/** The scanned cover of the book's edition, when it has one; other books get a drawn cover. */
+export function coverUrl(book: CatalogBook | undefined): string | undefined {
+  return book?.cover ? `library/${book.slug}/cover.jpg` : undefined
+}
+
+/** The Ling Library book a shelf book was added from, matched by title and language. */
+export function catalogBookOf(title: string, language: string): CatalogBook | undefined {
+  return CATALOG.find((book) => book.title === title && book.language === language)
 }
 
 /** The book's public page on the site. */

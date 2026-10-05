@@ -224,6 +224,27 @@ h2 {
   border: 1px solid #ffffff55;
   border-radius: 3px;
 }
+.cover.has-image {
+  overflow: hidden;
+  padding: 0;
+  background: var(--surface);
+}
+.cover.has-image::before {
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  border-radius: inherit;
+  box-shadow: inset 6px 0 0 #0000001f, inset 0 0 0 1px #00000014;
+}
+.cover.has-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Old covers carry the title near the top, so a tall scan is trimmed at the bottom. */
+  object-position: top;
+}
 .cover-1 { background: var(--cover-1); }
 .cover-2 { background: var(--cover-2); }
 .cover-3 { background: var(--cover-3); }

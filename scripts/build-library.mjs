@@ -113,7 +113,11 @@ function readingTime(t, words) {
   return minutes >= 90 ? t.hours(Math.round(minutes / 60)) : t.minutes(Math.max(5, Math.round(minutes / 5) * 5))
 }
 
-function cover(book) {
+const coverPath = (book) => `library/${book.slug}/cover.jpg`
+
+/** The scanned cover of the book's edition when there is one (catalog/covers/), otherwise a drawn cover. */
+function cover(book, from) {
+  if (book.cover) return `<div class="cover has-image"><img src="${link(from, coverPath(book))}" alt="" loading="lazy"></div>`
   return `<div class="cover cover-${coverIndex(book.slug)}"><span class="cover-stamp">${book.language.toUpperCase()}</span><span class="cover-title">${escape(book.title)}</span><span class="cover-author">${escape(book.author)}</span></div>`
 }
 
@@ -127,7 +131,7 @@ function trackingScript(kind) {
   return `<script>(function(){if(/^(localhost|127\\.|192\\.168\\.|\\[)/.test(location.hostname))return;var v;try{v=localStorage.getItem('ling-visitor');if(!v){v=crypto.randomUUID();localStorage.setItem('ling-visitor',v)}}catch(e){v=crypto.randomUUID()}var r=null;try{var u=new URL(document.referrer);if(u.host!==location.host)r=u.href.slice(0,300)}catch(e){}fetch(${JSON.stringify(`${SUPABASE_URL}/rest/v1/page_views`)},{method:'POST',keepalive:true,headers:{apikey:${JSON.stringify(SUPABASE_KEY)},Authorization:${JSON.stringify(`Bearer ${SUPABASE_KEY}`)},'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(${row})}).catch(function(){})})()</script>`
 }
 
-function page({ locale, path: pagePath, title, description, alternates, body, jsonLd }) {
+function page({ locale, path: pagePath, title, description, alternates, body, jsonLd, image }) {
   const t = T[locale]
   const hreflang = alternates.map(([lang, href]) => `<link rel="alternate" hreflang="${lang}" href="${SITE}${href}">`).join('\n  ')
   const switcher = alternates.map(([lang, href]) => `<a href="${link(pagePath, href)}"${lang === locale ? ' aria-current="page"' : ''} lang="${lang}">${lang === 'uk' ? 'UA' : lang.toUpperCase()}</a>`).join('')
@@ -145,6 +149,7 @@ function page({ locale, path: pagePath, title, description, alternates, body, js
   <meta property="og:title" content="${escape(title)}">
   <meta property="og:description" content="${escape(description)}">
   <meta property="og:url" content="${SITE}${pagePath}">
+  ${image ? `<meta property="og:image" content="${image}">` : ''}
   <meta property="og:site_name" content="Ling">
   <link rel="icon" type="image/svg+xml" href="${link(pagePath, 'ling-icon.svg')}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -168,7 +173,7 @@ function page({ locale, path: pagePath, title, description, alternates, body, js
 
 function bookCard(book, locale, from) {
   const t = T[locale]
-  return `<a class="card" href="${link(from, bookPath(locale, book.slug))}">${cover(book)}<span class="card-title">${escape(book.title)}</span><span class="card-meta">${escape(book.author)} · ${t.difficulty[book.difficulty]}</span></a>`
+  return `<a class="card" href="${link(from, bookPath(locale, book.slug))}">${cover(book, from)}<span class="card-title">${escape(book.title)}</span><span class="card-meta">${escape(book.author)} · ${t.difficulty[book.difficulty]}</span></a>`
 }
 
 function catalogPage(books, locale) {
@@ -209,7 +214,7 @@ function bookPage(book, books, chapters, locale) {
   const body = `
     <nav class="crumbs"><a href="${link(pagePath, catalogPath(locale))}">${t.library}</a> / <a href="${link(pagePath, catalogPath(locale))}#${book.language}">${t.language[book.language]}</a></nav>
     <section class="book">
-      ${cover(book)}
+      ${cover(book, pagePath)}
       <div class="book-info">
         <p class="eyebrow">${t.language[book.language].toUpperCase()} · ${book.year}</p>
         <h1 lang="${book.language}">${escape(book.title)}</h1>
@@ -236,10 +241,12 @@ function bookPage(book, books, chapters, locale) {
     '@context': 'https://schema.org', '@type': 'Book', name: book.title, inLanguage: book.language,
     author: { '@type': 'Person', name: book.author }, datePublished: String(book.year), bookFormat: 'https://schema.org/EBook',
     isAccessibleForFree: true, description: book.description[locale], url: `${SITE}${pagePath}`,
+    ...(book.cover ? { image: `${SITE}${coverPath(book)}` } : {}),
   }
   return page({
     locale, path: pagePath, title: t.pageTitle(book, t.readIn[book.language]), description: t.pageDescription(book),
     alternates: LOCALES.map((lang) => [lang, bookPath(lang, book.slug)]), body, jsonLd,
+    image: book.cover ? `${SITE}${coverPath(book)}` : undefined,
   })
 }
 
@@ -261,6 +268,7 @@ for (const locale of LOCALES) {
 for (const book of books) {
   const { chapters } = JSON.parse(fs.readFileSync(path.join(ROOT, `catalog/texts/${book.slug}.json`), 'utf8'))
   write(`library/${book.slug}/book.json`, JSON.stringify({ slug: book.slug, chapters }))
+  if (book.cover) write(coverPath(book), fs.readFileSync(path.join(ROOT, `catalog/covers/${book.slug}.jpg`)))
   for (const locale of LOCALES) {
     write(`${bookPath(locale, book.slug)}index.html`, bookPage(book, books, chapters, locale))
     urls.push(`${SITE}${bookPath(locale, book.slug)}`)
