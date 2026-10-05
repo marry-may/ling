@@ -46,6 +46,8 @@ function servePublicPages(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
+  // reader.html is the trial reader embedded in the Ling Library book pages.
+  build: { rollupOptions: { input: { main: 'index.html', reader: 'reader.html' } } },
   plugins: [
     react(),
     servePublicPages(),

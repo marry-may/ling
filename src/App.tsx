@@ -37,6 +37,16 @@ function readWelcomeSkipped(): boolean {
   }
 }
 
+/** The page reached in the trial reader on a Ling Library book page (src/TryReader.tsx). */
+function readTrialPage(slug: string): number | undefined {
+  try {
+    const page = Number(localStorage.getItem(`ling-try-page:${slug}`))
+    return Number.isInteger(page) && page > 0 ? page : undefined
+  } catch {
+    return undefined
+  }
+}
+
 function readStudyLanguage(): string | null {
   try {
     return localStorage.getItem(LANGUAGE_STORAGE_KEY)
@@ -715,6 +725,9 @@ function App() {
       const content = sections.map((section) => section.content).join('\n\n')
       const file = new File([content], `${entry.slug}.txt`, { type: 'text/plain' })
       const created = await createBooks({ title: entry.title, author: entry.author, format: 'LING', language: entry.language, content, sections }, file)
+      // Pick up where the trial reader on the book's library page left off (it shows the first part).
+      const trialPage = readTrialPage(entry.slug)
+      if (trialPage) created.books[0] = { ...created.books[0], page: trialPage }
       await persistBooks([...created.books, ...books])
       ensureLanguage(entry.language)
       if (open) {

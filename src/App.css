@@ -3213,3 +3213,50 @@ button.word-initial:hover {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Trial reader (reader.html), embedded in the Ling Library book pages */
+.try-reader {
+  padding-top: 24px;
+  padding-bottom: 0;
+}
+.try-bar {
+  position: sticky;
+  z-index: 3;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 12px 0 14px;
+  border-top: 1px solid var(--s-e3eae5);
+  color: var(--t-667770);
+  background: var(--s-ffffff);
+  font-size: 13px;
+}
+.try-bar .primary-action {
+  flex: none;
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+.try-message {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  min-height: 100svh;
+  color: var(--t-82908a);
+  text-align: center;
+}
+.try-message p {
+  margin: 0;
+}
+@media (max-width: 520px) {
+  .try-reader {
+    padding-top: 16px;
+  }
+  .try-bar span {
+    font-size: 12px;
+  }
+}

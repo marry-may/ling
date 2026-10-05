@@ -202,5 +202,260 @@
     },
     "words": 66147,
     "chapters": 148
+  },
+  {
+    "slug": "a-christmas-carol",
+    "gutenbergId": 46,
+    "title": "A Christmas Carol",
+    "author": "Charles Dickens",
+    "authorYears": "1812–1870",
+    "year": 1843,
+    "language": "en",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Скупой Эбенезер Скрудж в канун Рождества встречает трёх духов, которые показывают ему прошлое, настоящее и будущее. Самая известная рождественская история Диккенса — тёплая, немного страшная и очень живая. Пять коротких «строф» легко прочитать за пару вечеров.",
+      "uk": "Скнара Ебенезер Скрудж напередодні Різдва зустрічає трьох духів, які показують йому минуле, теперішнє й майбутнє. Найвідоміша різдвяна історія Діккенса — тепла, трохи моторошна й дуже жива. П’ять коротких «строф» легко прочитати за кілька вечорів.",
+      "en": "On Christmas Eve the miser Ebenezer Scrooge is visited by three spirits who show him his past, present and future. Dickens's best-known Christmas story is warm, a little spooky and full of life. Its five short “staves” are easy to finish in a couple of evenings."
+    },
+    "words": 29112,
+    "chapters": 5
+  },
+  {
+    "slug": "the-time-machine",
+    "gutenbergId": 35,
+    "title": "The Time Machine",
+    "author": "H. G. Wells",
+    "authorYears": "1866–1946",
+    "year": 1895,
+    "language": "en",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Изобретатель отправляется в 802 701 год и находит человечество, разделившееся на беззаботных элоев и подземных морлоков. Короткий роман Уэллса, с которого началась научная фантастика о путешествиях во времени. Ясный язык и захватывающий сюжет делают его хорошим выбором для среднего уровня.",
+      "uk": "Винахідник вирушає в 802 701 рік і бачить людство, що розділилося на безтурботних елоїв і підземних морлоків. Короткий роман Веллса, з якого почалася наукова фантастика про подорожі в часі. Ясна мова й захопливий сюжет роблять його добрим вибором для середнього рівня.",
+      "en": "An inventor travels to the year 802,701 and finds humanity split into the carefree Eloi and the underground Morlocks. Wells's short novel started the whole genre of time-travel fiction. Clear prose and a gripping plot make it a good pick for intermediate readers."
+    },
+    "words": 32741,
+    "chapters": 17
+  },
+  {
+    "slug": "peter-pan",
+    "gutenbergId": 16,
+    "title": "Peter Pan",
+    "author": "J. M. Barrie",
+    "authorYears": "1860–1937",
+    "year": 1911,
+    "language": "en",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Мальчик, который не хочет взрослеть, уводит Венди и её братьев в Нетландию — к пиратам, русалкам и капитану Крюку. Сказка Барри одновременно смешная и грустная, а в оригинале полна живых разговорных фраз. Хорошая книга, чтобы начать читать по-английски целиком.",
+      "uk": "Хлопчик, який не хоче дорослішати, забирає Венді та її братів до Небувалії — до піратів, русалок і капітана Гака. Казка Баррі водночас смішна й сумна, а в оригіналі сповнена живих розмовних фраз. Добра книжка, щоб почати читати англійською повністю.",
+      "en": "The boy who won't grow up takes Wendy and her brothers to Neverland, with its pirates, mermaids and Captain Hook. Barrie's tale is funny and sad at once, and full of lively everyday dialogue. A good first full-length book to read in English."
+    },
+    "words": 47784,
+    "chapters": 17
+  },
+  {
+    "slug": "dr-jekyll-and-mr-hyde",
+    "gutenbergId": 43,
+    "title": "The Strange Case of Dr Jekyll and Mr Hyde",
+    "author": "Robert Louis Stevenson",
+    "authorYears": "1850–1894",
+    "year": 1886,
+    "language": "en",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Адвокат Аттерсон пытается понять, что связывает уважаемого доктора Джекила с жестоким мистером Хайдом. Короткая готическая повесть Стивенсона построена как детектив и держит в напряжении до последней главы. Её можно прочитать за выходные.",
+      "uk": "Адвокат Аттерсон намагається зрозуміти, що пов’язує шанованого доктора Джекіла з жорстоким містером Гайдом. Коротка готична повість Стівенсона побудована як детектив і тримає в напрузі до останнього розділу. Її можна прочитати за вихідні.",
+      "en": "The lawyer Utterson tries to work out what binds the respected Dr Jekyll to the brutal Mr Hyde. Stevenson's short Gothic tale reads like a detective story and keeps the suspense to the last chapter. You can read it in a weekend."
+    },
+    "words": 25863,
+    "chapters": 10
+  },
+  {
+    "slug": "niebla",
+    "gutenbergId": 49836,
+    "title": "Niebla",
+    "author": "Miguel de Unamuno",
+    "authorYears": "1864–1936",
+    "year": 1914,
+    "language": "es",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Мечтательный Аугусто Перес влюбляется в пианистку Эухению — и однажды решает поспорить с самим автором романа. Унамуно назвал свою книгу «ниволой»: в ней много диалогов, иронии и неожиданных поворотов. Живой разговорный испанский делает её удобной для чтения.",
+      "uk": "Мрійливий Аугусто Перес закохується в піаністку Еухенію — і одного дня вирішує посперечатися із самим автором роману. Унамуно назвав свою книжку «ніволою»: у ній багато діалогів, іронії й несподіваних поворотів. Жива розмовна іспанська робить її зручною для читання.",
+      "en": "Dreamy Augusto Pérez falls in love with the pianist Eugenia — and one day decides to argue with the author of the novel himself. Unamuno called his book a “nivola”: it is full of dialogue, irony and surprising turns. Its lively spoken Spanish makes it an easy read."
+    },
+    "words": 53871,
+    "chapters": 33
+  },
+  {
+    "slug": "cuentos-de-amor",
+    "gutenbergId": 55514,
+    "title": "Cuentos de amor",
+    "author": "Emilia Pardo Bazán",
+    "authorYears": "1851–1921",
+    "year": 1898,
+    "language": "es",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Больше сорока коротких рассказов о любви — счастливой, ревнивой, смешной и трагической. Эмилия Пардо Басан была одной из главных писательниц Испании XIX века и мастером короткой формы. Каждый рассказ занимает несколько страниц, поэтому их удобно читать по одному.",
+      "uk": "Понад сорок коротких оповідань про кохання — щасливе, ревниве, смішне й трагічне. Емілія Пардо Басан була однією з головних письменниць Іспанії XIX століття та майстринею короткої форми. Кожне оповідання займає кілька сторінок, тож їх зручно читати по одному.",
+      "en": "More than forty short stories about love — happy, jealous, funny and tragic. Emilia Pardo Bazán was one of Spain's leading nineteenth-century writers and a master of the short form. Each story is only a few pages long, so they are easy to read one at a time."
+    },
+    "words": 62131,
+    "chapters": 43
+  },
+  {
+    "slug": "grimms-maerchen",
+    "gutenbergId": 77905,
+    "title": "Grimms Märchen",
+    "author": "Brüder Grimm",
+    "authorYears": "1785–1863 · 1786–1859",
+    "year": 1812,
+    "language": "de",
+    "difficulty": "easy",
+    "description": {
+      "ru": "«Гензель и Гретель», «Бременские музыканты», «Золушка», «Белоснежка», «Румпельштильцхен» и ещё полсотни сказок, собранных братьями Гримм. Знакомые сюжеты помогают понимать текст, даже когда попадаются незнакомые слова. Лучший способ начать читать по-немецки.",
+      "uk": "«Гензель і Гретель», «Бременські музиканти», «Попелюшка», «Білосніжка», «Румпельштільцхен» і ще пів сотні казок, зібраних братами Грімм. Знайомі сюжети допомагають розуміти текст, навіть коли трапляються незнайомі слова. Найкращий спосіб почати читати німецькою.",
+      "en": "Hansel and Gretel, The Town Musicians of Bremen, Cinderella, Snow White, Rumpelstiltskin and some fifty more tales collected by the Brothers Grimm. Familiar plots help you follow the text even when you meet new words. The best way to start reading in German."
+    },
+    "words": 88649,
+    "chapters": 58
+  },
+  {
+    "slug": "peter-schlemihl",
+    "gutenbergId": 31538,
+    "title": "Peter Schlemihls wundersame Geschichte",
+    "author": "Adelbert von Chamisso",
+    "authorYears": "1781–1838",
+    "year": 1814,
+    "language": "de",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Петер Шлемиль продаёт свою тень таинственному человеку в сером за бездонный кошелёк — и быстро понимает, что без тени жить нельзя. Короткая романтическая сказка Шамиссо стала одной из самых известных немецких повестей. Одиннадцать небольших глав читаются за пару вечеров.",
+      "uk": "Петер Шлеміль продає свою тінь таємничому чоловікові в сірому за бездонний гаманець — і швидко розуміє, що без тіні жити не можна. Коротка романтична казка Шаміссо стала однією з найвідоміших німецьких повістей. Одинадцять невеликих розділів читаються за кілька вечорів.",
+      "en": "Peter Schlemihl sells his shadow to a mysterious man in grey for a bottomless purse — and soon learns that life without a shadow is impossible. Chamisso's short Romantic tale became one of the best-known German novellas. Its eleven brief chapters take a couple of evenings."
+    },
+    "words": 19648,
+    "chapters": 11
+  },
+  {
+    "slug": "aus-dem-leben-eines-taugenichts",
+    "gutenbergId": 35312,
+    "title": "Aus dem Leben eines Taugenichts",
+    "author": "Joseph von Eichendorff",
+    "authorYears": "1788–1857",
+    "year": 1826,
+    "language": "de",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Сын мельника берёт скрипку и отправляется куда глаза глядят — через сады Вены и дороги Италии, навстречу любви и приключениям. Повесть Эйхендорфа — самое солнечное произведение немецкого романтизма, полное песен и природы. Лёгкий сюжет помогает читать без спешки.",
+      "uk": "Син мірошника бере скрипку й вирушає куди очі дивляться — крізь сади Відня й дороги Італії, назустріч коханню та пригодам. Повість Айхендорфа — найсонячніший твір німецького романтизму, сповнений пісень і природи. Легкий сюжет допомагає читати без поспіху.",
+      "en": "A miller's son takes his fiddle and sets off wherever the road leads — through the gardens of Vienna and across Italy, towards love and adventure. Eichendorff's novella is the sunniest work of German Romanticism, full of songs and landscapes. Its light plot makes for unhurried reading."
+    },
+    "words": 31136,
+    "chapters": 10
+  },
+  {
+    "slug": "candide",
+    "gutenbergId": 4650,
+    "title": "Candide, ou l’Optimisme",
+    "author": "Voltaire",
+    "authorYears": "1694–1778",
+    "year": 1759,
+    "language": "fr",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Наивного Кандида выгоняют из замка, и он объезжает полмира, всё ещё веря учителю, что «всё к лучшему в этом лучшем из миров». Философская повесть Вольтера — острая, смешная и до сих пор актуальная. Тридцать коротких глав написаны ясным и точным французским языком.",
+      "uk": "Наївного Кандида виганяють із замку, і він об’їжджає пів світу, досі вірячи вчителеві, що «все на краще в цьому найкращому зі світів». Філософська повість Вольтера — гостра, смішна й досі актуальна. Тридцять коротких розділів написано ясною й точною французькою.",
+      "en": "Naive Candide is thrown out of his castle and travels half the world, still trusting his tutor that “all is for the best in the best of all possible worlds”. Voltaire's philosophical tale is sharp, funny and still relevant. Its thirty short chapters are written in clear, precise French."
+    },
+    "words": 33579,
+    "chapters": 30
+  },
+  {
+    "slug": "lettres-de-mon-moulin",
+    "gutenbergId": 11770,
+    "title": "Lettres de mon moulin",
+    "author": "Alphonse Daudet",
+    "authorYears": "1840–1897",
+    "year": 1869,
+    "language": "fr",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Писатель поселяется на старой мельнице в Провансе и пишет оттуда истории о местных жителях: козочке господина Сегена, секрете мельника Корнилля, папском муле. Рассказы Доде тёплые, полные юмора и южного солнца. Каждое «письмо» — отдельная короткая история.",
+      "uk": "Письменник оселяється на старому млині в Провансі й пише звідти історії про місцевих мешканців: кізку пана Сегена, таємницю мірошника Корнія, папського мула. Оповідання Доде теплі, сповнені гумору й південного сонця. Кожен «лист» — окрема коротка історія.",
+      "en": "A writer settles in an old windmill in Provence and sends back stories about the people around him: Monsieur Seguin's goat, Master Cornille's secret, the Pope's mule. Daudet's tales are warm, funny and full of southern sunshine. Each “letter” is a short story of its own."
+    },
+    "words": 49379,
+    "chapters": 30
+  },
+  {
+    "slug": "un-cavallo-nella-luna",
+    "gutenbergId": 56775,
+    "title": "Un cavallo nella luna",
+    "author": "Luigi Pirandello",
+    "authorYears": "1867–1936",
+    "year": 1918,
+    "language": "it",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Сборник новелл Пиранделло — о сицилийских деревнях, странных встречах и людях, которые видят мир не так, как все. Нобелевский лауреат пишет с иронией и вниманием к мелочам, а диалоги в его рассказах звучат как живая речь. Короткие новеллы удобно читать по одной.",
+      "uk": "Збірка новел Піранделло — про сицилійські села, дивні зустрічі й людей, які бачать світ не так, як усі. Нобелівський лауреат пише з іронією й увагою до дрібниць, а діалоги в його оповіданнях звучать як жива мова. Короткі новели зручно читати по одній.",
+      "en": "A collection of Pirandello's stories about Sicilian villages, strange encounters and people who see the world differently from everyone else. The Nobel laureate writes with irony and an eye for detail, and his dialogue sounds like real speech. The short stories are easy to read one at a time."
+    },
+    "words": 36701,
+    "chapters": 11
+  },
+  {
+    "slug": "dopo-il-divorzio",
+    "gutenbergId": 43226,
+    "title": "Dopo il divorzio",
+    "author": "Grazia Deledda",
+    "authorYears": "1871–1936",
+    "year": 1902,
+    "language": "it",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Костантино осуждён за убийство, которого не совершал, а его жена Джованна, оставшись одна в сардинской деревне, решается на развод. Роман нобелевского лауреата Грации Деледды — о любви, бедности и суровых традициях Сардинии. Простой сюжет и много диалогов помогают читать дальше.",
+      "uk": "Костантіно засуджено за вбивство, якого він не скоював, а його дружина Джованна, лишившись сама в сардинському селі, наважується на розлучення. Роман нобелівської лауреатки Грації Деледди — про кохання, бідність і суворі традиції Сардинії. Простий сюжет і багато діалогів допомагають читати далі.",
+      "en": "Costantino is convicted of a murder he did not commit, and his wife Giovanna, left alone in a Sardinian village, decides to divorce him. Nobel laureate Grazia Deledda's novel is about love, poverty and Sardinia's harsh traditions. A simple plot and plenty of dialogue keep you reading."
+    },
+    "words": 57994,
+    "chapters": 17
+  },
+  {
+    "slug": "memorias-postumas-de-bras-cubas",
+    "gutenbergId": 54829,
+    "title": "Memórias Póstumas de Brás Cubas",
+    "author": "Machado de Assis",
+    "authorYears": "1839–1908",
+    "year": 1881,
+    "language": "pt",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Брас Кубас рассказывает историю своей жизни уже после смерти — с иронией, отступлениями и разговорами с читателем. Один из главных романов бразильской литературы, удивительно современный по форме. Главы очень короткие, но язык XIX века с устаревшей орфографией потребует внимания.",
+      "uk": "Брас Кубас розповідає історію свого життя вже після смерті — з іронією, відступами й розмовами з читачем. Один із головних романів бразильської літератури, напрочуд сучасний за формою. Розділи дуже короткі, але мова XIX століття із застарілим правописом потребуватиме уваги.",
+      "en": "Brás Cubas tells the story of his life after his death — with irony, digressions and asides to the reader. One of the great Brazilian novels, and strikingly modern in form. The chapters are very short, but the nineteenth-century language and old spelling need some attention."
+    },
+    "words": 61807,
+    "chapters": 157
+  },
+  {
+    "slug": "historias-sem-data",
+    "gutenbergId": 33056,
+    "title": "Histórias sem data",
+    "author": "Machado de Assis",
+    "authorYears": "1839–1908",
+    "year": 1884,
+    "language": "pt",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Сборник рассказов Машаду де Ассиса: дьявол открывает собственную церковь, врач лечит от долгов, а сиамский король меняется душой с любимой. Остроумные истории о человеческих слабостях от лучшего бразильского писателя. Каждый рассказ можно прочитать за один вечер.",
+      "uk": "Збірка оповідань Машаду де Ассіса: диявол відкриває власну церкву, лікар лікує від боргів, а сіамський король міняється душею з коханою. Дотепні історії про людські слабкості від найкращого бразильського письменника. Кожне оповідання можна прочитати за один вечір.",
+      "en": "A collection of stories by Machado de Assis: the Devil founds his own church, a doctor cures a man of his debts, and a king of Siam swaps souls with his beloved. Witty tales of human weakness from Brazil's greatest writer. Each story can be read in an evening."
+    },
+    "words": 51404,
+    "chapters": 17
   }
 ]

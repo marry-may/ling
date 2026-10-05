@@ -4,6 +4,7 @@
 //   /library/                    catalog (Russian)      /uk/library/, /en/library/  the same in Ukrainian, English
 //   /library/<slug>/             book page (Russian)    /uk/library/<slug>/, /en/library/<slug>/
 //   /library/<slug>/book.json    chapters, loaded by the app when a reader adds the book
+import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -12,6 +13,9 @@ const OUT = path.join(ROOT, 'public')
 const SITE = (readEnv('VITE_SITE_URL') || 'https://ling.uno/').replace(/\/?$/, '/')
 const LOCALES = ['ru', 'uk', 'en']
 const EXCERPT_WORDS = 1500
+const STYLES = fs.readFileSync(path.join(ROOT, 'catalog/library.css'))
+// The hosting's CDN keeps CSS for a week whatever the server says, so the stylesheet URL changes with its content.
+const STYLES_URL = `library/library.css?v=${crypto.createHash('sha256').update(STYLES).digest('hex').slice(0, 10)}`
 const SUPABASE_URL = readEnv('VITE_SUPABASE_URL').replace(/\/$/, '')
 const SUPABASE_KEY = readEnv('VITE_SUPABASE_ANON_KEY')
 
@@ -31,8 +35,10 @@ const T = {
     library: 'Библиотека Ling', app: 'Открыть Ling', catalogTitle: 'Книги в оригинале', home: 'Главная',
     catalogLead: 'Классика на иностранных языках в свободном доступе. Читай онлайн, а в приложении Ling нажимай на любое слово, чтобы увидеть перевод, и сохраняй новые слова.',
     catalogMeta: 'Бесплатная библиотека книг в оригинале: английский, испанский, немецкий, французский, итальянский и португальский. Читай с переводом любого слова в Ling.',
-    read: 'Читать с переводом в Ling', start: 'Начало книги', chapters: 'Оглавление', more: 'Ещё на этом языке',
-    excerpt: 'Начало книги', continueTitle: 'Продолжить чтение в Ling',
+    read: 'Читать с переводом в Ling', start: 'Попробовать здесь', chapters: 'Оглавление', more: 'Ещё на этом языке',
+    excerpt: 'Начало книги простым текстом', continueTitle: 'Продолжить чтение в Ling',
+    tryTitle: 'Попробуй читать в Ling',
+    tryText: 'Это настоящий ридер Ling: нажми на любое слово, чтобы увидеть перевод, и сохрани новые слова. Аккаунт не нужен.',
     continueText: 'В Ling эта книга откроется целиком: нажимай на незнакомые слова, чтобы увидеть перевод, сохраняй их в словарь и тренируй.',
     words: 'слов', hours: (h) => `≈ ${h} ч чтения`, minutes: (m) => `≈ ${m} мин чтения`, chaptersCount: 'глав', andMore: (n) => `и ещё ${n}`,
     publicDomain: 'Текст произведения находится в общественном достоянии.', difficulty: { easy: 'Лёгкая', medium: 'Средняя', hard: 'Сложная' },
@@ -46,8 +52,11 @@ const T = {
     library: 'Бібліотека Ling', app: 'Відкрити Ling', catalogTitle: 'Книжки в оригіналі', home: 'Головна',
     catalogLead: 'Класика іноземними мовами у вільному доступі. Читай онлайн, а в застосунку Ling натискай на будь-яке слово, щоб побачити переклад, і зберігай нові слова.',
     catalogMeta: 'Безкоштовна бібліотека книжок в оригіналі: англійська, іспанська, німецька, французька, італійська й португальська. Читай із перекладом будь-якого слова в Ling.',
-    read: 'Читати з перекладом у Ling', start: 'Початок книжки', chapters: 'Зміст', more: 'Ще цією мовою',
-    excerpt: 'Початок книжки', continueTitle: 'Продовжити читання в Ling',
+    read: 'Читати з перекладом у Ling', start: 'Спробувати тут', chapters: 'Зміст', more: 'Ще цією мовою',
+    excerpt: 'Початок книжки звичайним текстом', continueTitle: 'Продовжити читання в Ling',
+    tryTitle: 'Спробуй читати в Ling',
+    tryText: 'Це справжній рідер Ling: натисни на будь-яке слово, щоб побачити переклад, і збережи нові слова. Акаунт не потрібен.',
+    tryNote: 'Інтерфейс застосунку поки що російською мовою.',
     continueText: 'У Ling ця книжка відкриється повністю: натискай на незнайомі слова, щоб побачити переклад, зберігай їх до словника й тренуй.',
     words: 'слів', hours: (h) => `≈ ${h} год читання`, minutes: (m) => `≈ ${m} хв читання`, chaptersCount: 'розділів', andMore: (n) => `і ще ${n}`,
     publicDomain: 'Текст твору перебуває в суспільному надбанні.', difficulty: { easy: 'Легка', medium: 'Середня', hard: 'Складна' },
@@ -61,8 +70,11 @@ const T = {
     library: 'Ling Library', app: 'Open Ling', catalogTitle: 'Books in the original', home: 'Home',
     catalogLead: 'Public-domain classics in foreign languages. Read online, and in the Ling app tap any word to see its translation and save new words.',
     catalogMeta: 'A free library of books in the original: English, Spanish, German, French, Italian and Portuguese. Read with a translation of any word in Ling.',
-    read: 'Read with translations in Ling', start: 'Start reading', chapters: 'Contents', more: 'More in this language',
-    excerpt: 'The beginning', continueTitle: 'Keep reading in Ling',
+    read: 'Read with translations in Ling', start: 'Try it here', chapters: 'Contents', more: 'More in this language',
+    excerpt: 'The beginning as plain text', continueTitle: 'Keep reading in Ling',
+    tryTitle: 'Try reading in Ling',
+    tryText: 'This is the real Ling reader: tap any word to see its translation and save new words. No account needed.',
+    tryNote: 'The app interface is in Russian for now.',
     continueText: 'Ling opens the whole book: tap unfamiliar words to see their translation, save them to your dictionary and practise them.',
     words: 'words', hours: (h) => `≈ ${h} h of reading`, minutes: (m) => `≈ ${m} min of reading`, chaptersCount: 'chapters', andMore: (n) => `and ${n} more`,
     publicDomain: 'The text of this work is in the public domain.', difficulty: { easy: 'Easy', medium: 'Intermediate', hard: 'Advanced' },
@@ -137,7 +149,7 @@ function page({ locale, path: pagePath, title, description, alternates, body, js
   <link rel="icon" type="image/svg+xml" href="${link(pagePath, 'ling-icon.svg')}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap">
-  <link rel="stylesheet" href="${link(pagePath, 'library/library.css')}">
+  <link rel="stylesheet" href="${link(pagePath, STYLES_URL)}">
   <script>try{var s=localStorage.getItem('ling-theme');document.documentElement.dataset.theme=s==='dark'||(s!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}catch(e){}</script>
   ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
 </head>
@@ -208,9 +220,15 @@ function bookPage(book, books, chapters, locale) {
       </div>
     </section>
     <section class="contents"><h2>${t.chapters}</h2><ol lang="${book.language}">${shownChapters.map((chapter) => `<li>${escape(chapter.title || book.title)}</li>`).join('')}</ol>${chapters.length > shownChapters.length ? `<p class="muted">${t.andMore(chapters.length - shownChapters.length)}</p>` : ''}</section>
-    <article class="excerpt" id="read" lang="${book.language}"><h2 lang="${locale}">${t.excerpt}</h2>
+    <section class="try" id="read">
+      <h2>${t.tryTitle}</h2>
+      <p>${t.tryText}</p>
+      <iframe class="reader-frame" src="${link(pagePath, 'reader.html')}?book=${book.slug}&amp;lang=${locale}" title="${escape(t.tryTitle)}" loading="lazy"></iframe>
+      ${t.tryNote ? `<p class="muted try-note">${t.tryNote}</p>` : ''}
+    </section>
+    <details class="excerpt" lang="${book.language}"><summary lang="${locale}">${t.excerpt}</summary>
       ${excerptOf(chapters).map((part) => (part.heading ? `<h3>${escape(part.heading)}</h3>` : `<p>${escape(part.text)}</p>`)).join('\n      ')}
-    </article>
+    </details>
     <section class="continue"><h2>${t.continueTitle}</h2><p>${t.continueText}</p><a class="button" href="${appLink}">${t.read}</a></section>
     ${others.length ? `<section class="group"><h2>${t.more}</h2><div class="grid">${others.map((other) => bookCard(other, locale, pagePath)).join('')}</div></section>` : ''}
     <p class="muted small">${t.publicDomain}</p>`
@@ -233,7 +251,7 @@ function write(relative, content) {
 
 const books = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog/books.json'), 'utf8'))
 for (const locale of LOCALES) fs.rmSync(path.join(OUT, prefix(locale), 'library'), { recursive: true, force: true })
-write('library/library.css', fs.readFileSync(path.join(ROOT, 'catalog/library.css')))
+write('library/library.css', STYLES)
 
 const urls = [SITE]
 for (const locale of LOCALES) {
