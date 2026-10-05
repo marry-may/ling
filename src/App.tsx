@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { ArrowLeft, BookOpen, Bookmark, CalendarDays, Check, ChevronDown, Cloud, Dumbbell, FilePlus2, Flame, Library, LoaderCircle, LogOut, Plus, Sparkles, Trash2, X } from 'lucide-react'
+import { ArrowLeft, BookMarked, BookOpen, Bookmark, CalendarDays, Check, ChevronDown, Cloud, ChartColumn, Dumbbell, FilePlus2, Flame, Library, LoaderCircle, LogOut, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
+import { AdminPage } from './AdminPage'
+import { isAdmin, trackPageView } from './analytics'
 import { AccountButton, AuthForm, WelcomeScreen, type AuthFormProps, type AuthMode } from './Account'
 import { readBookFile } from './bookImport'
+import { findCatalogBook, loadCatalogChapters, shelfCopies, type CatalogBook } from './catalog'
+import { CatalogPage } from './CatalogPage'
 import { deleteAccountBooks, deleteAccountKnownWord, deleteAccountWord, downloadAccountBookContent, getAccountBooks, getAccountKnownWords, getAccountProfile, getAccountWords, saveAccountKnownWords, saveAccountProfile, saveAccountWords, PARTS_MIGRATION_MESSAGE, updateAccountProgress, uploadAccountBook, uploadAccountCollection, uploadGuestLibrary } from './cloud'
 import { bookTitleOf, type BookFile, type KnownWords, type SavedWord } from './domain'
 import { DEFAULT_LANGUAGE, defaultTranslationLanguage, getLanguage, LANGUAGES } from './languages'
@@ -15,7 +19,7 @@ import { SAMPLE_BOOKS } from './sampleBooks'
 import { isDue, normalizeWord } from './srs'
 import { loadCollection, saveCollection } from './storage'
 import { cloudEnabled, siteUrl, supabase } from './supabase'
-import { splitIntoParts, wordKey } from './text'
+import { splitIntoParts, wordKey, type Section } from './text'
 import { useTheme } from './theme'
 import { ThemeToggle } from './ThemeToggle'
 import { Training } from './Training'
@@ -135,6 +139,8 @@ function normalizeBook(book: Partial<BookFile> & Pick<BookFile, 'id' | 'title'>)
   }
 }
 
+type NewBook = { title: string; author: string; format: string; language: string; content: string; sections?: Section[] }
+
 type LoadedScope = { scope: string; books: BookFile[]; words: SavedWord[]; known: KnownWords; profile: Profile; offline: boolean }
 
 async function loadScopeCollections(userId: string | null): Promise<LoadedScope> {
@@ -204,17 +210,26 @@ function App() {
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false)
   const [openCollection, setOpenCollection] = useState<string | null>(null)
   const [activeBook, setActiveBook] = useState<BookFile | null>(null)
-  const [view, setView] = useState<'library' | 'words' | 'training'>('library')
+  const [view, setView] = useState<'library' | 'catalog' | 'words' | 'training' | 'admin'>('library')
+  const [catalogSlug, setCatalogSlug] = useState<string | null>(null)
+  const [catalogBusy, setCatalogBusy] = useState<string | null>(null)
+  // A book page on the site links here as ?book=<slug>; it opens once the visitor is in the app.
+  const [pendingBook, setPendingBook] = useState<string | null>(() => {
+    const slug = new URLSearchParams(window.location.search).get('book')
+    return slug && findCatalogBook(slug) ? slug : null
+  })
   const [notice, setNotice] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [dataScope, setDataScope] = useState('anonymous')
   const [accountUser, setAccountUser] = useState<User | null>(null)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [adminId, setAdminId] = useState<string | null>(null)
+  const pageViewTracked = useRef(false)
   const [authMode, setAuthMode] = useState<AuthMode>('signin')
   const [welcomeSkipped, setWelcomeSkipped] = useState(readWelcomeSkipped)
   // Visitors who are not signed in see the landing page first; its buttons open the sign-in screen.
-  const [authScreenOpen, setAuthScreenOpen] = useState(false)
+  const [authScreenOpen, setAuthScreenOpen] = useState(() => Boolean(pendingBook))
   const [authEmail, setAuthEmail] = useState('')
   const [authPassword, setAuthPassword] = useState('')
   const [authMessage, setAuthMessage] = useState('')
@@ -236,6 +251,7 @@ function App() {
   const shelf = useMemo(() => shelfOf(languageBooks), [languageBooks])
   const openFolder = shelf.find((item): item is Extract<ShelfItem, { kind: 'folder' }> => item.kind === 'folder' && item.id === openCollection)
   const nextPart = activeBook?.collectionId ? books.find((book) => book.collectionId === activeBook.collectionId && book.part === (activeBook.part ?? 0) + 1) : undefined
+  const adminUser = Boolean(accountUser && adminId === accountUser.id)
   const activeLanguages = useMemo(() => activeLanguagesOf(books, words, profile), [books, words, profile])
   const activity = profile.activity[studyLanguage]
   const translationLanguage = profile.translationLanguage ?? defaultTranslationLanguage()
@@ -323,6 +339,29 @@ function App() {
       activeScopeRef.current = ''
       unsubscribe()
     }
+  }, [])
+
+  // The admin center tab is shown to admins only; the statistics themselves are refused to anyone else by the database.
+  useEffect(() => {
+    if (!accountUser) return
+    let isActive = true
+    void isAdmin().then((admin) => { if (isActive) setAdminId(admin ? accountUser.id : null) })
+    return () => { isActive = false }
+  }, [accountUser])
+
+  // One page view per load, once it is known whether the visitor sees the landing page or the app.
+  useEffect(() => {
+    if (isLoadingData || pageViewTracked.current) return
+    pageViewTracked.current = true
+    const onLanding = cloudEnabled && !accountUser && !welcomeSkipped && !authScreenOpen
+    trackPageView(onLanding ? 'landing' : 'app', accountUser?.id ?? null)
+  }, [isLoadingData, accountUser, welcomeSkipped, authScreenOpen])
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('book')) return
+    url.searchParams.delete('book')
+    window.history.replaceState(null, '', url)
   }, [])
 
   function changeStudyLanguage(language: string) {
@@ -459,6 +498,44 @@ function App() {
     await saveCollection('words', `${dataScope}:known`, nextKnown)
   }
 
+  /**
+   * Creates a book from its text, or a folder of parts when it is long, and uploads it to the account when
+   * signed in. A failed upload keeps the book on this device and returns a warning for the notice.
+   */
+  async function createBooks(source: NewBook, file: File): Promise<{ books: BookFile[]; warning: string }> {
+    const details = { author: source.author, format: source.format, language: source.language, progress: 0 }
+    const uploadFailed = ' Книга добавлена на устройство, но не загрузилась в аккаунт.'
+    const parts = splitIntoParts(source.sections ?? [{ content: source.content }])
+    if (parts.length === 1) {
+      const book: BookFile = { id: crypto.randomUUID(), title: source.title, content: parts[0].content, ...details }
+      if (!accountUser || !book.content.trim()) return { books: [book], warning: '' }
+      try {
+        return { books: [await uploadAccountBook(accountUser.id, book, file)], warning: '' }
+      } catch {
+        return { books: [book], warning: uploadFailed }
+      }
+    }
+
+    // A long book becomes a folder of parts that are read, synced and tracked one by one.
+    const collectionId = crypto.randomUUID()
+    const books: BookFile[] = parts.map((part, index) => ({
+      id: crypto.randomUUID(),
+      title: `Часть ${index + 1}${part.title ? ` · ${part.title}` : ''}`,
+      content: part.content,
+      collectionId,
+      collectionTitle: source.title,
+      part: index + 1,
+      partCount: parts.length,
+      ...details,
+    }))
+    if (!accountUser) return { books, warning: '' }
+    try {
+      return { books: await uploadAccountCollection(accountUser.id, books, file), warning: '' }
+    } catch (error) {
+      return { books, warning: error instanceof Error && error.message === PARTS_MIGRATION_MESSAGE ? ` ${error.message}` : uploadFailed }
+    }
+  }
+
   async function importFiles(files: FileList | null) {
     if (!files?.length) return
     setIsImporting(true)
@@ -467,44 +544,16 @@ function App() {
       let uploadWarning = ''
       const imported = (await Promise.all(Array.from(files).map(async (file): Promise<BookFile[]> => {
         const { language: detectedLanguage, sections, ...parsed } = await readBookFile(file, { fallbackLanguage: studyLanguage, onProgress: setNotice })
-        const title = parsed.title ?? file.name.replace(/\.[^.]+$/, '')
-        const details = {
+        const created = await createBooks({
+          title: parsed.title ?? file.name.replace(/\.[^.]+$/, ''),
           author: parsed.author ?? 'Моя библиотека',
           format: file.name.split('.').pop()?.toUpperCase() ?? 'FILE',
           language: LANGUAGES.some((language) => language.code === detectedLanguage) ? detectedLanguage! : studyLanguage,
-          progress: 0,
-        }
-        const parts = splitIntoParts(sections ?? [{ content: parsed.content }])
-        if (parts.length === 1) {
-          const book: BookFile = { id: crypto.randomUUID(), title, content: parsed.content, ...details }
-          if (!accountUser || !book.content.trim()) return [book]
-          try {
-            return [await uploadAccountBook(accountUser.id, book, file)]
-          } catch {
-            uploadWarning = ' Книга добавлена на устройство, но не загрузилась в аккаунт.'
-            return [book]
-          }
-        }
-
-        // A long book becomes a folder of parts that are read, synced and tracked one by one.
-        const collectionId = crypto.randomUUID()
-        const books: BookFile[] = parts.map((part, index) => ({
-          id: crypto.randomUUID(),
-          title: `Часть ${index + 1}${part.title ? ` · ${part.title}` : ''}`,
-          content: part.content,
-          collectionId,
-          collectionTitle: title,
-          part: index + 1,
-          partCount: parts.length,
-          ...details,
-        }))
-        if (!accountUser) return books
-        try {
-          return await uploadAccountCollection(accountUser.id, books, file)
-        } catch (error) {
-          uploadWarning = error instanceof Error && error.message === PARTS_MIGRATION_MESSAGE ? ` ${error.message}` : ' Книга добавлена на устройство, но не загрузилась в аккаунт.'
-          return books
-        }
+          content: parsed.content,
+          sections,
+        }, file)
+        uploadWarning ||= created.warning
+        return created.books
       }))).flat()
       const usable = imported.filter((book) => book.content.trim())
       await persistBooks([...usable, ...books])
@@ -611,6 +660,7 @@ function App() {
   }
 
   async function openBook(book: BookFile) {
+    setPendingBook(null)
     setView('library')
     setNotice('')
     setActiveBook(book)
@@ -626,18 +676,69 @@ function App() {
   }
 
   function showLibrary() {
+    setPendingBook(null)
     setView('library')
     setActiveBook(null)
     setOpenCollection(null)
   }
 
   function showWords() {
+    setPendingBook(null)
     setView('words')
     setActiveBook(null)
   }
 
+  function showCatalog(slug: string | null = null) {
+    setPendingBook(null)
+    setView('catalog')
+    setActiveBook(null)
+    setCatalogSlug(slug)
+  }
+
+  /** Makes a language one of the learner's, without the starter book a newly added language gets. */
+  function ensureLanguage(code: string) {
+    const current = profileRef.current
+    if (!current.languages.includes(code)) persistProfile({ ...current, languages: [...current.languages, code] })
+    changeStudyLanguage(code)
+  }
+
+  /** Puts a Ling Library book on the learner's shelf (as a folder when long) and optionally opens it. */
+  async function addCatalogBook(entry: CatalogBook, open: boolean) {
+    const copies = shelfCopies(entry, books)
+    if (copies.length) {
+      if (open) void openBook(currentPart(copies))
+      return
+    }
+    setCatalogBusy(entry.slug)
+    try {
+      const sections = await loadCatalogChapters(entry)
+      const content = sections.map((section) => section.content).join('\n\n')
+      const file = new File([content], `${entry.slug}.txt`, { type: 'text/plain' })
+      const created = await createBooks({ title: entry.title, author: entry.author, format: 'LING', language: entry.language, content, sections }, file)
+      await persistBooks([...created.books, ...books])
+      ensureLanguage(entry.language)
+      if (open) {
+        void openBook(created.books[0])
+        if (created.warning) setNotice(created.warning.trim())
+      } else {
+        setNotice(`«${entry.title}» теперь в «Моих книгах».${created.warning}`)
+      }
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Не удалось добавить книгу.')
+    } finally {
+      setCatalogBusy(null)
+    }
+  }
+
   function showTraining() {
+    setPendingBook(null)
     setView('training')
+    setActiveBook(null)
+  }
+
+  function showAdmin() {
+    setPendingBook(null)
+    setView('admin')
     setActiveBook(null)
   }
 
@@ -647,7 +748,11 @@ function App() {
 
   const noticeBar = notice && <div className="notice-bar" role="status">{notice}<button onClick={() => setNotice('')} aria-label="Скрыть уведомление"><X size={15} /></button></div>
 
-  const onboarding = !activeBook && !activeLanguages.length
+  // Arriving from a book page (?book=…) shows that book in the Ling Library until the visitor goes elsewhere;
+  // a first-time visitor browsing the Ling Library skips the language picker, since adding a book sets its language.
+  const pendingShown = pendingBook && !activeBook && !(cloudEnabled && !accountUser && !welcomeSkipped) ? pendingBook : null
+  const currentView = pendingShown ? 'catalog' : view
+  const onboarding = !activeBook && !activeLanguages.length && currentView !== 'catalog'
   const showWelcome = cloudEnabled && !accountUser && !welcomeSkipped
   const openAccount = () => {
     setAuthMessage('')
@@ -698,9 +803,11 @@ function App() {
         </a>
         <span className="side-label">ТВОЁ ПРОСТРАНСТВО</span>
         <nav className="side-nav" aria-label="Основная навигация">
-          <button className={!activeBook && view === 'library' ? 'nav-item selected' : 'nav-item'} onClick={showLibrary}><Library size={18} /> Библиотека <span className="nav-count">{shelf.length}</span></button>
-          <button className={!activeBook && view === 'training' ? 'nav-item selected' : 'nav-item'} onClick={showTraining}><Dumbbell size={18} /> Тренировка {dueCount > 0 && <span className="nav-count due">{dueCount}</span>}</button>
-          <button className={!activeBook && view === 'words' ? 'nav-item selected' : 'nav-item'} onClick={showWords}><Bookmark size={18} /> Мои слова <span className="nav-count">{languageWords.length}</span></button>
+          <button className={!activeBook && currentView === 'library' ? 'nav-item selected' : 'nav-item'} onClick={showLibrary}><Library size={18} /> Мои книги <span className="nav-count">{shelf.length}</span></button>
+          <button className={!activeBook && currentView === 'catalog' ? 'nav-item selected' : 'nav-item'} onClick={() => showCatalog()}><BookMarked size={18} /> Библиотека Ling</button>
+          <button className={!activeBook && currentView === 'training' ? 'nav-item selected' : 'nav-item'} onClick={showTraining}><Dumbbell size={18} /> Тренировка {dueCount > 0 && <span className="nav-count due">{dueCount}</span>}</button>
+          <button className={!activeBook && currentView === 'words' ? 'nav-item selected' : 'nav-item'} onClick={showWords}><Bookmark size={18} /> Мои слова <span className="nav-count">{languageWords.length}</span></button>
+          {adminUser && <button className={!activeBook && currentView === 'admin' ? 'nav-item selected' : 'nav-item'} onClick={showAdmin}><ChartColumn size={18} /> Админ-центр</button>}
         </nav>
         <div className="sidebar-bottom">
           <button className="streak-badge" onClick={showLibrary}><Flame size={17} /><span><strong>{streak} {daysLabel(streak)}</strong><small>подряд · {getLanguage(studyLanguage).name}</small></span></button>
@@ -716,7 +823,7 @@ function App() {
           </div>
         )}
         {showWelcome ? (
-          <WelcomeScreen form={authForm} onSkip={skipWelcome} onBack={() => setAuthScreenOpen(false)} />
+          <WelcomeScreen form={authForm} onSkip={skipWelcome} onBack={() => setAuthScreenOpen(false)} note={pendingBook ? `Чтобы читать «${findCatalogBook(pendingBook)?.title}», войди или продолжи без аккаунта.` : undefined} />
         ) : onboarding ? (
           <LanguagePicker exclude={[translationLanguage]} onPick={addLanguage} translation={{ value: translationLanguage, onChange: changeTranslationLanguage }} />
         ) : activeBook ? (
@@ -745,6 +852,21 @@ function App() {
             {noticeBar}
             <WordsPage words={languageWords} language={studyLanguage} onDeleteWord={deleteWord} onOpenLibrary={showLibrary} onOpenTraining={showTraining} />
           </>
+        ) : currentView === 'catalog' ? (
+          <>
+            {noticeBar}
+            <CatalogPage
+              shelf={books}
+              studyLanguage={studyLanguage}
+              selectedSlug={pendingShown ?? catalogSlug}
+              busySlug={catalogBusy}
+              onSelect={(slug) => showCatalog(slug)}
+              onStart={(entry) => void addCatalogBook(entry, true)}
+              onAdd={(entry) => void addCatalogBook(entry, false)}
+            />
+          </>
+        ) : view === 'admin' && adminUser ? (
+          <AdminPage />
         ) : view === 'training' ? (
           <>
             {noticeBar}
@@ -807,7 +929,7 @@ function App() {
         )}
       </main>
 
-      <nav className="mobile-nav" aria-label="Основная навигация"><button className={!activeBook && view === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>Библиотека</span></button><button className={!activeBook && view === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>Тренировка</span>{dueCount > 0 && <i />}</button><button className={!activeBook && view === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>Слова</span></button></nav>
+      <nav className="mobile-nav" aria-label="Основная навигация"><button className={!activeBook && currentView === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>Мои книги</span></button><button className={!activeBook && currentView === 'catalog' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={() => showCatalog()}><BookMarked size={20} /><span>Каталог</span></button><button className={!activeBook && currentView === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>Тренировка</span>{dueCount > 0 && <i />}</button><button className={!activeBook && currentView === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>Слова</span></button>{adminUser && <button className={!activeBook && currentView === 'admin' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showAdmin}><ChartColumn size={20} /><span>Админ</span></button>}</nav>
       {languageDialogOpen && <LanguagePicker exclude={[...activeLanguages, translationLanguage]} onPick={addLanguage} onClose={() => setLanguageDialogOpen(false)} />}
       {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label="Аккаунт Ling" onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label="Закрыть"><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? 'Аккаунт подключён' : 'Твоя библиотека везде'}</h2>{(accountUser || !cloudEnabled || authMode === 'signin') && <div className="account-settings"><TranslationLanguageSelect value={translationLanguage} onChange={changeTranslationLanguage} hint="Новые слова будут переводиться на этот язык. Уже сохранённые переводы не изменятся." /></div>}{!cloudEnabled ? <div className="cloud-setup-note"><p>Подключи проект Supabase, чтобы включить вход и синхронизацию книг.</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> Книги и слова привязаны к аккаунту</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? 'Выходим...' : 'Выйти из аккаунта'}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
     </div>

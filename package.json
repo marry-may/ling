@@ -11,7 +11,12 @@
     "ios:add": "cap add ios",
     "ios:sync": "npm run build && cap sync ios",
     "ios:open": "cap open ios",
-    "db:migrate": "bash scripts/db-migrate.sh"
+    "db:migrate": "bash scripts/db-migrate.sh",
+    "library": "node scripts/build-library.mjs",
+    "predev": "npm run library",
+    "prebuild": "npm run library",
+    "catalog:fetch": "node scripts/catalog-fetch.mjs",
+    "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.3",

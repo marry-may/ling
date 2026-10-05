@@ -1,0 +1,206 @@
+[
+  {
+    "slug": "alice-in-wonderland",
+    "gutenbergId": 11,
+    "title": "Alice's Adventures in Wonderland",
+    "author": "Lewis Carroll",
+    "authorYears": "1832–1898",
+    "year": 1865,
+    "language": "en",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Алиса бежит за Белым Кроликом, падает в нору и попадает в мир, где всё перевёрнуто с ног на голову. Сказка Льюиса Кэрролла полна игры слов и абсурдного юмора — её с удовольствием читают и дети, и взрослые. Короткие главы удобно читать по одной за вечер.",
+      "uk": "Аліса біжить за Білим Кроликом, падає в нору й потрапляє у світ, де все догори дриґом. Казка Льюїса Керрола сповнена гри слів і абсурдного гумору — її із задоволенням читають і діти, і дорослі. Короткі розділи зручно читати по одному за вечір.",
+      "en": "Alice follows the White Rabbit down a rabbit hole into a world where nothing makes sense. Lewis Carroll's tale is full of wordplay and absurd humour, loved by children and adults alike. Its short chapters are easy to read one evening at a time."
+    },
+    "words": 27257,
+    "chapters": 12
+  },
+  {
+    "slug": "the-happy-prince",
+    "gutenbergId": 902,
+    "title": "The Happy Prince and Other Tales",
+    "author": "Oscar Wilde",
+    "authorYears": "1854–1900",
+    "year": 1888,
+    "language": "en",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Пять сказок Оскара Уайльда — «Счастливый принц», «Соловей и роза», «Великан-эгоист» и другие. Простой язык, короткие истории и глубокий смысл: отличный выбор для первой книги в оригинале.",
+      "uk": "П’ять казок Оскара Вайлда — «Щасливий принц», «Соловей і троянда», «Велетень-егоїст» та інші. Проста мова, короткі історії й глибокий зміст: чудовий вибір для першої книжки в оригіналі.",
+      "en": "Five fairy tales by Oscar Wilde, including “The Happy Prince”, “The Nightingale and the Rose” and “The Selfish Giant”. Simple language, short stories and deep meaning make it a great first book in the original."
+    },
+    "words": 16365,
+    "chapters": 5
+  },
+  {
+    "slug": "the-wonderful-wizard-of-oz",
+    "gutenbergId": 55,
+    "title": "The Wonderful Wizard of Oz",
+    "author": "L. Frank Baum",
+    "authorYears": "1856–1919",
+    "year": 1900,
+    "language": "en",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Ураган уносит девочку Дороти из Канзаса в волшебную страну Оз. Вместе со Страшилой, Железным Дровосеком и Трусливым Львом она отправляется к Изумрудному городу. Простой и живой язык — хорошая книга для уверенного начинающего.",
+      "uk": "Ураган забирає дівчинку Дороті з Канзасу до чарівної країни Оз. Разом з Опудалом, Залізним Лісорубом і Боягузливим Левом вона вирушає до Смарагдового міста. Проста й жива мова — добра книжка для впевненого початківця.",
+      "en": "A cyclone carries Dorothy from Kansas to the magical Land of Oz. With the Scarecrow, the Tin Woodman and the Cowardly Lion she sets off for the Emerald City. Lively, simple language makes it a good book for confident beginners."
+    },
+    "words": 39456,
+    "chapters": 24
+  },
+  {
+    "slug": "the-adventures-of-sherlock-holmes",
+    "gutenbergId": 1661,
+    "title": "The Adventures of Sherlock Holmes",
+    "author": "Arthur Conan Doyle",
+    "authorYears": "1859–1930",
+    "year": 1892,
+    "language": "en",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Двенадцать рассказов о Шерлоке Холмсе и докторе Ватсоне — от «Скандала в Богемии» до «Медных буков». Каждое дело — отдельная история, поэтому книгу удобно читать небольшими частями. Язык викторианской Англии богат и точен: для уровня выше среднего.",
+      "uk": "Дванадцять оповідань про Шерлока Голмса й доктора Ватсона — від «Скандалу в Богемії» до «Мідних буків». Кожна справа — окрема історія, тож книжку зручно читати невеликими частинами. Мова вікторіанської Англії багата й точна: для рівня вище середнього.",
+      "en": "Twelve stories about Sherlock Holmes and Dr Watson, from “A Scandal in Bohemia” to “The Copper Beeches”. Each case is a story of its own, so the book is easy to read in small portions. The rich Victorian English suits upper-intermediate readers."
+    },
+    "words": 105685,
+    "chapters": 12
+  },
+  {
+    "slug": "el-sombrero-de-tres-picos",
+    "gutenbergId": 29506,
+    "title": "El sombrero de tres picos",
+    "author": "Pedro Antonio de Alarcón",
+    "authorYears": "1833–1891",
+    "year": 1874,
+    "language": "es",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Весёлая повесть Педро Антонио де Аларкона о мельнике, его красавице-жене и влюблённом коррехидоре, который решил перехитрить их обоих. Живая Испания начала XIX века, комедия ошибок и много диалогов.",
+      "uk": "Весела повість Педро Антоніо де Аларкона про мірошника, його вродливу дружину та закоханого коррехідора, який вирішив перехитрити їх обох. Жива Іспанія початку XIX століття, комедія помилок і багато діалогів.",
+      "en": "Pedro Antonio de Alarcón's comic tale of a miller, his beautiful wife and the lovestruck magistrate who tries to outwit them both. A lively picture of early 19th-century Spain: a comedy of errors with plenty of dialogue."
+    },
+    "words": 24560,
+    "chapters": 35
+  },
+  {
+    "slug": "marianela",
+    "gutenbergId": 17340,
+    "title": "Marianela",
+    "author": "Benito Pérez Galdós",
+    "authorYears": "1843–1920",
+    "year": 1878,
+    "language": "es",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Трогательный роман Бенито Переса Гальдоса о бедной девушке Неле, которая становится глазами слепого юноши Пабло. Когда врач возвращает ему зрение, всё меняется. Классика испанской литературы XIX века.",
+      "uk": "Зворушливий роман Беніто Переса Гальдоса про бідну дівчину Нелу, яка стає очима сліпого юнака Пабло. Коли лікар повертає йому зір, усе змінюється. Класика іспанської літератури XIX століття.",
+      "en": "Benito Pérez Galdós's moving novel about Nela, a poor girl who becomes the eyes of Pablo, a blind young man. When a doctor restores his sight, everything changes. A classic of 19th-century Spanish literature."
+    },
+    "words": 50887,
+    "chapters": 22
+  },
+  {
+    "slug": "die-verwandlung",
+    "gutenbergId": 22367,
+    "title": "Die Verwandlung",
+    "author": "Franz Kafka",
+    "authorYears": "1883–1924",
+    "year": 1915,
+    "language": "de",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Однажды утром Грегор Замза просыпается и обнаруживает, что превратился в огромное насекомое. Знаменитая повесть Франца Кафки — короткая, но очень плотная по смыслу. Подходит тем, кто уже уверенно читает по-немецки.",
+      "uk": "Одного ранку Грегор Замза прокидається й бачить, що перетворився на велетенську комаху. Знаменита повість Франца Кафки — коротка, але дуже насичена змістом. Підійде тим, хто вже впевнено читає німецькою.",
+      "en": "One morning Gregor Samsa wakes up to find himself transformed into a monstrous insect. Franz Kafka's famous novella is short but dense with meaning, best for readers already comfortable with German."
+    },
+    "words": 19148,
+    "chapters": 3
+  },
+  {
+    "slug": "immensee",
+    "gutenbergId": 6651,
+    "title": "Immensee",
+    "author": "Theodor Storm",
+    "authorYears": "1817–1888",
+    "year": 1849,
+    "language": "de",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Старик вспоминает детскую дружбу и первую любовь к Элизабет — и то, как их пути разошлись. Короткая лирическая новелла Теодора Шторма, которую часто читают на уроках немецкого: ясный язык и простые предложения.",
+      "uk": "Старий згадує дитячу дружбу й перше кохання до Елізабет — і те, як їхні шляхи розійшлися. Коротка лірична новела Теодора Шторма, яку часто читають на уроках німецької: зрозуміла мова й прості речення.",
+      "en": "An old man remembers his childhood friendship and first love with Elisabeth, and how their paths parted. Theodor Storm's short, lyrical novella is a classroom favourite thanks to its clear language and simple sentences."
+    },
+    "words": 9707,
+    "chapters": 9
+  },
+  {
+    "slug": "le-tour-du-monde-en-quatre-vingts-jours",
+    "gutenbergId": 800,
+    "title": "Le tour du monde en quatre-vingts jours",
+    "author": "Jules Verne",
+    "authorYears": "1828–1905",
+    "year": 1872,
+    "language": "fr",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Невозмутимый англичанин Филеас Фогг заключает пари, что объедет вокруг света за 80 дней, и отправляется в путь вместе с находчивым слугой Паспарту. Приключенческий роман Жюля Верна с короткими главами и динамичным сюжетом.",
+      "uk": "Незворушний англієць Філеас Фоґґ закладається, що обігне світ за 80 днів, і вирушає в дорогу разом із кмітливим слугою Паспарту. Пригодницький роман Жуля Верна з короткими розділами й динамічним сюжетом.",
+      "en": "The unflappable Englishman Phileas Fogg wagers that he can travel around the world in 80 days and sets off with his resourceful servant Passepartout. Jules Verne's adventure novel has short chapters and a fast-moving plot."
+    },
+    "words": 71238,
+    "chapters": 37
+  },
+  {
+    "slug": "contes-du-jour-et-de-la-nuit",
+    "gutenbergId": 14790,
+    "title": "Contes du jour et de la nuit",
+    "author": "Guy de Maupassant",
+    "authorYears": "1850–1893",
+    "year": 1885,
+    "language": "fr",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Сборник рассказов Ги де Мопассана, мастера короткой прозы, — среди них знаменитое «Ожерелье» («La Parure»). Каждый рассказ можно прочитать за один присест, а неожиданные концовки не дают оторваться.",
+      "uk": "Збірка оповідань Гі де Мопассана, майстра короткої прози, — серед них знамените «Намисто» («La Parure»). Кожне оповідання можна прочитати за один раз, а несподівані фінали не відпускають.",
+      "en": "A collection by Guy de Maupassant, master of the short story, including the famous “La Parure” (The Necklace). Each story can be read in one sitting, and the surprise endings keep you turning pages."
+    },
+    "words": 43653,
+    "chapters": 21
+  },
+  {
+    "slug": "le-avventure-di-pinocchio",
+    "gutenbergId": 52484,
+    "title": "Le avventure di Pinocchio",
+    "author": "Carlo Collodi",
+    "authorYears": "1826–1890",
+    "year": 1883,
+    "language": "it",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Деревянная кукла Пиноккио убегает от папы Джеппетто и попадает в одну передрягу за другой. Оригинальная сказка Карло Коллоди — забавная, поучительная и написанная простым итальянским языком.",
+      "uk": "Дерев’яна лялька Піноккіо тікає від тата Джеппетто й потрапляє з однієї халепи в іншу. Оригінальна казка Карло Коллоді — кумедна, повчальна й написана простою італійською мовою.",
+      "en": "The wooden puppet Pinocchio runs away from his father Geppetto and lurches from one scrape to the next. Carlo Collodi's original tale is funny, instructive and written in simple Italian."
+    },
+    "words": 39891,
+    "chapters": 36
+  },
+  {
+    "slug": "dom-casmurro",
+    "gutenbergId": 55752,
+    "title": "Dom Casmurro",
+    "author": "Machado de Assis",
+    "authorYears": "1839–1908",
+    "year": 1899,
+    "language": "pt",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Пожилой Бенту Сантьягу вспоминает юность и любовь к Капиту — и сомнения, которые разрушили его жизнь. Главный роман Машаду де Ассиса, классика бразильской литературы. Издание в старой орфографии — для продвинутых.",
+      "uk": "Літній Бенту Сантьягу згадує юність і кохання до Капіту — і сумніви, що зруйнували його життя. Головний роман Машаду де Ассіса, класика бразильської літератури. Видання в старому правописі — для просунутих.",
+      "en": "The ageing Bento Santiago looks back on his youth, his love for Capitu and the doubts that ruined his life. Machado de Assis's masterpiece is a classic of Brazilian literature; this edition uses the old spelling and suits advanced readers."
+    },
+    "words": 66147,
+    "chapters": 148
+  }
+]

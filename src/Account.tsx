@@ -43,14 +43,14 @@ export function AuthForm({ mode, email, password, busy, message, onModeChange, o
 }
 
 /** The first screen for visitors who are not signed in. */
-export function WelcomeScreen({ form, onSkip, onBack }: { form: AuthFormProps; onSkip: () => void; onBack: () => void }) {
+export function WelcomeScreen({ form, onSkip, onBack, note }: { form: AuthFormProps; onSkip: () => void; onBack: () => void; note?: string }) {
   return (
     <section className="welcome">
       <button className="quiet-button welcome-back" onClick={onBack}><ArrowLeft size={16} /> О приложении</button>
       <span className="brand-mark"><BookOpen size={19} strokeWidth={2.2} /></span>
       <span className="eyebrow">ДОБРО ПОЖАЛОВАТЬ В LING</span>
       <h1>Читай книги и учи слова<span className="heading-period">.</span></h1>
-      <p>Войди или создай аккаунт: книги, слова и прогресс будут с тобой на всех устройствах.</p>
+      <p>{note ?? 'Войди или создай аккаунт: книги, слова и прогресс будут с тобой на всех устройствах.'}</p>
       <div className="welcome-card">
         <div className="segmented welcome-tabs" role="tablist" aria-label="Вход или регистрация">
           <button role="tab" aria-selected={form.mode === 'signin'} className={form.mode === 'signin' ? 'selected' : ''} onClick={() => form.onModeChange('signin')}>Вход</button>

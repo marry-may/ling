@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, BookOpen, Check, Cloud, FileScan, Languages, Layers, Volume2, WifiOff, type LucideIcon } from 'lucide-react'
 import { HeroDecor, ShelfIllustration, TapWordIllustration, TrainingIllustration, UploadIllustration } from './LandingIllustrations'
+import { CATALOG } from './catalog'
 import { detectLandingLanguage, LANDING_TEXT, type LandingLanguage } from './landingText'
 import type { Theme } from './theme'
 import { ThemeToggle } from './ThemeToggle'
@@ -10,6 +11,19 @@ const LANGUAGES: LandingLanguage[] = ['uk', 'ru', 'en']
 const MORE_ICONS: LucideIcon[] = [Languages, FileScan, Layers, Cloud, WifiOff, Volume2]
 const STEP_ILLUSTRATIONS = [UploadIllustration, TapWordIllustration, TrainingIllustration]
 const YEAR = new Date().getFullYear()
+/** One book per language for the landing page; the rest are in the library. */
+const FEATURED = CATALOG.filter((book, index) => CATALOG.findIndex((other) => other.language === book.language) === index).slice(0, 6)
+
+/** Public library pages: /library/ in Russian, /uk/library/ and /en/library/ in the other languages. */
+function libraryPath(language: LandingLanguage, slug?: string) {
+  return `${language === 'ru' ? '' : `${language}/`}library/${slug ? `${slug}/` : ''}`
+}
+
+function coverIndex(id: string): number {
+  let hash = 0
+  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) | 0
+  return Math.abs(hash) % 4
+}
 
 type LandingProps = {
   theme: Theme
@@ -80,6 +94,7 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
                 <button key={code} className={code === language ? 'selected' : ''} aria-pressed={code === language} lang={code} onClick={() => chooseLanguage(code)}>{LANDING_TEXT[code].label}</button>
               ))}
             </div>
+            <a className="landing-library-link" href={libraryPath(language)}>{text.libraryNav}</a>
             <ThemeToggle theme={theme} onToggle={onToggleTheme} className="landing-theme" />
             <button className="landing-login" onClick={() => onSignIn(language)}>{text.login}</button>
           </div>
@@ -136,6 +151,17 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
             const Icon = MORE_ICONS[index]
             return <div className="landing-card" key={item.title}><Icon size={20} /><h3>{item.title}</h3><p>{item.text}</p></div>
           })}</div>
+        </section>
+
+        <section className="landing-section landing-container landing-library">
+          <h2>{text.libraryTitle}</h2>
+          <p className="landing-section-lead">{text.libraryText}</p>
+          <div className="landing-books">{FEATURED.map((book) => (
+            <a className={`landing-book cover-${coverIndex(book.slug)}`} key={book.slug} href={libraryPath(language, book.slug)}>
+              <span className="book-cover"><span className="cover-stamp">{book.language.toUpperCase()}</span><BookOpen size={22} strokeWidth={1.5} /><span className="cover-title">{book.title}</span><span className="cover-author">{book.author}</span></span>
+            </a>
+          ))}</div>
+          <a className="landing-secondary" href={libraryPath(language)}>{text.libraryAll} →</a>
         </section>
 
         <section className="landing-final landing-container">

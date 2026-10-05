@@ -23,6 +23,10 @@ export type LandingText = {
   more: Item[]
   finalTitle: string
   finalText: string
+  libraryNav: string
+  libraryTitle: string
+  libraryText: string
+  libraryAll: string
   imageAlt: { reader: string; readerPhone: string; training: string; trainingPhone: string; library: string }
 }
 
@@ -64,6 +68,10 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
       { title: 'Працює офлайн', text: 'Встанови Ling на телефон як застосунок і читай без інтернету.' },
       { title: 'Озвучення', text: 'Послухай, як звучить слово, одним натиском.' },
     ],
+    libraryNav: 'Бібліотека',
+    libraryTitle: 'Книжки в оригіналі — безкоштовно',
+    libraryText: 'Бібліотека Ling: класика англійською, іспанською, німецькою, французькою, італійською та португальською. Почни читати онлайн або додай книжку до себе.',
+    libraryAll: 'Уся бібліотека',
     finalTitle: 'Відкрий першу книжку вже сьогодні',
     finalText: 'Реєстрація займає хвилину. Книжки й слова збережуться в акаунті.',
     imageAlt: {
@@ -110,6 +118,10 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
       { title: 'Работает офлайн', text: 'Установи Ling на телефон как приложение и читай без интернета.' },
       { title: 'Озвучка', text: 'Послушай, как звучит слово, одним нажатием.' },
     ],
+    libraryNav: 'Библиотека',
+    libraryTitle: 'Книги в оригинале — бесплатно',
+    libraryText: 'Библиотека Ling: классика на английском, испанском, немецком, французском, итальянском и португальском. Начни читать онлайн или добавь книгу себе.',
+    libraryAll: 'Вся библиотека',
     finalTitle: 'Открой первую книгу уже сегодня',
     finalText: 'Регистрация займёт минуту. Книги и слова сохранятся в аккаунте.',
     imageAlt: {
@@ -157,6 +169,10 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
       { title: 'Works offline', text: 'Install Ling on your phone as an app and read without internet.' },
       { title: 'Pronunciation', text: 'Hear how a word sounds with one tap.' },
     ],
+    libraryNav: 'Library',
+    libraryTitle: 'Books in the original, for free',
+    libraryText: 'The Ling Library: classics in English, Spanish, German, French, Italian and Portuguese. Start reading online or add a book to your shelf.',
+    libraryAll: 'The whole library',
     finalTitle: 'Open your first book today',
     finalText: 'Signing up takes a minute. Your books and words are kept in your account.',
     imageAlt: {

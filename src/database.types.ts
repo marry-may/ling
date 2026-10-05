@@ -103,9 +103,34 @@ export type Database = {
         }
         Relationships: []
       }
+      page_views: {
+        Row: {
+          id: number
+          created_at: string
+          visitor_id: string
+          user_id: string | null
+          kind: 'landing' | 'app' | 'catalog' | 'book'
+          path: string
+          referrer: string | null
+          device: 'mobile' | 'desktop' | null
+        }
+        Insert: {
+          visitor_id: string
+          user_id?: string | null
+          kind: 'landing' | 'app' | 'catalog' | 'book'
+          path: string
+          referrer?: string | null
+          device?: 'mobile' | 'desktop' | null
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      is_admin: { Args: Record<string, never>; Returns: boolean }
+      admin_stats: { Args: { days?: number }; Returns: unknown }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }
