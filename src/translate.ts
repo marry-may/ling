@@ -1,11 +1,11 @@
-import { TARGET_LANGUAGE } from './languages'
-
 /** Translations of one part of speech; `pos` is empty for the general translation. */
 export type TranslationGroup = { pos: string; variants: string[] }
 
 const REQUEST_TIMEOUT = 6000
 const MAX_VARIANTS_PER_GROUP = 6
 const cache = new Map<string, TranslationGroup[]>()
+/** Translation languages written in Cyrillic; all others use the Latin script. */
+const CYRILLIC = new Set(['ru', 'uk'])
 
 const POS_LABELS: [RegExp, string][] = [
   [/сущ|существительное|noun/i, 'сущ.'],
@@ -30,9 +30,10 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 /** Google Translate: the general translation plus dictionary variants grouped by part of speech. */
-async function fromGoogle(word: string, from: string): Promise<TranslationGroup[]> {
+async function fromGoogle(word: string, from: string, to: string): Promise<TranslationGroup[]> {
   type GoogleResponse = [[string, string][] | null, [string, string[]][] | null]
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${TARGET_LANGUAGE}&hl=${TARGET_LANGUAGE}&dt=t&dt=bd&q=${encodeURIComponent(word)}`
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&hl=ru&dt=t&dt=bd&q=${encodeURIComponent(word)}`
+  // hl=ru keeps the part-of-speech names in Russian, the language of the app, whatever the translation language.
   const [sentences, dictionary] = await fetchJson<GoogleResponse>(url)
   const groups: TranslationGroup[] = []
   const main = sentences?.map((sentence) => sentence[0]).join('').trim()
@@ -55,7 +56,7 @@ function stripWikitext(line: string): string {
     .replace(/^[\s,;:—-]+|[\s,;:.—-]+$/g, '')
 }
 
-/** Russian Wiktionary: dictionary meanings written in Russian, grouped by part of speech. */
+/** Russian Wiktionary: dictionary meanings written in Russian, grouped by part of speech. Used for Russian only. */
 async function fromWiktionary(word: string, from: string): Promise<TranslationGroup[]> {
   type ParseResponse = { parse?: { wikitext: { '*': string } } }
   const url = `https://ru.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word.toLowerCase())}&prop=wikitext&format=json&redirects=1&origin=*`
@@ -80,24 +81,29 @@ async function fromWiktionary(word: string, from: string): Promise<TranslationGr
 }
 
 /** MyMemory: translation memory, useful when the dictionaries have nothing. */
-async function fromMyMemory(word: string, from: string): Promise<TranslationGroup[]> {
+async function fromMyMemory(word: string, from: string, to: string): Promise<TranslationGroup[]> {
   type MyMemoryResponse = { responseData?: { translatedText?: string }; matches?: { translation?: string }[] }
-  const result = await fetchJson<MyMemoryResponse>(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=${from}|${TARGET_LANGUAGE}`)
+  const result = await fetchJson<MyMemoryResponse>(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=${from}|${to}`)
+  const script = CYRILLIC.has(to) ? /\p{Script=Cyrillic}/u : /\p{Script=Latin}/u
+  // Names and shouting ("Rosé Wines", "PINKS") are memory noise when the looked-up word is an ordinary lowercase one.
+  const looksLikeNoise = (text: string) => (text.length > 1 && text === text.toUpperCase() && text !== text.toLowerCase())
+    || (word === word.toLowerCase() && to !== 'de' && text.split(/\s+/).length > 1 && text.split(/\s+/).every((part) => /^\p{Lu}/u.test(part)))
   const variants = [result.responseData?.translatedText, ...(result.matches ?? []).map((match) => match.translation)]
-    // Translation memory also returns whole example sentences and transliterations; keep only short Cyrillic phrases.
-    .filter((text): text is string => Boolean(text) && /\p{Script=Cyrillic}/u.test(text!) && !/[.!?]$/.test(text!.trim()) && text!.split(/\s+/).length <= 4)
+    // Translation memory also returns whole example sentences and transliterations; keep short phrases in the right script.
+    .filter((text): text is string => Boolean(text) && script.test(text!) && !looksLikeNoise(text!) && !/^\d/.test(text!) && !/[.!?]$/.test(text!.trim()) && text!.split(/\s+/).length <= 4)
   return variants.length ? [{ pos: '', variants }] : []
 }
 
 /** Merges groups from all sources: same part of speech together, duplicates and junk removed. */
-function mergeGroups(word: string, sources: TranslationGroup[][]): TranslationGroup[] {
-  const lowercaseWord = word === word.toLowerCase()
+function mergeGroups(word: string, to: string, sources: TranslationGroup[][]): TranslationGroup[] {
+  // Sentence-case variants are lowered to match the word, except in German, where nouns are capitalised.
+  const lowercaseWord = word === word.toLowerCase() && to !== 'de'
   const seen = new Set<string>([word.toLowerCase()])
   const merged = new Map<string, string[]>()
   for (const groups of sources) {
     for (const group of groups) {
       for (const raw of group.variants) {
-        const trimmed = raw.trim().replace(/\s+/g, ' ').replace(/[\s:;,.]+$/, '')
+        const trimmed = raw.trim().replace(/\s+/g, ' ').replace(/[\s:;,.\-–—]+$/, '')
         const text = lowercaseWord && trimmed.slice(1) === trimmed.slice(1).toLowerCase() ? trimmed.charAt(0).toLowerCase() + trimmed.slice(1) : trimmed
         const key = text.toLowerCase().replace(/ё/g, 'е')
         if (!text || text.length > 80 || seen.has(key) || !/\p{L}/u.test(text)) continue
@@ -113,14 +119,18 @@ function mergeGroups(word: string, sources: TranslationGroup[][]): TranslationGr
 }
 
 /** Translation variants from several dictionaries, best first. An empty list means nothing was found. */
-export async function translateWord(word: string, from: string): Promise<TranslationGroup[]> {
-  const cacheKey = `${from}|${word.toLowerCase()}`
+export async function translateWord(word: string, from: string, to: string): Promise<TranslationGroup[]> {
+  const cacheKey = `${from}|${to}|${word.toLowerCase()}`
   const cached = cache.get(cacheKey)
   if (cached) return cached
 
-  const results = await Promise.allSettled([fromGoogle(word, from), fromWiktionary(word, from), fromMyMemory(word, from)])
+  const results = await Promise.allSettled([
+    fromGoogle(word, from, to),
+    to === 'ru' ? fromWiktionary(word, from) : Promise.resolve([]),
+    fromMyMemory(word, from, to),
+  ])
   if (results.every((result) => result.status === 'rejected')) throw new Error('Translation services unavailable')
-  const groups = mergeGroups(word, results.map((result) => result.status === 'fulfilled' ? result.value : []))
+  const groups = mergeGroups(word, to, results.map((result) => result.status === 'fulfilled' ? result.value : []))
   cache.set(cacheKey, groups)
   return groups
 }

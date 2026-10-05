@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Bookmark, Check, ChevronLeft, ChevronRight, LoaderCircle, Sparkles, Volume2, X } from 'lucide-react'
+import { ArrowLeft, Bookmark, Check, ChevronLeft, ChevronRight, LoaderCircle, Minus, Plus, Sparkles, Type, Volume2, X } from 'lucide-react'
 import { bookTitleOf, type BookFile, type SavedWord } from './domain'
 import { getLanguage, speak } from './languages'
+import { FONT_SIZE_RANGE, LINE_HEIGHTS, readerTextStyle, useReaderSettings } from './readerSettings'
 import { MAX_LEVEL, schedule, setLevel } from './srs'
 import { cleanWord, countWords, paginate, sentenceAt, tokenize, wordKey, type Token } from './text'
+import type { Theme } from './theme'
+import { ThemeToggle } from './ThemeToggle'
 import { translateWord, type TranslationGroup } from './translate'
 
 type Panel = {
@@ -23,6 +26,10 @@ type ReaderProps = {
   onBack: () => void
   /** Present when the book is a part of a split book and a later part exists. */
   onNextPart?: () => void
+  theme: Theme
+  onToggleTheme: () => void
+  /** The learner's own language, which words are translated into. */
+  translationLanguage: string
   onOpenWords: () => void
   onPageChange: (page: number, pageCount: number) => void
   onSaveWord: (word: SavedWord) => Promise<void>
@@ -31,9 +38,11 @@ type ReaderProps = {
 
 const LEVELS = Array.from({ length: MAX_LEVEL }, (_, index) => index + 1)
 
-export function Reader({ book, words, known, onBack, onNextPart, onOpenWords, onPageChange, onSaveWord, onMarkKnown }: ReaderProps) {
+export function Reader({ book, words, known, onBack, onNextPart, theme, onToggleTheme, translationLanguage, onOpenWords, onPageChange, onSaveWord, onMarkKnown }: ReaderProps) {
   const [panel, setPanel] = useState<Panel | null>(null)
   const [busy, setBusy] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settings, updateSettings] = useReaderSettings()
   const textRef = useRef<HTMLDivElement>(null)
 
   const pages = useMemo(() => paginate(book.content), [book.content])
@@ -106,7 +115,7 @@ export function Reader({ book, words, known, onBack, onNextPart, onOpenWords, on
       draft: savedByKey.get(key)?.translation ?? '',
     })
     try {
-      const groups = await translateWord(word, book.language)
+      const groups = await translateWord(word, book.language, translationLanguage)
       setPanel((current) => current?.key === key ? { ...current, loading: false, groups, draft: current.draft || groups[0]?.variants[0] || '' } : current)
     } catch {
       setPanel((current) => current?.key === key ? { ...current, loading: false, failed: true } : current)
@@ -166,19 +175,48 @@ export function Reader({ book, words, known, onBack, onNextPart, onOpenWords, on
       <header className="reader-topbar">
         <button className="icon-button back-button" onClick={onBack} aria-label="Назад в библиотеку"><ArrowLeft size={19} /></button>
         <div className="reader-heading"><span>{book.part ? `ЧАСТЬ ${book.part} ИЗ ${book.partCount}` : 'ЧТЕНИЕ'}</span><strong>{title}</strong></div>
-        <div className="reader-tools"><button className="quiet-button" onClick={onOpenWords}><Bookmark size={16} /> <span>Мои слова</span></button></div>
+        <div className="reader-tools">
+          <button className={settingsOpen ? 'icon-button text-settings-button active' : 'icon-button text-settings-button'} onClick={() => setSettingsOpen(!settingsOpen)} aria-expanded={settingsOpen} aria-label="Настройки текста" title="Настройки текста"><Type size={17} /></button>
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          <button className="quiet-button" onClick={onOpenWords}><Bookmark size={16} /> <span>Мои слова</span></button>
+          {settingsOpen && (
+            <div className="text-settings" role="dialog" aria-label="Настройки текста">
+              <div className="text-settings-row">
+                <span>Размер</span>
+                <div className="stepper">
+                  <button className="icon-button" onClick={() => updateSettings({ fontSize: settings.fontSize - 1 })} disabled={settings.fontSize <= FONT_SIZE_RANGE.min} aria-label="Уменьшить текст"><Minus size={15} /></button>
+                  <strong>{settings.fontSize}</strong>
+                  <button className="icon-button" onClick={() => updateSettings({ fontSize: settings.fontSize + 1 })} disabled={settings.fontSize >= FONT_SIZE_RANGE.max} aria-label="Увеличить текст"><Plus size={15} /></button>
+                </div>
+              </div>
+              <div className="text-settings-row column">
+                <span>Интервал</span>
+                <div className="segmented">{LINE_HEIGHTS.map((option) => (
+                  <button key={option.value} className={settings.lineHeight === option.value ? 'selected' : ''} aria-pressed={settings.lineHeight === option.value} onClick={() => updateSettings({ lineHeight: option.value })}>{option.label}</button>
+                ))}</div>
+              </div>
+              <div className="text-settings-row column">
+                <span>Шрифт</span>
+                <div className="segmented">
+                  <button className={settings.font === 'serif' ? 'selected serif-sample' : 'serif-sample'} aria-pressed={settings.font === 'serif'} onClick={() => updateSettings({ font: 'serif' })}>С засечками</button>
+                  <button className={settings.font === 'sans' ? 'selected' : ''} aria-pressed={settings.font === 'sans'} onClick={() => updateSettings({ font: 'sans' })}>Без засечек</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </header>
       <section className="reader-layout">
         <article className="reading-column">
           <div className="reading-meta"><span>{book.author}</span><span>{languageName.toUpperCase()}</span><span>{book.format}</span></div>
-          <h1 className="book-title">{title}</h1>
-          {book.part && <p className="part-subtitle">{book.title}</p>}
+          <h1 className="book-title" title={title}>{title}</h1>
+          {book.part && <p className="part-subtitle" title={book.title}>{book.title}</p>}
           <div className="reading-hint">
             <span className="legend legend-new">новое</span>
             <span className="legend legend-learning">изучаю</span>
             <span>Нажми на слово, чтобы увидеть перевод</span>
           </div>
-          <div className="book-text" ref={textRef}>
+          <div className="book-text" ref={textRef} style={readerTextStyle(settings)}>
             {book.content ? pageTokens.map((tokens, paragraphIndex) => (
               <p key={`${page}-${paragraphIndex}`}>
                 {tokens.map((token, index) => {

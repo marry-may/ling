@@ -5,6 +5,10 @@ export type Profile = {
   /** Languages the learner added explicitly, even before uploading a book. */
   languages: string[]
   activity: Record<string, LanguageActivity>
+  /** The learner's own language, which words are translated into. */
+  translationLanguage?: string
+  /** Languages that already received a starter book, so a deleted one does not come back. */
+  samples?: string[]
 }
 
 export const EMPTY_PROFILE: Profile = { languages: [], activity: {} }
@@ -60,6 +64,8 @@ export function normalizeProfile(value: unknown): Profile {
   return {
     languages: Array.isArray(profile?.languages) ? profile.languages.filter((code) => typeof code === 'string') : [],
     activity: profile?.activity && typeof profile.activity === 'object' ? profile.activity : {},
+    translationLanguage: typeof profile?.translationLanguage === 'string' ? profile.translationLanguage : undefined,
+    samples: Array.isArray(profile?.samples) ? profile.samples.filter((code) => typeof code === 'string') : undefined,
   }
 }
 
@@ -79,7 +85,13 @@ export function mergeProfiles(local: Profile, remote: Profile): Profile {
       recent: Array.from(new Set([...other.recent, ...entry.recent])).sort().slice(-RECENT_DAYS),
     }
   }
-  return { languages: Array.from(new Set([...remote.languages, ...local.languages])), activity }
+  return {
+    languages: Array.from(new Set([...remote.languages, ...local.languages])),
+    activity,
+    // A choice made on another device reaches this one through the account copy.
+    translationLanguage: remote.translationLanguage ?? local.translationLanguage,
+    samples: remote.samples || local.samples ? Array.from(new Set([...(remote.samples ?? []), ...(local.samples ?? [])])) : undefined,
+  }
 }
 
 export function sameProfile(a: Profile, b: Profile): boolean {

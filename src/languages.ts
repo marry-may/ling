@@ -16,7 +16,29 @@ export const LANGUAGES: Language[] = [
 ]
 
 export const DEFAULT_LANGUAGE = 'en'
-export const TARGET_LANGUAGE = 'ru'
+
+/** Languages words can be translated into: the learner's own language, chosen at sign-up and in the account. */
+export const TRANSLATION_LANGUAGES: { code: string; name: string }[] = [
+  { code: 'ru', name: 'Русский' },
+  { code: 'uk', name: 'Українська' },
+  { code: 'en', name: 'English' },
+  { code: 'de', name: 'Deutsch' },
+  { code: 'pl', name: 'Polski' },
+  { code: 'es', name: 'Español' },
+  { code: 'fr', name: 'Français' },
+  { code: 'it', name: 'Italiano' },
+  { code: 'pt', name: 'Português' },
+  { code: 'nl', name: 'Nederlands' },
+  { code: 'cs', name: 'Čeština' },
+  { code: 'sv', name: 'Svenska' },
+  { code: 'tr', name: 'Türkçe' },
+]
+
+/** A first guess at the learner's own language, from the browser. */
+export function defaultTranslationLanguage(): string {
+  const browser = navigator.language.slice(0, 2).toLowerCase()
+  return TRANSLATION_LANGUAGES.some((language) => language.code === browser) ? browser : 'ru'
+}
 
 export function getLanguage(code: string): Language {
   return LANGUAGES.find((language) => language.code === code) ?? LANGUAGES[0]

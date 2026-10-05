@@ -5,6 +5,16 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="ling-icon.svg" />
   <meta name="theme-color" content="#f5f8f5" />
+  <script>
+    // Apply the saved or system theme before the app loads, so the page does not flash light (see src/theme.ts).
+    try {
+      var savedTheme = localStorage.getItem('ling-theme')
+      var dark = savedTheme === 'dark' || (savedTheme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+    } catch (error) {
+      document.documentElement.dataset.theme = 'light'
+    }
+  </script>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

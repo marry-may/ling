@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
-import { BookOpen, LoaderCircle, UserRound } from 'lucide-react'
+import { ArrowLeft, BookOpen, LoaderCircle, UserRound } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
+import { TranslationLanguageSelect } from './TranslationLanguageSelect'
 
 export type AuthMode = 'signin' | 'signup'
 
@@ -14,14 +15,18 @@ export type AuthFormProps = {
   onEmailChange: (email: string) => void
   onPasswordChange: (password: string) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
+  /** Asked when creating an account: the language words are translated into. */
+  translationLanguage: string
+  onTranslationLanguageChange: (code: string) => void
 }
 
-export function AuthForm({ mode, email, password, busy, message, onModeChange, onEmailChange, onPasswordChange, onSubmit, showModeToggle = true }: AuthFormProps & { showModeToggle?: boolean }) {
+export function AuthForm({ mode, email, password, busy, message, onModeChange, onEmailChange, onPasswordChange, onSubmit, translationLanguage, onTranslationLanguageChange, showModeToggle = true }: AuthFormProps & { showModeToggle?: boolean }) {
   return (
     <>
       <form className="auth-form" onSubmit={onSubmit}>
         <label>Электронная почта<input type="email" autoComplete="email" required value={email} onChange={(event) => onEmailChange(event.target.value)} /></label>
         <label>Пароль<input type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} minLength={8} required value={password} onChange={(event) => onPasswordChange(event.target.value)} placeholder={mode === 'signup' ? 'Не короче 8 символов' : undefined} /></label>
+        {mode === 'signup' && <TranslationLanguageSelect value={translationLanguage} onChange={onTranslationLanguageChange} hint="Твой родной язык. Его можно поменять в любой момент в аккаунте." />}
         <button className="primary-action auth-submit" type="submit" disabled={busy}>
           {busy ? <LoaderCircle size={16} className="spin" /> : <UserRound size={16} />}
           {busy ? 'Подключаем...' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}
@@ -38,9 +43,10 @@ export function AuthForm({ mode, email, password, busy, message, onModeChange, o
 }
 
 /** The first screen for visitors who are not signed in. */
-export function WelcomeScreen({ form, onSkip }: { form: AuthFormProps; onSkip: () => void }) {
+export function WelcomeScreen({ form, onSkip, onBack }: { form: AuthFormProps; onSkip: () => void; onBack: () => void }) {
   return (
     <section className="welcome">
+      <button className="quiet-button welcome-back" onClick={onBack}><ArrowLeft size={16} /> О приложении</button>
       <span className="brand-mark"><BookOpen size={19} strokeWidth={2.2} /></span>
       <span className="eyebrow">ДОБРО ПОЖАЛОВАТЬ В LING</span>
       <h1>Читай книги и учи слова<span className="heading-period">.</span></h1>

@@ -5,30 +5,25 @@ import { AccountButton, AuthForm, WelcomeScreen, type AuthFormProps, type AuthMo
 import { readBookFile } from './bookImport'
 import { deleteAccountBooks, deleteAccountKnownWord, deleteAccountWord, downloadAccountBookContent, getAccountBooks, getAccountKnownWords, getAccountProfile, getAccountWords, saveAccountKnownWords, saveAccountProfile, saveAccountWords, PARTS_MIGRATION_MESSAGE, updateAccountProgress, uploadAccountBook, uploadAccountCollection, uploadGuestLibrary } from './cloud'
 import { bookTitleOf, type BookFile, type KnownWords, type SavedWord } from './domain'
-import { DEFAULT_LANGUAGE, getLanguage, LANGUAGES } from './languages'
+import { DEFAULT_LANGUAGE, defaultTranslationLanguage, getLanguage, LANGUAGES } from './languages'
+import { TranslationLanguageSelect } from './TranslationLanguageSelect'
+import { Landing } from './Landing'
 import { LanguagePicker } from './LanguagePicker'
 import { currentStreak, EMPTY_PROFILE, lastWeek, mergeProfiles, normalizeProfile, recordDay, sameProfile, type Profile } from './profile'
 import { Reader } from './Reader'
+import { SAMPLE_BOOKS } from './sampleBooks'
 import { isDue, normalizeWord } from './srs'
 import { loadCollection, saveCollection } from './storage'
 import { cloudEnabled, siteUrl, supabase } from './supabase'
 import { splitIntoParts, wordKey } from './text'
+import { useTheme } from './theme'
+import { ThemeToggle } from './ThemeToggle'
 import { Training } from './Training'
 import { WordsPage } from './WordsPage'
 import './App.css'
 
 const LANGUAGE_STORAGE_KEY = 'ling-study-language'
 const WELCOME_SKIPPED_KEY = 'ling-welcome-skipped'
-
-const sampleBook: BookFile = {
-  id: 'sample',
-  title: 'The Lighthouse Keeper',
-  author: 'Ling Reader',
-  format: 'DEMO',
-  language: 'en',
-  progress: 0,
-  content: `Every morning, Clara climbed the narrow stairs to the top of the lighthouse. The sea was still and silver beneath the early sun, and the gulls circled above the quiet harbor. She kept a notebook by the window, filling it with small observations: the weather, the ships, and the changing color of the water.\n\nOn the first day of spring, Clara noticed a tiny boat drifting beyond the rocks. She raised the brass telescope and saw a bright red scarf waving from its deck. Without hesitation, she called the harbor station and watched the rescue boat hurry across the bay. By sunset, the stranger was safe, and the lighthouse glowed warmly against the darkening sky.`,
-}
 
 function readWelcomeSkipped(): boolean {
   try {
@@ -145,7 +140,7 @@ type LoadedScope = { scope: string; books: BookFile[]; words: SavedWord[]; known
 async function loadScopeCollections(userId: string | null): Promise<LoadedScope> {
   const scope = userId ? `user:${userId}` : 'anonymous'
   const [storedBooks, storedWords, cachedKnown, storedProfile] = await Promise.all([
-    loadCollection<BookFile[]>('books', `${scope}:books`, userId ? '' : 'ling-books', userId ? [] : [sampleBook]),
+    loadCollection<BookFile[]>('books', `${scope}:books`, userId ? '' : 'ling-books', []),
     loadCollection<SavedWord[]>('words', `${scope}:words`, userId ? '' : 'ling-words', []),
     loadCollection<KnownWords>('words', `${scope}:known`, '', {}),
     loadCollection<Profile>('words', `${scope}:profile`, '', EMPTY_PROFILE),
@@ -200,6 +195,7 @@ async function migrateGuestLibrary(userId: string, force: boolean): Promise<void
 }
 
 function App() {
+  const [theme, toggleTheme] = useTheme()
   const [books, setBooks] = useState<BookFile[]>([])
   const [words, setWords] = useState<SavedWord[]>([])
   const [knownWords, setKnownWords] = useState<KnownWords>({})
@@ -217,6 +213,8 @@ function App() {
   const [accountOpen, setAccountOpen] = useState(false)
   const [authMode, setAuthMode] = useState<AuthMode>('signin')
   const [welcomeSkipped, setWelcomeSkipped] = useState(readWelcomeSkipped)
+  // Visitors who are not signed in see the landing page first; its buttons open the sign-in screen.
+  const [authScreenOpen, setAuthScreenOpen] = useState(false)
   const [authEmail, setAuthEmail] = useState('')
   const [authPassword, setAuthPassword] = useState('')
   const [authMessage, setAuthMessage] = useState('')
@@ -240,6 +238,7 @@ function App() {
   const nextPart = activeBook?.collectionId ? books.find((book) => book.collectionId === activeBook.collectionId && book.part === (activeBook.part ?? 0) + 1) : undefined
   const activeLanguages = useMemo(() => activeLanguagesOf(books, words, profile), [books, words, profile])
   const activity = profile.activity[studyLanguage]
+  const translationLanguage = profile.translationLanguage ?? defaultTranslationLanguage()
   const streak = currentStreak(activity)
   const bookCountByLanguage = useMemo(() => {
     const counts = new Map<string, number>()
@@ -344,7 +343,12 @@ function App() {
     try {
       const result = authMode === 'signin'
         ? await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword })
-        : await supabase.auth.signUp({ email: authEmail.trim(), password: authPassword, options: { emailRedirectTo: siteUrl } })
+        : await supabase.auth.signUp({
+          email: authEmail.trim(),
+          password: authPassword,
+          // The new account starts with the chosen translation language in its profile.
+          options: { emailRedirectTo: siteUrl, data: { ling_profile: { ...EMPTY_PROFILE, translationLanguage } } },
+        })
       if (result.error) throw result.error
       if (!result.data.session || !result.data.user) {
         setAuthMessage(`Проверь почту ${authEmail.trim()}: мы отправили ссылку для подтверждения. Она откроет ${new URL(siteUrl).host}, и ты сразу войдёшь в аккаунт.`)
@@ -413,11 +417,40 @@ function App() {
     if (nextProfile) persistProfile(nextProfile)
   }
 
+  function changeTranslationLanguage(code: string) {
+    persistProfile({ ...profileRef.current, translationLanguage: code })
+  }
+
   function addLanguage(code: string) {
-    if (!profileRef.current.languages.includes(code)) persistProfile({ ...profileRef.current, languages: [...profileRef.current.languages, code] })
+    const current = profileRef.current
+    const giveSample = Boolean(SAMPLE_BOOKS[code]) && !current.samples?.includes(code) && !books.some((book) => book.language === code)
+    persistProfile({
+      ...current,
+      languages: current.languages.includes(code) ? current.languages : [...current.languages, code],
+      samples: giveSample ? [...(current.samples ?? []), code] : current.samples,
+    })
     changeStudyLanguage(code)
     setLanguageDialogOpen(false)
     showLibrary()
+    if (giveSample) void addSampleBook(code)
+  }
+
+  /** Puts the starter book for a language on the shelf, and into the account when signed in. */
+  async function addSampleBook(language: string) {
+    const sample = SAMPLE_BOOKS[language]
+    let book: BookFile = { id: crypto.randomUUID(), ...sample, format: 'TXT', language, progress: 0 }
+    if (accountUser) {
+      try {
+        book = await uploadAccountBook(accountUser.id, book, new File([sample.content], `${sample.title}.txt`, { type: 'text/plain' }))
+      } catch {
+        setNotice('Книга-пример добавлена на устройство, но не загрузилась в аккаунт.')
+      }
+    }
+    try {
+      await persistBooks([book, ...books])
+    } catch {
+      setNotice('Не удалось добавить книгу-пример.')
+    }
   }
 
   async function persistKnown(nextKnown: KnownWords) {
@@ -633,6 +666,8 @@ function App() {
     onEmailChange: setAuthEmail,
     onPasswordChange: setAuthPassword,
     onSubmit: (event) => void handleAuthSubmit(event),
+    translationLanguage,
+    onTranslationLanguageChange: changeTranslationLanguage,
   }
   const skipWelcome = () => {
     setWelcomeSkipped(true)
@@ -641,6 +676,17 @@ function App() {
     } catch {
       // The welcome screen just shows again next time.
     }
+  }
+
+  if (showWelcome && !authScreenOpen) {
+    const openAuth = (mode: AuthMode, landingLanguage: string) => {
+      // The language the visitor read the landing page in is the best first guess for translations.
+      if (!profileRef.current.translationLanguage) changeTranslationLanguage(landingLanguage)
+      authForm.onModeChange(mode)
+      setAuthScreenOpen(true)
+      window.scrollTo({ top: 0 })
+    }
+    return <Landing theme={theme} onToggleTheme={toggleTheme} onSignUp={(language) => openAuth('signup', language)} onSignIn={(language) => openAuth('signin', language)} />
   }
 
   return (
@@ -663,11 +709,16 @@ function App() {
       </aside>
 
       <main className="main-area">
-        {!showWelcome && !activeBook && <AccountButton user={accountUser} onClick={openAccount} />}
+        {!activeBook && (
+          <div className="corner-actions">
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+            {!showWelcome && <AccountButton user={accountUser} onClick={openAccount} />}
+          </div>
+        )}
         {showWelcome ? (
-          <WelcomeScreen form={authForm} onSkip={skipWelcome} />
+          <WelcomeScreen form={authForm} onSkip={skipWelcome} onBack={() => setAuthScreenOpen(false)} />
         ) : onboarding ? (
-          <LanguagePicker onPick={addLanguage} />
+          <LanguagePicker exclude={[translationLanguage]} onPick={addLanguage} translation={{ value: translationLanguage, onChange: changeTranslationLanguage }} />
         ) : activeBook ? (
           <>
             {noticeBar}
@@ -680,6 +731,9 @@ function App() {
                 setOpenCollection(activeBook.collectionId ?? null)
               }}
               onNextPart={nextPart ? () => void openBook(nextPart) : undefined}
+              theme={theme}
+              onToggleTheme={toggleTheme}
+              translationLanguage={translationLanguage}
               onOpenWords={showWords}
               onPageChange={(page, pageCount) => updatePage(activeBook.id, page, pageCount)}
               onSaveWord={saveWord}
@@ -754,8 +808,8 @@ function App() {
       </main>
 
       <nav className="mobile-nav" aria-label="Основная навигация"><button className={!activeBook && view === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>Библиотека</span></button><button className={!activeBook && view === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>Тренировка</span>{dueCount > 0 && <i />}</button><button className={!activeBook && view === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>Слова</span></button></nav>
-      {languageDialogOpen && <LanguagePicker exclude={activeLanguages} onPick={addLanguage} onClose={() => setLanguageDialogOpen(false)} />}
-      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label="Аккаунт Ling" onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label="Закрыть"><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? 'Аккаунт подключён' : 'Твоя библиотека везде'}</h2>{!cloudEnabled ? <div className="cloud-setup-note"><p>Подключи проект Supabase, чтобы включить вход и синхронизацию книг.</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> Книги и слова привязаны к аккаунту</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? 'Выходим...' : 'Выйти из аккаунта'}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
+      {languageDialogOpen && <LanguagePicker exclude={[...activeLanguages, translationLanguage]} onPick={addLanguage} onClose={() => setLanguageDialogOpen(false)} />}
+      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label="Аккаунт Ling" onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label="Закрыть"><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? 'Аккаунт подключён' : 'Твоя библиотека везде'}</h2>{(accountUser || !cloudEnabled || authMode === 'signin') && <div className="account-settings"><TranslationLanguageSelect value={translationLanguage} onChange={changeTranslationLanguage} hint="Новые слова будут переводиться на этот язык. Уже сохранённые переводы не изменятся." /></div>}{!cloudEnabled ? <div className="cloud-setup-note"><p>Подключи проект Supabase, чтобы включить вход и синхронизацию книг.</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> Книги и слова привязаны к аккаунту</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? 'Выходим...' : 'Выйти из аккаунта'}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
     </div>
   )
 }
