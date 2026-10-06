@@ -120,7 +120,7 @@ export function ShelfIllustration() {
 }
 
 /** Floating word bubbles on both sides of the hero title (wide screens only). */
-export function HeroDecor() {
+export function HeroDecor({ greeting }: { greeting: string }) {
   return (
     <>
       <svg className="hero-decor hero-decor-left" viewBox="0 0 150 170" aria-hidden="true">
@@ -133,7 +133,7 @@ export function HeroDecor() {
       <svg className="hero-decor hero-decor-right" viewBox="0 0 150 170" aria-hidden="true">
         <WordChip x={50} y={14} width={70} word="hello" />
         <WordChip x={14} y={66} width={70} word="ciao" />
-        <WordChip x={60} y={116} width={78} word="привет" />
+        <WordChip x={60} y={116} width={78} word={greeting} />
         <Sparkle x={130} y={78} size={0.8} />
       </svg>
     </>

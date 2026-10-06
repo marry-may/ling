@@ -1,3 +1,5 @@
+import { messages } from './i18n'
+
 export type Token = { text: string; start: number; key: string }
 
 const PAGE_WORDS = 220
@@ -89,7 +91,7 @@ export function paginate(content: string): string[][] {
 
 function pieceTitle(section: Section, index: number): string | undefined {
   if (!section.title || index === 0) return section.title
-  return `${section.title} (продолжение)`
+  return messages().common.continuation(section.title)
 }
 
 /** Cuts a section that is longer than one part into paragraph-aligned pieces. */

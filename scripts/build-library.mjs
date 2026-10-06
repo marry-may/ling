@@ -56,7 +56,6 @@ const T = {
     excerpt: 'Початок книжки звичайним текстом', continueTitle: 'Продовжити читання в Ling',
     tryTitle: 'Спробуй читати в Ling',
     tryText: 'Це справжній рідер Ling: натисни на будь-яке слово, щоб побачити переклад, і збережи нові слова. Акаунт не потрібен.',
-    tryNote: 'Інтерфейс застосунку поки що російською мовою.',
     continueText: 'У Ling ця книжка відкриється повністю: натискай на незнайомі слова, щоб побачити переклад, зберігай їх до словника й тренуй.',
     words: 'слів', hours: (h) => `≈ ${h} год читання`, minutes: (m) => `≈ ${m} хв читання`, chaptersCount: 'розділів', andMore: (n) => `і ще ${n}`,
     publicDomain: 'Текст твору перебуває в суспільному надбанні.', difficulty: { easy: 'Легка', medium: 'Середня', hard: 'Складна' },
@@ -74,7 +73,6 @@ const T = {
     excerpt: 'The beginning as plain text', continueTitle: 'Keep reading in Ling',
     tryTitle: 'Try reading in Ling',
     tryText: 'This is the real Ling reader: tap any word to see its translation and save new words. No account needed.',
-    tryNote: 'The app interface is in Russian for now.',
     continueText: 'Ling opens the whole book: tap unfamiliar words to see their translation, save them to your dictionary and practise them.',
     words: 'words', hours: (h) => `≈ ${h} h of reading`, minutes: (m) => `≈ ${m} min of reading`, chaptersCount: 'chapters', andMore: (n) => `and ${n} more`,
     publicDomain: 'The text of this work is in the public domain.', difficulty: { easy: 'Easy', medium: 'Intermediate', hard: 'Advanced' },
@@ -229,7 +227,6 @@ function bookPage(book, books, chapters, locale) {
       <h2>${t.tryTitle}</h2>
       <p>${t.tryText}</p>
       <iframe class="reader-frame" src="${link(pagePath, 'reader.html')}?book=${book.slug}&amp;lang=${locale}" title="${escape(t.tryTitle)}" loading="lazy"></iframe>
-      ${t.tryNote ? `<p class="muted try-note">${t.tryNote}</p>` : ''}
     </section>
     <details class="excerpt" lang="${book.language}"><summary lang="${locale}">${t.excerpt}</summary>
       ${excerptOf(chapters).map((part) => (part.heading ? `<h3>${escape(part.heading)}</h3>` : `<p>${escape(part.text)}</p>`)).join('\n      ')}

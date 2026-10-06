@@ -1,0 +1,113 @@
+/* Grammar lesson illustrations (src/grammar/art.tsx), in the landing illustration palette for both themes. */
+.grammar-art {
+  --ga-paper: #ffffff;
+  --ga-panel: #eef4f0;
+  --ga-line: #cfdcd3;
+  --ga-text: #d3ddd6;
+  --ga-green: #315b4d;
+  --ga-green-soft: #d6e8dc;
+  --ga-coral: #ee7967;
+  --ga-coral-soft: #fbe0da;
+  --ga-gold: #eec879;
+  --ga-yellow: #fbe6b0;
+  --ga-blue: #dcebfa;
+  --ga-blue-line: #7fa9d4;
+  --ga-ink: #20352f;
+  --ga-muted: #82908a;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+:root[data-theme="dark"] .grammar-art {
+  --ga-paper: #1a221e;
+  --ga-panel: #222d27;
+  --ga-line: #3a4a41;
+  --ga-text: #3d4d44;
+  --ga-green: #4f8a72;
+  --ga-green-soft: #2c4236;
+  --ga-coral: #e0806f;
+  --ga-coral-soft: #4a2e29;
+  --ga-gold: #d9b260;
+  --ga-yellow: #625228;
+  --ga-blue: #20374e;
+  --ga-blue-line: #6b97c4;
+  --ga-ink: #e4ebe6;
+  --ga-muted: #8d9b94;
+}
+
+.ga-paper { fill: var(--ga-paper); }
+.ga-panel { fill: var(--ga-panel); }
+.ga-text { fill: var(--ga-text); }
+.ga-green { fill: var(--ga-green); }
+.ga-green-soft { fill: var(--ga-green-soft); }
+.ga-coral { fill: var(--ga-coral); }
+.ga-gold { fill: var(--ga-gold); }
+.ga-yellow { fill: var(--ga-yellow); }
+.ga-blue { fill: var(--ga-blue); }
+.ga-outline { stroke: var(--ga-line); stroke-width: 2; stroke-linejoin: round; }
+.ga-outline-dashed { stroke: var(--ga-line); stroke-width: 2; stroke-dasharray: 5 5; }
+.ga-ghost { fill: none; stroke: var(--ga-coral); stroke-width: 2; stroke-dasharray: 4 4; stroke-linejoin: round; }
+
+.ga-line,
+.ga-line-dashed,
+.ga-green-line,
+.ga-coral-line,
+.ga-gold-line,
+.ga-blue-line,
+.ga-text-line,
+.ga-paper-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ga-line { stroke: var(--ga-line); }
+.ga-line-dashed { stroke: var(--ga-line); stroke-width: 2; stroke-dasharray: 3 5; }
+.ga-green-line { stroke: var(--ga-green); }
+.ga-coral-line { stroke: var(--ga-coral); }
+.ga-gold-line { stroke: var(--ga-gold); }
+.ga-blue-line { stroke: var(--ga-blue-line); }
+.ga-text-line { stroke: var(--ga-text); }
+.ga-paper-line { stroke: var(--ga-paper); stroke-width: 5; }
+.ga-check { fill: none; stroke: #ffffff; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.ga-chip-plain,
+.ga-bubble-plain { fill: var(--ga-paper); stroke: var(--ga-line); stroke-width: 1.5; }
+.ga-chip-green { fill: var(--ga-green); }
+.ga-chip-coral { fill: var(--ga-coral); }
+.ga-chip-gold { fill: var(--ga-gold); }
+.ga-chip-blue { fill: var(--ga-blue); }
+.ga-bubble-green { fill: var(--ga-green-soft); }
+.ga-bubble-coral { fill: var(--ga-coral-soft); }
+.ga-body-green { fill: var(--ga-green); }
+.ga-body-coral { fill: var(--ga-coral); }
+.ga-body-gold { fill: var(--ga-gold); }
+.ga-body-blue { fill: var(--ga-blue-line); }
+.ga-body-plain { fill: var(--ga-text); }
+
+.ga-word {
+  fill: var(--ga-ink);
+  font-family: var(--serif);
+  font-weight: 500;
+  text-anchor: middle;
+}
+.ga-word.on-color,
+.ga-big.on-color { fill: #ffffff; }
+.ga-big {
+  fill: var(--ga-ink);
+  font: 600 30px var(--serif);
+  text-anchor: middle;
+}
+.ga-label {
+  fill: var(--ga-muted);
+  font: 700 9px "DM Sans", sans-serif;
+  letter-spacing: 0.04em;
+  text-anchor: middle;
+}
+.ga-ghost-text {
+  fill: var(--ga-muted);
+  font: italic 500 11px var(--serif);
+  text-anchor: middle;
+  opacity: 0.7;
+}

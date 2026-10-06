@@ -3,9 +3,38 @@ export type LandingLanguage = 'uk' | 'ru' | 'en'
 type Feature = { title: string; points: string[] }
 type Item = { title: string; text: string }
 
+/** The sign-in screen a visitor reaches from the landing page, in the language they read it in. */
+export type AuthText = {
+  back: string
+  eyebrow: string
+  title: string
+  lead: string
+  bookNote: (title: string) => string
+  tabs: string
+  signIn: string
+  signUp: string
+  skip: string
+  email: string
+  password: string
+  passwordHint: string
+  translateTo: string
+  translationHint: string
+  busy: string
+  toSignUp: string
+  toSignIn: string
+  checkEmail: (email: string, host: string) => string
+  /** Supabase answers in English; the common cases are told in the visitor's language. */
+  errors: { invalid: string; exists: string; unconfirmed: string; rateLimit: string; failed: string }
+}
+
 /** Headings mark the words set in italic with *asterisks* (see Rich in Landing.tsx). */
 export type LandingText = {
   label: string
+  /** Browser tab title. */
+  pageTitle: string
+  /** The words the hero greets with, in this language among others. */
+  greeting: string
+  auth: AuthText
   login: string
   eyebrow: string
   title: string
@@ -13,8 +42,6 @@ export type LandingText = {
   start: string
   haveAccount: string
   facts: string
-  /** Shown where the app interface (in Russian) differs from the page language. */
-  interfaceNote?: string
   stepsTitle: string
   steps: Item[]
   reading: Feature
@@ -37,13 +64,41 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
   uk: {
     label: 'UA',
     login: 'Увійти',
+    pageTitle: 'Ling — читай і вивчай слова',
+    greeting: 'привіт',
+    auth: {
+      back: 'Про застосунок',
+      eyebrow: 'ЛАСКАВО ПРОСИМО ДО LING',
+      title: 'Читай книжки й вивчай слова',
+      lead: 'Увійди або створи акаунт: книжки, слова й прогрес будуть із тобою на всіх пристроях.',
+      bookNote: (title) => `Щоб читати «${title}», увійди або продовж без акаунта.`,
+      tabs: 'Вхід або реєстрація',
+      signIn: 'Увійти',
+      signUp: 'Створити акаунт',
+      skip: 'Спробувати без акаунта',
+      email: 'Електронна пошта',
+      password: 'Пароль',
+      passwordHint: 'Не менше 8 символів',
+      translateTo: 'Перекладати на',
+      translationHint: 'Твоя рідна мова. Її можна змінити будь-коли в акаунті.',
+      busy: 'Підключаємо...',
+      toSignUp: 'Уперше в Ling? Створити акаунт',
+      toSignIn: 'Уже маєш акаунт? Увійти',
+      checkEmail: (email, host) => `Перевір пошту ${email}: ми надіслали посилання для підтвердження. Воно відкриє ${host}, і ти одразу увійдеш в акаунт.`,
+      errors: {
+        invalid: 'Неправильна пошта або пароль.',
+        exists: 'Акаунт із цією поштою вже існує. Спробуй увійти.',
+        unconfirmed: 'Пошту ще не підтверджено: відкрий посилання з листа.',
+        rateLimit: 'Забагато спроб. Зачекай трохи й спробуй ще раз.',
+        failed: 'Не вдалося увійти. Спробуй ще раз.',
+      },
+    },
     eyebrow: 'ЧИТАЙ · ПЕРЕКЛАДАЙ · ЗАПАМ’ЯТОВУЙ',
     title: 'Вивчай мову за *книжками*, які хочеться читати',
     lead: 'Завантаж будь-яку книжку — Ling покаже переклад кожного слова одним натиском, збереже нові слова до словника й допоможе їх вивчити.',
     start: 'Створити акаунт',
     haveAccount: 'У мене вже є акаунт',
     facts: 'EPUB, PDF, TXT · 12 мов · переклад твоєю мовою',
-    interfaceNote: 'Інтерфейс застосунку поки що російською мовою.',
     stepsTitle: 'Як це *працює*',
     steps: [
       { title: 'Завантаж книжку', text: 'EPUB, PDF, TXT або MD. Навіть скани: текст розпізнається автоматично, а великі книжки діляться на частини.' },
@@ -89,6 +144,35 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
   ru: {
     label: 'RU',
     login: 'Войти',
+    pageTitle: 'Ling — читай и учи слова',
+    greeting: 'привет',
+    auth: {
+      back: 'О приложении',
+      eyebrow: 'ДОБРО ПОЖАЛОВАТЬ В LING',
+      title: 'Читай книги и учи слова',
+      lead: 'Войди или создай аккаунт: книги, слова и прогресс будут с тобой на всех устройствах.',
+      bookNote: (title) => `Чтобы читать «${title}», войди или продолжи без аккаунта.`,
+      tabs: 'Вход или регистрация',
+      signIn: 'Войти',
+      signUp: 'Создать аккаунт',
+      skip: 'Попробовать без аккаунта',
+      email: 'Электронная почта',
+      password: 'Пароль',
+      passwordHint: 'Не короче 8 символов',
+      translateTo: 'Переводить на',
+      translationHint: 'Твой родной язык. Его можно поменять в любой момент в аккаунте.',
+      busy: 'Подключаем...',
+      toSignUp: 'Первый раз в Ling? Создать аккаунт',
+      toSignIn: 'Уже есть аккаунт? Войти',
+      checkEmail: (email, host) => `Проверь почту ${email}: мы отправили ссылку для подтверждения. Она откроет ${host}, и ты сразу войдёшь в аккаунт.`,
+      errors: {
+        invalid: 'Неверная почта или пароль.',
+        exists: 'Аккаунт с этой почтой уже есть. Попробуй войти.',
+        unconfirmed: 'Почта ещё не подтверждена: открой ссылку из письма.',
+        rateLimit: 'Слишком много попыток. Подожди немного и попробуй снова.',
+        failed: 'Не удалось выполнить вход. Попробуй ещё раз.',
+      },
+    },
     eyebrow: 'ЧИТАЙ · ПЕРЕВОДИ · ЗАПОМИНАЙ',
     title: 'Учи язык по *книгам*, которые хочется читать',
     lead: 'Загрузи любую книгу — Ling покажет перевод каждого слова одним нажатием, сохранит новые слова в словарь и поможет их выучить.',
@@ -140,13 +224,41 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
   en: {
     label: 'EN',
     login: 'Log in',
+    pageTitle: 'Ling — read books, learn words',
+    greeting: 'bonjour',
+    auth: {
+      back: 'About the app',
+      eyebrow: 'WELCOME TO LING',
+      title: 'Read books and learn words',
+      lead: 'Sign in or create an account: your books, words and progress will be with you on every device.',
+      bookNote: (title) => `To read “${title}”, sign in or continue without an account.`,
+      tabs: 'Sign in or sign up',
+      signIn: 'Sign in',
+      signUp: 'Create account',
+      skip: 'Try without an account',
+      email: 'Email',
+      password: 'Password',
+      passwordHint: 'At least 8 characters',
+      translateTo: 'Translate into',
+      translationHint: 'Your native language. You can change it any time in your account.',
+      busy: 'Connecting...',
+      toSignUp: 'New to Ling? Create an account',
+      toSignIn: 'Already have an account? Sign in',
+      checkEmail: (email, host) => `Check your inbox at ${email}: we sent you a confirmation link. It opens ${host} and signs you in right away.`,
+      errors: {
+        invalid: 'Wrong email or password.',
+        exists: 'An account with this email already exists. Try signing in.',
+        unconfirmed: 'Your email is not confirmed yet: open the link from the email.',
+        rateLimit: 'Too many attempts. Wait a moment and try again.',
+        failed: 'Could not sign in. Please try again.',
+      },
+    },
     eyebrow: 'READ · TRANSLATE · REMEMBER',
     title: 'Learn a language from *books* you actually want to read',
     lead: 'Upload any book — Ling shows the translation of every word with a single tap, saves new words to your dictionary and helps you learn them.',
     start: 'Create an account',
     haveAccount: 'I already have an account',
     facts: 'EPUB, PDF, TXT · 12 languages · translations into your language',
-    interfaceNote: 'The app interface is in Russian for now.',
     stepsTitle: 'How it *works*',
     steps: [
       { title: 'Upload a book', text: 'EPUB, PDF, TXT or MD. Even scans: the text is recognized automatically, and long books are split into parts.' },
@@ -202,4 +314,16 @@ export function detectLandingLanguage(): LandingLanguage {
   if (browser.startsWith('uk')) return 'uk'
   if (browser.startsWith('ru')) return 'ru'
   return 'en'
+}
+
+
+/** The visitor-facing reason a sign-in or sign-up failed. */
+export function authErrorText(error: unknown, text: AuthText): string {
+  const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : ''
+  const message = error instanceof Error ? error.message : ''
+  if (code === 'invalid_credentials' || /invalid login credentials/i.test(message)) return text.errors.invalid
+  if (code === 'user_already_exists' || /already registered/i.test(message)) return text.errors.exists
+  if (code === 'email_not_confirmed' || /email not confirmed/i.test(message)) return text.errors.unconfirmed
+  if (code.startsWith('over_') || /rate limit/i.test(message)) return text.errors.rateLimit
+  return message || text.errors.failed
 }

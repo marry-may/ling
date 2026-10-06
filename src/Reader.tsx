@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Bookmark, Check, ChevronLeft, ChevronRight, LoaderCircle, Minus, Plus, Sparkles, Type, Volume2, X } from 'lucide-react'
 import { bookTitleOf, type BookFile, type SavedWord } from './domain'
+import { partTitle, useMessages } from './i18n'
 import { getLanguage, speak } from './languages'
 import { FONT_SIZE_RANGE, LINE_HEIGHTS, readerTextStyle, useReaderSettings } from './readerSettings'
 import { MAX_LEVEL, schedule, setLevel } from './srs'
@@ -39,6 +40,7 @@ type ReaderProps = {
 const LEVELS = Array.from({ length: MAX_LEVEL }, (_, index) => index + 1)
 
 export function Reader({ book, words, known, onBack, onNextPart, theme, onToggleTheme, translationLanguage, onOpenWords, onPageChange, onSaveWord, onMarkKnown }: ReaderProps) {
+  const t = useMessages()
   const [panel, setPanel] = useState<Panel | null>(null)
   const [busy, setBusy] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -173,33 +175,33 @@ export function Reader({ book, words, known, onBack, onNextPart, theme, onToggle
   return (
     <>
       <header className="reader-topbar">
-        <button className="icon-button back-button" onClick={onBack} aria-label="Назад в библиотеку"><ArrowLeft size={19} /></button>
-        <div className="reader-heading"><span>{book.part ? `ЧАСТЬ ${book.part} ИЗ ${book.partCount}` : 'ЧТЕНИЕ'}</span><strong>{title}</strong></div>
+        <button className="icon-button back-button" onClick={onBack} aria-label={t.reader.back}><ArrowLeft size={19} /></button>
+        <div className="reader-heading"><span>{book.part ? t.reader.partOf(book.part, book.partCount ?? book.part) : t.reader.reading}</span><strong>{title}</strong></div>
         <div className="reader-tools">
-          <button className={settingsOpen ? 'icon-button text-settings-button active' : 'icon-button text-settings-button'} onClick={() => setSettingsOpen(!settingsOpen)} aria-expanded={settingsOpen} aria-label="Настройки текста" title="Настройки текста"><Type size={17} /></button>
+          <button className={settingsOpen ? 'icon-button text-settings-button active' : 'icon-button text-settings-button'} onClick={() => setSettingsOpen(!settingsOpen)} aria-expanded={settingsOpen} aria-label={t.reader.textSettings} title={t.reader.textSettings}><Type size={17} /></button>
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          <button className="quiet-button" onClick={onOpenWords}><Bookmark size={16} /> <span>Мои слова</span></button>
+          <button className="quiet-button" onClick={onOpenWords}><Bookmark size={16} /> <span>{t.reader.myWords}</span></button>
           {settingsOpen && (
-            <div className="text-settings" role="dialog" aria-label="Настройки текста">
+            <div className="text-settings" role="dialog" aria-label={t.reader.textSettings}>
               <div className="text-settings-row">
-                <span>Размер</span>
+                <span>{t.reader.size}</span>
                 <div className="stepper">
-                  <button className="icon-button" onClick={() => updateSettings({ fontSize: settings.fontSize - 1 })} disabled={settings.fontSize <= FONT_SIZE_RANGE.min} aria-label="Уменьшить текст"><Minus size={15} /></button>
+                  <button className="icon-button" onClick={() => updateSettings({ fontSize: settings.fontSize - 1 })} disabled={settings.fontSize <= FONT_SIZE_RANGE.min} aria-label={t.reader.smaller}><Minus size={15} /></button>
                   <strong>{settings.fontSize}</strong>
-                  <button className="icon-button" onClick={() => updateSettings({ fontSize: settings.fontSize + 1 })} disabled={settings.fontSize >= FONT_SIZE_RANGE.max} aria-label="Увеличить текст"><Plus size={15} /></button>
+                  <button className="icon-button" onClick={() => updateSettings({ fontSize: settings.fontSize + 1 })} disabled={settings.fontSize >= FONT_SIZE_RANGE.max} aria-label={t.reader.bigger}><Plus size={15} /></button>
                 </div>
               </div>
               <div className="text-settings-row column">
-                <span>Интервал</span>
+                <span>{t.reader.spacing}</span>
                 <div className="segmented">{LINE_HEIGHTS.map((option) => (
-                  <button key={option.value} className={settings.lineHeight === option.value ? 'selected' : ''} aria-pressed={settings.lineHeight === option.value} onClick={() => updateSettings({ lineHeight: option.value })}>{option.label}</button>
+                  <button key={option.value} className={settings.lineHeight === option.value ? 'selected' : ''} aria-pressed={settings.lineHeight === option.value} onClick={() => updateSettings({ lineHeight: option.value })}>{t.reader.lineHeights[option.name]}</button>
                 ))}</div>
               </div>
               <div className="text-settings-row column">
-                <span>Шрифт</span>
+                <span>{t.reader.font}</span>
                 <div className="segmented">
-                  <button className={settings.font === 'serif' ? 'selected serif-sample' : 'serif-sample'} aria-pressed={settings.font === 'serif'} onClick={() => updateSettings({ font: 'serif' })}>С засечками</button>
-                  <button className={settings.font === 'sans' ? 'selected' : ''} aria-pressed={settings.font === 'sans'} onClick={() => updateSettings({ font: 'sans' })}>Без засечек</button>
+                  <button className={settings.font === 'serif' ? 'selected serif-sample' : 'serif-sample'} aria-pressed={settings.font === 'serif'} onClick={() => updateSettings({ font: 'serif' })}>{t.reader.serif}</button>
+                  <button className={settings.font === 'sans' ? 'selected' : ''} aria-pressed={settings.font === 'sans'} onClick={() => updateSettings({ font: 'sans' })}>{t.reader.sans}</button>
                 </div>
               </div>
             </div>
@@ -210,11 +212,11 @@ export function Reader({ book, words, known, onBack, onNextPart, theme, onToggle
         <article className="reading-column">
           <div className="reading-meta"><span>{book.author}</span><span>{languageName.toUpperCase()}</span><span>{book.format}</span></div>
           <h1 className="book-title" title={title}>{title}</h1>
-          {book.part && <p className="part-subtitle" title={book.title}>{book.title}</p>}
+          {book.part && <p className="part-subtitle" title={partTitle(book.title, book.part, t)}>{partTitle(book.title, book.part, t)}</p>}
           <div className="reading-hint">
-            <span className="legend legend-new">новое</span>
-            <span className="legend legend-learning">изучаю</span>
-            <span>Нажми на слово, чтобы увидеть перевод</span>
+            <span className="legend legend-new">{t.reader.legendNew}</span>
+            <span className="legend legend-learning">{t.reader.legendLearning}</span>
+            <span>{t.reader.tapHint}</span>
           </div>
           <div className="book-text" ref={textRef} style={readerTextStyle(settings)}>
             {book.content ? pageTokens.map((tokens, paragraphIndex) => (
@@ -227,54 +229,54 @@ export function Reader({ book, words, known, onBack, onNextPart, theme, onToggle
                   return <button className={`word-token is-${status}${level}${selected}`} key={index} onClick={() => void selectWord(token, paragraphs[paragraphIndex])}>{token.text}</button>
                 })}
               </p>
-            )) : <div className="book-loading"><LoaderCircle size={17} className="spin" /> Загружаем книгу из аккаунта...</div>}
+            )) : <div className="book-loading"><LoaderCircle size={17} className="spin" /> {t.reader.loading}</div>}
           </div>
           {book.content && (
             <div className="page-controls">
-              <button className="icon-button" onClick={() => goTo(page - 1)} disabled={page === 0} aria-label="Предыдущая страница"><ChevronLeft size={19} /></button>
-              <span>Страница {page + 1} из {pageCount}</span>
+              <button className="icon-button" onClick={() => goTo(page - 1)} disabled={page === 0} aria-label={t.reader.previous}><ChevronLeft size={19} /></button>
+              <span>{t.reader.page(page + 1, pageCount)}</span>
               {newKeys.length > 0
-                ? <button className="finish-page" onClick={() => void finishPage()} disabled={busy}><Check size={16} />{isLastPage ? `Знаю все новые (${newKeys.length})` : `Знаю новые (${newKeys.length}) и дальше`}</button>
+                ? <button className="finish-page" onClick={() => void finishPage()} disabled={busy}><Check size={16} />{isLastPage ? t.reader.knowAll(newKeys.length) : t.reader.knowAndNext(newKeys.length)}</button>
                 : isLastPage && onNextPart
-                  ? <button className="finish-page" onClick={onNextPart}>Следующая часть <ChevronRight size={16} /></button>
-                  : <button className="icon-button" onClick={() => goTo(page + 1)} disabled={isLastPage} aria-label="Следующая страница"><ChevronRight size={19} /></button>}
+                  ? <button className="finish-page" onClick={onNextPart}>{t.reader.nextPart} <ChevronRight size={16} /></button>
+                  : <button className="icon-button" onClick={() => goTo(page + 1)} disabled={isLastPage} aria-label={t.reader.next}><ChevronRight size={19} /></button>}
             </div>
           )}
-          <div className="reading-footer"><span>{totalWords.toLocaleString('ru-RU')} слов</span><span>{book.progress}% прочитано</span></div>
+          <div className="reading-footer"><span>{t.reader.totalWords(totalWords.toLocaleString(t.locale))}</span><span>{t.common.percentRead(book.progress)}</span></div>
         </article>
         <aside className="reader-side-note">
-          <div className="book-progress-label"><span>ТВОЙ ПРОГРЕСС</span><span>{book.progress}%</span></div>
+          <div className="book-progress-label"><span>{t.reader.yourProgress}</span><span>{book.progress}%</span></div>
           <div className="progress-track"><span style={{ width: `${book.progress}%` }} /></div>
-          <div className="reader-stat"><Bookmark size={18} /><span><strong>{bookWordCount}</strong><small>слов из этой книги</small></span></div>
-          <div className="reader-stat"><Sparkles size={18} /><span><strong>{newKeys.length}</strong><small>новых на странице</small></span></div>
+          <div className="reader-stat"><Bookmark size={18} /><span><strong>{bookWordCount}</strong><small>{t.reader.bookWords}</small></span></div>
+          <div className="reader-stat"><Sparkles size={18} /><span><strong>{newKeys.length}</strong><small>{t.reader.newOnPage}</small></span></div>
         </aside>
       </section>
       {panel && (
         <div className="translation-scrim" onClick={() => setPanel(null)}>
-          <section className="translation-panel" role="dialog" aria-modal="true" aria-label={`Перевод слова ${panel.word}`} onClick={(event) => event.stopPropagation()}>
-            <button className="icon-button panel-close" onClick={() => setPanel(null)} aria-label="Закрыть"><X size={18} /></button>
-            <span className="panel-kicker">{panelStatus === 'known' ? 'ЗНАКОМОЕ СЛОВО' : panelStatus === 'learning' ? 'ИЗУЧАЕШЬ' : 'НОВОЕ СЛОВО'}</span>
-            <div className="translation-wordline"><h2>{panel.word}</h2><button className="icon-button sound-button" onClick={() => speak(panel.word, book.language)} aria-label="Произнести слово"><Volume2 size={19} /></button></div>
+          <section className="translation-panel" role="dialog" aria-modal="true" aria-label={t.reader.translationOf(panel.word)} onClick={(event) => event.stopPropagation()}>
+            <button className="icon-button panel-close" onClick={() => setPanel(null)} aria-label={t.common.close}><X size={18} /></button>
+            <span className="panel-kicker">{panelStatus === 'known' ? t.reader.known : panelStatus === 'learning' ? t.reader.learning : t.reader.newWord}</span>
+            <div className="translation-wordline"><h2>{panel.word}</h2><button className="icon-button sound-button" onClick={() => speak(panel.word, book.language)} aria-label={t.common.speak}><Volume2 size={19} /></button></div>
             {panel.context && <p className="translation-context">{tokenize(panel.context).map((token, index) => token.key === panel.key ? <mark key={index}>{token.text}</mark> : token.text)}</p>}
             {panel.loading
-              ? <div className="translation-loading"><LoaderCircle size={17} className="spin" /> Ищем перевод...</div>
+              ? <div className="translation-loading"><LoaderCircle size={17} className="spin" /> {t.reader.searching}</div>
               : panel.groups.length
                 ? <div className="variant-groups">{panel.groups.map((group) => (
                   <div className="variant-list" key={group.pos || 'main'}>
-                    {group.pos && <span className="variant-pos">{group.pos}</span>}
+                    {group.pos && <span className="variant-pos">{t.reader.pos[group.pos as keyof typeof t.reader.pos] ?? group.pos}</span>}
                     {group.variants.map((variant) => <button className={panel.draft === variant ? 'variant selected' : 'variant'} key={variant} onClick={() => setPanel({ ...panel, draft: variant })}>{variant}</button>)}
                   </div>
                 ))}</div>
-                : <p className="translation-result">{panel.failed ? 'Нет соединения со словарём' : 'Перевод не найден'}</p>}
-            <label className="translation-input">Твой перевод<input value={panel.draft} placeholder="Впиши свой вариант" onChange={(event) => setPanel({ ...panel, draft: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter') saveTranslation() }} /></label>
-            <div className="status-row" role="group" aria-label="Насколько хорошо знаешь слово">
-              <span>Статус</span>
+                : <p className="translation-result">{panel.failed ? t.reader.offline : t.reader.notFound}</p>}
+            <label className="translation-input">{t.reader.yourTranslation}<input value={panel.draft} placeholder={t.reader.yourVariant} onChange={(event) => setPanel({ ...panel, draft: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter') saveTranslation() }} /></label>
+            <div className="status-row" role="group" aria-label={t.reader.howWell}>
+              <span>{t.reader.status}</span>
               {LEVELS.map((level) => <button key={level} className={`status-pill level-${level}${activeLevel === level ? ' active' : ''}`} aria-pressed={activeLevel === level} disabled={busy || (!saved && !panel.draft.trim())} onClick={() => changeLevel(level)}>{level}</button>)}
-              <button className={`status-pill status-known${activeLevel > MAX_LEVEL ? ' active' : ''}`} aria-pressed={activeLevel > MAX_LEVEL} aria-label="Знаю это слово" disabled={busy} onClick={() => changeLevel(MAX_LEVEL + 1)}><Check size={14} /></button>
+              <button className={`status-pill status-known${activeLevel > MAX_LEVEL ? ' active' : ''}`} aria-pressed={activeLevel > MAX_LEVEL} aria-label={t.reader.knowIt} disabled={busy} onClick={() => changeLevel(MAX_LEVEL + 1)}><Check size={14} /></button>
             </div>
             <div className="panel-divider" />
             <button className={translationUnchanged ? 'save-word saved' : 'save-word'} disabled={busy || translationUnchanged || !panel.draft.trim()} onClick={saveTranslation}>
-              {translationUnchanged ? <Check size={17} /> : <Bookmark size={17} />}{translationUnchanged ? 'Сохранено в словаре' : saved ? 'Обновить перевод' : 'Сохранить слово'}
+              {translationUnchanged ? <Check size={17} /> : <Bookmark size={17} />}{translationUnchanged ? t.reader.saved : saved ? t.reader.update : t.reader.save}
             </button>
           </section>
         </div>

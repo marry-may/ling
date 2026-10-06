@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { ArrowRight, BookOpen, Check, Cloud, FileScan, Languages, Layers, Volume2, WifiOff, type LucideIcon } from 'lucide-react'
 import { HeroDecor, ShelfIllustration, TapWordIllustration, TrainingIllustration, UploadIllustration } from './LandingIllustrations'
 import { BookShelf } from './BookShelf'
-import { detectLandingLanguage, LANDING_TEXT, type LandingLanguage } from './landingText'
+import { setUiLanguage, useUiLanguage } from './i18n'
+import { LANDING_TEXT, type LandingLanguage } from './landingText'
 import type { Theme } from './theme'
 import { ThemeToggle } from './ThemeToggle'
 import './Landing.css'
@@ -91,23 +92,11 @@ function Points({ points }: { points: string[] }) {
 
 /** The public page for visitors who are not signed in: what Ling is, with screenshots, in three languages. */
 export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingProps) {
-  const [language, setLanguage] = useState<LandingLanguage>(detectLandingLanguage)
+  const language = useUiLanguage()
   const text = LANDING_TEXT[language]
   const root = useReveal()
 
-  useEffect(() => {
-    document.documentElement.lang = language
-    return () => { document.documentElement.lang = 'ru' }
-  }, [language])
-
-  function chooseLanguage(next: LandingLanguage) {
-    setLanguage(next)
-    try {
-      localStorage.setItem('ling-landing-language', next)
-    } catch {
-      // The choice still applies on this visit.
-    }
-  }
+  const chooseLanguage = (next: LandingLanguage) => setUiLanguage(next)
 
   return (
     <div className="landing" ref={root}>
@@ -129,7 +118,7 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
 
       <main>
         <section className="landing-hero landing-container">
-          <HeroDecor />
+          <HeroDecor greeting={text.greeting} />
           <span className="eyebrow" {...reveal(0)}>{text.eyebrow}</span>
           <h1 {...reveal(1)}><Rich text={text.title} /><span className="heading-period">.</span></h1>
           <p className="landing-lead" {...reveal(2)}>{text.lead}</p>
@@ -142,7 +131,6 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
             <BrowserFrame theme={theme} language={language} name="reader-translate" alt={text.imageAlt.reader} />
             <PhoneFrame theme={theme} language={language} name="phone-reader" alt={text.imageAlt.readerPhone} />
           </div>
-          {text.interfaceNote && <p className="landing-note">{text.interfaceNote}</p>}
         </section>
 
         <section className="landing-section landing-container">

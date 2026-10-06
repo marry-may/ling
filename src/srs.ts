@@ -1,4 +1,5 @@
 import type { SavedWord } from './domain'
+import { messages } from './i18n'
 import { DEFAULT_LANGUAGE } from './languages'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -34,7 +35,7 @@ export function normalizeWord(word: Partial<SavedWord> & Pick<SavedWord, 'id' | 
     id: word.id,
     word: word.word,
     translation: word.translation ?? '',
-    bookTitle: word.bookTitle ?? 'Без книги',
+    bookTitle: word.bookTitle ?? messages().common.noBook,
     language: word.language ?? DEFAULT_LANGUAGE,
     context: word.context ?? '',
     level: Math.min(MAX_LEVEL, Math.max(1, word.level ?? 1)),

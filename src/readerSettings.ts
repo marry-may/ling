@@ -4,10 +4,11 @@ export type ReaderFont = 'serif' | 'sans'
 export type ReaderSettings = { fontSize: number; lineHeight: number; font: ReaderFont }
 
 export const FONT_SIZE_RANGE = { min: 14, max: 28 }
-export const LINE_HEIGHTS: { value: number; label: string }[] = [
-  { value: 1.6, label: 'Плотно' },
-  { value: 1.95, label: 'Обычно' },
-  { value: 2.3, label: 'Свободно' },
+/** `name` picks the label in the interface texts (src/i18n, reader.lineHeights). */
+export const LINE_HEIGHTS: { value: number; name: 'tight' | 'normal' | 'loose' }[] = [
+  { value: 1.6, name: 'tight' },
+  { value: 1.95, name: 'normal' },
+  { value: 2.3, name: 'loose' },
 ]
 
 const STORAGE_KEY = 'ling-reader-settings'

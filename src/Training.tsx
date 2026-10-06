@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ArrowRight, Bookmark, Check, Delete, Languages, Layers, ListChecks, PenLine, Puzzle, RotateCcw, Shuffle, Volume2, X, type LucideIcon } from 'lucide-react'
 import type { SavedWord } from './domain'
+import { useMessages } from './i18n'
 import { getLanguage, speak } from './languages'
 import { isDue, review } from './srs'
 import { tokenize, wordKey } from './text'
@@ -14,20 +15,17 @@ type Result = { word: SavedWord; correct: boolean }
 const SESSION_SIZE = 10
 const MAX_MANUAL = 30
 
-const MODES: { id: Mode; title: string; hint: string; icon: LucideIcon }[] = [
-  { id: 'mix', title: 'Микс', hint: 'Все упражнения вперемешку', icon: Shuffle },
-  { id: 'flashcard', title: 'Карточки', hint: 'Вспомни перевод', icon: Layers },
-  { id: 'choose-translation', title: 'Выбери перевод', hint: 'Слово → 4 варианта', icon: ListChecks },
-  { id: 'choose-word', title: 'Перевод → слово', hint: 'Найди слово по переводу', icon: Languages },
-  { id: 'letters', title: 'Собери слово', hint: 'Из перемешанных букв', icon: Puzzle },
-  { id: 'write', title: 'Напиши слово', hint: 'Вспомни написание', icon: PenLine },
+/** Titles and hints come from training.types in the interface texts (src/i18n). */
+const MODES: { id: Mode; icon: LucideIcon }[] = [
+  { id: 'mix', icon: Shuffle },
+  { id: 'flashcard', icon: Layers },
+  { id: 'choose-translation', icon: ListChecks },
+  { id: 'choose-word', icon: Languages },
+  { id: 'letters', icon: Puzzle },
+  { id: 'write', icon: PenLine },
 ]
 
-const SOURCES: { id: WordSource; title: string }[] = [
-  { id: 'recommended', title: 'Рекомендуемые' },
-  { id: 'random', title: 'Случайные' },
-  { id: 'manual', title: 'Выбрать самой' },
-]
+const SOURCES: WordSource[] = ['recommended', 'random', 'manual']
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items]
@@ -76,15 +74,6 @@ function buildExercises(words: SavedWord[], mode: Mode, pool: SavedWord[]): Exer
   })
 }
 
-function wordsLabel(count: number): string {
-  const lastTwo = count % 100
-  const last = count % 10
-  if (lastTwo >= 11 && lastTwo <= 14) return 'слов'
-  if (last === 1) return 'слово'
-  if (last >= 2 && last <= 4) return 'слова'
-  return 'слов'
-}
-
 type TrainingProps = {
   words: SavedWord[]
   language: string
@@ -94,6 +83,7 @@ type TrainingProps = {
 }
 
 export function Training({ words, language, onSaveWord, onActivity, onOpenLibrary }: TrainingProps) {
+  const t = useMessages()
   const [stage, setStage] = useState<'setup' | 'session' | 'results'>('setup')
   const [mode, setMode] = useState<Mode>('mix')
   const [source, setSource] = useState<WordSource>('recommended')
@@ -134,7 +124,7 @@ export function Training({ words, language, onSaveWord, onActivity, onOpenLibrar
     return (
       <>
         <TrainingHeader language={language} />
-        <div className="empty-state"><div className="empty-icon"><Bookmark size={23} /></div><h2>Пока нечего тренировать</h2><p>Открой книгу и сохрани несколько незнакомых слов — они появятся здесь.</p><button className="primary-action" onClick={onOpenLibrary}>Открыть библиотеку</button></div>
+        <div className="empty-state"><div className="empty-icon"><Bookmark size={23} /></div><h2>{t.training.emptyTitle}</h2><p>{t.training.emptyText}</p><button className="primary-action" onClick={onOpenLibrary}>{t.common.openLibrary}</button></div>
       </>
     )
   }
@@ -145,8 +135,8 @@ export function Training({ words, language, onSaveWord, onActivity, onOpenLibrar
     return (
       <section className="training-session">
         <div className="session-top">
-          <button className="icon-button" onClick={() => setStage('setup')} aria-label="Закончить тренировку"><X size={18} /></button>
-          <div className="session-progress" aria-label={`Упражнение ${results.length + 1} из ${exercises.length}`}><span style={{ width: `${(results.length / exercises.length) * 100}%` }} /></div>
+          <button className="icon-button" onClick={() => setStage('setup')} aria-label={t.training.finish}><X size={18} /></button>
+          <div className="session-progress" aria-label={t.training.exerciseOf(results.length + 1, exercises.length)}><span style={{ width: `${(results.length / exercises.length) * 100}%` }} /></div>
           <span className="session-count">{results.length + 1} / {exercises.length}</span>
         </div>
         <ExerciseView key={results.length} exercise={exercise} language={language} onDone={(correct) => void finishExercise(exercise, correct)} />
@@ -160,9 +150,9 @@ export function Training({ words, language, onSaveWord, onActivity, onOpenLibrar
     const ratio = correctCount / Math.max(1, results.length)
     return (
       <section className="training-results">
-        <span className="eyebrow">ИТОГ ТРЕНИРОВКИ</span>
-        <div className="score"><strong>{correctCount}</strong><span>из {results.length}</span></div>
-        <p className="score-note">{ratio === 1 ? 'Безупречно! Все ответы верные.' : ratio >= 0.7 ? 'Отличный результат. Ошибки вернутся на повторение.' : 'Хорошая разминка. Слова с ошибками скоро вернутся.'}</p>
+        <span className="eyebrow">{t.training.result}</span>
+        <div className="score"><strong>{correctCount}</strong><span>{t.training.outOf(results.length)}</span></div>
+        <p className="score-note">{ratio === 1 ? t.training.perfect : ratio >= 0.7 ? t.training.great : t.training.warmup}</p>
         <div className="result-list">{results.map((result, index) => (
           <div className={`result-row${result.correct ? '' : ' wrong'}`} key={`${result.word.id}-${index}`}>
             <span className="result-mark">{result.correct ? <Check size={14} /> : <X size={14} />}</span>
@@ -171,9 +161,9 @@ export function Training({ words, language, onSaveWord, onActivity, onOpenLibrar
           </div>
         ))}</div>
         <div className="result-actions">
-          {mistakes.length > 0 && <button className="secondary-action" onClick={() => start(mistakes)}><RotateCcw size={16} /> Повторить ошибки</button>}
-          <button className="primary-action" onClick={() => start(sessionWords())}>Ещё {startCount} {wordsLabel(startCount)} <ArrowRight size={16} /></button>
-          <button className="quiet-button" onClick={() => setStage('setup')}>Другая тренировка</button>
+          {mistakes.length > 0 && <button className="secondary-action" onClick={() => start(mistakes)}><RotateCcw size={16} /> {t.training.repeatMistakes}</button>}
+          <button className="primary-action" onClick={() => start(sessionWords())}>{t.training.more(startCount)} <ArrowRight size={16} /></button>
+          <button className="quiet-button" onClick={() => setStage('setup')}>{t.training.other}</button>
         </div>
       </section>
     )
@@ -183,23 +173,23 @@ export function Training({ words, language, onSaveWord, onActivity, onOpenLibrar
     <>
       <TrainingHeader language={language} />
       <section className="training-setup">
-        {dueCount > 0 && <div className="due-note"><RotateCcw size={15} /> {dueCount} {wordsLabel(dueCount)} ждут повторения — они первыми попадут в рекомендуемые.</div>}
+        {dueCount > 0 && <div className="due-note"><RotateCcw size={15} /> {t.training.dueNote(dueCount)}</div>}
         <div className="setup-block">
-          <span className="eyebrow">УПРАЖНЕНИЕ</span>
-          <div className="mode-grid">{MODES.map(({ id, title, hint, icon: Icon }) => (
+          <span className="eyebrow">{t.training.exercise}</span>
+          <div className="mode-grid">{MODES.map(({ id, icon: Icon }) => (
             <button key={id} className={`mode-card${mode === id ? ' selected' : ''}`} onClick={() => setMode(id)} aria-pressed={mode === id}>
               <Icon size={19} />
-              <strong>{title}</strong>
-              <small>{hint}</small>
+              <strong>{t.training.types[id].title}</strong>
+              <small>{t.training.types[id].hint}</small>
             </button>
           ))}</div>
         </div>
         <div className="setup-block">
-          <span className="eyebrow">СЛОВА</span>
-          <div className="segmented" role="radiogroup" aria-label="Какие слова тренировать">{SOURCES.map(({ id, title }) => (
-            <button key={id} role="radio" aria-checked={source === id} className={source === id ? 'selected' : ''} onClick={() => setSource(id)}>{title}</button>
+          <span className="eyebrow">{t.training.wordsKicker}</span>
+          <div className="segmented" role="radiogroup" aria-label={t.training.whichWords}>{SOURCES.map((id) => (
+            <button key={id} role="radio" aria-checked={source === id} className={source === id ? 'selected' : ''} onClick={() => setSource(id)}>{t.training.sources[id]}</button>
           ))}</div>
-          <p className="setup-hint">{source === 'recommended' ? 'Слова, которые ты дольше всего не повторяла. Так память закрепляется лучше всего.' : source === 'random' ? `${SESSION_SIZE} случайных слов из словаря.` : `Отметь слова для тренировки (до ${MAX_MANUAL}).`}</p>
+          <p className="setup-hint">{source === 'recommended' ? t.training.recommendedHint : source === 'random' ? t.training.randomHint(SESSION_SIZE) : t.training.manualHint(MAX_MANUAL)}</p>
           {source === 'manual' && (
             <div className="pick-list">{ordered.map((word) => {
               const checked = manualIds.has(word.id)
@@ -213,14 +203,14 @@ export function Training({ words, language, onSaveWord, onActivity, onOpenLibrar
                   }} />
                   <strong>{word.word}</strong>
                   <span>{word.translation}</span>
-                  {isDue(word) && <i className="due-dot" aria-label="Пора повторить" />}
+                  {isDue(word) && <i className="due-dot" aria-label={t.training.dueDot} />}
                 </label>
               )
             })}</div>
           )}
         </div>
         <button className="primary-action start-training" disabled={!startCount} onClick={() => start(sessionWords())}>
-          Начать · {startCount} {wordsLabel(startCount)} <ArrowRight size={16} />
+          {t.training.startWith(startCount)} <ArrowRight size={16} />
         </button>
       </section>
     </>
@@ -228,7 +218,8 @@ export function Training({ words, language, onSaveWord, onActivity, onOpenLibrar
 }
 
 function TrainingHeader({ language }: { language: string }) {
-  return <header className="page-header"><div><span className="eyebrow">ТРЕНИРОВКА · {getLanguage(language).name.toUpperCase()}</span><h1>Тренировка<span className="heading-period">.</span></h1><p>Десять слов за подход. Выбери упражнение и слова.</p></div></header>
+  const t = useMessages()
+  return <header className="page-header"><div><span className="eyebrow">{t.training.kicker(getLanguage(language).name.toUpperCase())}</span><h1>{t.training.title}<span className="heading-period">.</span></h1><p>{t.training.lead}</p></div></header>
 }
 
 /** The example sentence with the studied word highlighted, or hidden while it is the answer. */
@@ -241,6 +232,7 @@ function Context({ word, hidden }: { word: SavedWord; hidden: boolean }) {
 type ExerciseProps = { exercise: Exercise; language: string; onDone: (correct: boolean) => void }
 
 function ExerciseView({ exercise, language, onDone }: ExerciseProps) {
+  const t = useMessages()
   const { word, type } = exercise
   const [answer, setAnswer] = useState<{ correct: boolean; note?: string } | null>(null)
   const doneRef = useRef(false)
@@ -270,7 +262,7 @@ function ExerciseView({ exercise, language, onDone }: ExerciseProps) {
     return () => window.removeEventListener('keydown', onKeyDown)
   })
 
-  const title = { 'flashcard': 'Вспомни перевод', 'choose-translation': 'Выбери перевод', 'choose-word': 'Какое это слово?', 'letters': 'Собери слово', 'write': 'Напиши слово' }[type]
+  const title = t.training.prompts[type]
   let body: ReactNode
   if (type === 'flashcard') body = <Flashcard word={word} onGrade={complete} />
   else if (type === 'choose-translation' || type === 'choose-word') body = <Choice options={exercise.options} correct={type === 'choose-word' ? word.word : word.translation} answered={Boolean(answer)} onPick={settle} />
@@ -282,7 +274,7 @@ function ExerciseView({ exercise, language, onDone }: ExerciseProps) {
       <span className="exercise-kind">{title}</span>
       <div className="exercise-prompt">
         <strong>{reverse ? word.translation : word.word}</strong>
-        {!reverse && <button className="icon-button" onClick={() => speak(word.word, language)} aria-label="Произнести слово"><Volume2 size={17} /></button>}
+        {!reverse && <button className="icon-button" onClick={() => speak(word.word, language)} aria-label={t.common.speak}><Volume2 size={17} /></button>}
       </div>
       <Context word={word} hidden={reverse && !answer} />
       {body}
@@ -290,10 +282,10 @@ function ExerciseView({ exercise, language, onDone }: ExerciseProps) {
         <div className={`exercise-feedback${answer.correct ? ' correct' : ' wrong'}`} role="status">
           <span>{answer.correct ? <Check size={17} /> : <X size={17} />}</span>
           <div>
-            <strong>{answer.correct ? 'Верно!' : 'Правильный ответ:'}</strong>
+            <strong>{answer.correct ? t.training.correct : t.training.rightAnswer}</strong>
             <small>{answer.note ?? (answer.correct ? `${word.word} — ${word.translation}` : reverse ? word.word : word.translation)}</small>
           </div>
-          <button className="primary-action" onClick={() => complete(answer.correct)} autoFocus>Дальше <ArrowRight size={16} /></button>
+          <button className="primary-action" onClick={() => complete(answer.correct)} autoFocus>{t.training.next} <ArrowRight size={16} /></button>
         </div>
       )}
     </div>
@@ -301,6 +293,7 @@ function ExerciseView({ exercise, language, onDone }: ExerciseProps) {
 }
 
 function Flashcard({ word, onGrade }: { word: SavedWord; onGrade: (correct: boolean) => void }) {
+  const t = useMessages()
   const [revealed, setRevealed] = useState(false)
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -314,13 +307,13 @@ function Flashcard({ word, onGrade }: { word: SavedWord; onGrade: (correct: bool
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   })
-  if (!revealed) return <button className="reveal-button" onClick={() => setRevealed(true)}>Показать перевод</button>
+  if (!revealed) return <button className="reveal-button" onClick={() => setRevealed(true)}>{t.training.reveal}</button>
   return (
     <>
       <div className="flash-answer">{word.translation}</div>
       <div className="practice-actions">
-        <button className="secondary-action" onClick={() => onGrade(false)}><RotateCcw size={16} /> Не помню</button>
-        <button className="primary-action" onClick={() => onGrade(true)}><Check size={17} /> Помню</button>
+        <button className="secondary-action" onClick={() => onGrade(false)}><RotateCcw size={16} /> {t.training.forgot}</button>
+        <button className="primary-action" onClick={() => onGrade(true)}><Check size={17} /> {t.training.remember}</button>
       </div>
     </>
   )
@@ -350,6 +343,7 @@ function Choice({ options, correct, answered, onPick }: { options: string[]; cor
 }
 
 function Letters({ word, answered, onFinish }: { word: string; answered: boolean; onFinish: (correct: boolean, note?: string) => void }) {
+  const t = useMessages()
   const tiles = useMemo(() => {
     const letters = word.toLowerCase().split('').map((letter, index) => ({ letter, index }))
     let mixed = shuffle(letters)
@@ -391,7 +385,7 @@ function Letters({ word, answered, onFinish }: { word: string; answered: boolean
 
   return (
     <>
-      <div className="letter-slots" aria-label="Собранное слово">{tiles.map((_, index) => {
+      <div className="letter-slots" aria-label={t.training.assembled}>{tiles.map((_, index) => {
         const tile = picked[index] === undefined ? null : tiles[picked[index]]
         return <span key={index} className={tile ? 'slot filled' : 'slot'}>{tile?.letter ?? ''}</span>
       })}</div>
@@ -400,8 +394,8 @@ function Letters({ word, answered, onFinish }: { word: string; answered: boolean
       ))}</div>
       {!answered && (
         <div className="exercise-tools">
-          <button className="quiet-button" onClick={removeLast} disabled={!picked.length}><Delete size={16} /> Стереть</button>
-          <button className="quiet-button" onClick={() => onFinish(false)}>Не знаю</button>
+          <button className="quiet-button" onClick={removeLast} disabled={!picked.length}><Delete size={16} /> {t.training.erase}</button>
+          <button className="quiet-button" onClick={() => onFinish(false)}>{t.training.dontKnow}</button>
         </div>
       )}
     </>
@@ -409,20 +403,21 @@ function Letters({ word, answered, onFinish }: { word: string; answered: boolean
 }
 
 function Writing({ word, answered, onFinish }: { word: string; answered: boolean; onFinish: (correct: boolean, note?: string) => void }) {
+  const t = useMessages()
   const [value, setValue] = useState('')
   function check() {
     if (answered || !value.trim()) return
     if (comparable(value, false) === comparable(word, false)) onFinish(true)
-    else if (comparable(value, true) === comparable(word, true)) onFinish(true, `Почти идеально — обрати внимание на знаки: ${word}`)
+    else if (comparable(value, true) === comparable(word, true)) onFinish(true, t.training.almost(word))
     else onFinish(false)
   }
   return (
     <form className="write-form" onSubmit={(event) => { event.preventDefault(); check() }}>
-      <input value={value} onChange={(event) => setValue(event.target.value)} disabled={answered} autoFocus autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Слово на изучаемом языке" aria-label="Твой ответ" />
+      <input value={value} onChange={(event) => setValue(event.target.value)} disabled={answered} autoFocus autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder={t.training.placeholder} aria-label={t.training.yourAnswer} />
       {!answered && (
         <div className="exercise-tools">
-          <button className="primary-action" type="submit" disabled={!value.trim()}>Проверить</button>
-          <button className="quiet-button" type="button" onClick={() => onFinish(false)}>Не знаю</button>
+          <button className="primary-action" type="submit" disabled={!value.trim()}>{t.common.check}</button>
+          <button className="quiet-button" type="button" onClick={() => onFinish(false)}>{t.training.dontKnow}</button>
         </div>
       )}
     </form>

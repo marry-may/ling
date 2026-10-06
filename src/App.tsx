@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { ArrowLeft, BookMarked, BookOpen, Bookmark, CalendarDays, Check, ChevronDown, Cloud, ChartColumn, Dumbbell, FilePlus2, Flame, Library, LoaderCircle, LogOut, Plus, Sparkles, Trash2, X } from 'lucide-react'
+import { ArrowLeft, BookMarked, BookOpen, Bookmark, CalendarDays, Check, ChevronDown, Cloud, ChartColumn, Dumbbell, FilePlus2, Flame, Globe, GraduationCap, Library, LoaderCircle, LogOut, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { AdminPage } from './AdminPage'
+import { GrammarPage } from './GrammarPage'
+import type { Lesson } from './grammar'
 import { isAdmin, trackPageView } from './analytics'
 import { AccountButton, AuthForm, WelcomeScreen, type AuthFormProps, type AuthMode } from './Account'
+import { authErrorText, LANDING_TEXT, type LandingLanguage } from './landingText'
+import { isUiLanguage, messages, partTitle, setUiLanguage, UI_LANGUAGES, useMessages, useUiLanguage, type UiLanguage } from './i18n'
 import { readBookFile } from './bookImport'
 import { catalogBookOf, coverUrl, findCatalogBook, loadCatalogChapters, shelfCopies, type CatalogBook } from './catalog'
 import { CatalogPage } from './CatalogPage'
@@ -114,34 +118,16 @@ function currentPart(parts: BookFile[]): BookFile {
   return parts.find((part) => part.progress > 0 && part.progress < 100) ?? parts.find((part) => part.progress < 100) ?? parts[parts.length - 1]
 }
 
-function partsLabel(count: number): string {
-  const lastTwo = count % 100
-  const last = count % 10
-  if (lastTwo >= 11 && lastTwo <= 14) return 'частей'
-  if (last === 1) return 'часть'
-  if (last >= 2 && last <= 4) return 'части'
-  return 'частей'
-}
-
 function coverIndex(id: string): number {
   let hash = 0
   for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) | 0
   return Math.abs(hash) % 4
 }
 
-function daysLabel(count: number): string {
-  const lastTwo = count % 100
-  const last = count % 10
-  if (lastTwo >= 11 && lastTwo <= 14) return 'дней'
-  if (last === 1) return 'день'
-  if (last >= 2 && last <= 4) return 'дня'
-  return 'дней'
-}
-
 function normalizeBook(book: Partial<BookFile> & Pick<BookFile, 'id' | 'title'>): BookFile {
   return {
     ...book,
-    author: book.author ?? 'Моя библиотека',
+    author: book.author ?? messages().common.myLibraryAuthor,
     content: book.content ?? '',
     format: book.format ?? 'TXT',
     language: book.language ?? DEFAULT_LANGUAGE,
@@ -212,6 +198,8 @@ async function migrateGuestLibrary(userId: string, force: boolean): Promise<void
 
 function App() {
   const [theme, toggleTheme] = useTheme()
+  const t = useMessages()
+  const uiLanguage = useUiLanguage()
   const [books, setBooks] = useState<BookFile[]>([])
   const [words, setWords] = useState<SavedWord[]>([])
   const [knownWords, setKnownWords] = useState<KnownWords>({})
@@ -220,7 +208,7 @@ function App() {
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false)
   const [openCollection, setOpenCollection] = useState<string | null>(null)
   const [activeBook, setActiveBook] = useState<BookFile | null>(null)
-  const [view, setView] = useState<'library' | 'catalog' | 'words' | 'training' | 'admin'>('library')
+  const [view, setView] = useState<'library' | 'catalog' | 'words' | 'training' | 'grammar' | 'admin'>('library')
   const [catalogSlug, setCatalogSlug] = useState<string | null>(null)
   const [catalogBusy, setCatalogBusy] = useState<string | null>(null)
   // A book page on the site links here as ?book=<slug>; it opens once the visitor is in the app.
@@ -307,10 +295,10 @@ function App() {
         const stored = await loadScopeCollections(user?.id ?? null)
         if (!isActive) return
         applyScope(stored)
-        if (stored.offline) setNotice('Нет связи с аккаунтом. Открыта сохранённая копия.')
-        else if (migrationFailed) setNotice('Вход выполнен, но часть локальной библиотеки не удалось перенести.')
+        if (stored.offline) setNotice(messages().notices.offline)
+        else if (migrationFailed) setNotice(messages().notices.migrationPartial)
       } catch {
-        if (isActive) setNotice('Не удалось загрузить сохранённые данные.')
+        if (isActive) setNotice(messages().notices.loadFailed)
       } finally {
         if (isActive) setIsLoadingData(false)
       }
@@ -339,7 +327,7 @@ function App() {
 
     void initialize().catch(() => {
       if (isActive) {
-        setNotice('Не удалось подключиться к хранилищу. Проверь настройки аккаунта.')
+        setNotice(messages().notices.storageFailed)
         setIsLoadingData(false)
       }
     })
@@ -389,6 +377,7 @@ function App() {
     setAuthBusy(true)
     setAuthMessage('')
     authFlowRef.current = true
+    const text = LANDING_TEXT[uiLanguage].auth
     try {
       const result = authMode === 'signin'
         ? await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword })
@@ -396,11 +385,11 @@ function App() {
           email: authEmail.trim(),
           password: authPassword,
           // The new account starts with the chosen translation language in its profile.
-          options: { emailRedirectTo: siteUrl, data: { ling_profile: { ...EMPTY_PROFILE, translationLanguage } } },
+          options: { emailRedirectTo: siteUrl, data: { ling_profile: { ...EMPTY_PROFILE, translationLanguage, uiLanguage } } },
         })
       if (result.error) throw result.error
       if (!result.data.session || !result.data.user) {
-        setAuthMessage(`Проверь почту ${authEmail.trim()}: мы отправили ссылку для подтверждения. Она откроет ${new URL(siteUrl).host}, и ты сразу войдёшь в аккаунт.`)
+        setAuthMessage(text.checkEmail(authEmail.trim(), new URL(siteUrl).host))
         return
       }
 
@@ -408,15 +397,15 @@ function App() {
       try {
         await migrateGuestLibrary(result.data.user.id, true)
       } catch {
-        migrationMessage = ' Вход выполнен, но часть локальной библиотеки не удалось перенести.'
+        migrationMessage = ` ${t.notices.migrationPartial}`
       }
       applyScope(await loadScopeCollections(result.data.user.id))
       setAccountUser(result.data.user)
       setAccountOpen(false)
       setAuthPassword('')
-      setNotice(`Библиотека подключена к аккаунту.${migrationMessage}`)
+      setNotice(`${t.notices.connected}${migrationMessage}`)
     } catch (error) {
-      setAuthMessage(error instanceof Error ? error.message : 'Не удалось выполнить вход.')
+      setAuthMessage(authErrorText(error, text))
     } finally {
       authFlowRef.current = false
       setAuthBusy(false)
@@ -435,7 +424,7 @@ function App() {
       setAccountUser(null)
       setAccountOpen(false)
     } catch {
-      setAuthMessage('Не удалось выйти из аккаунта.')
+      setAuthMessage(t.notices.signOutFailed)
     } finally {
       authFlowRef.current = false
       setAuthBusy(false)
@@ -466,6 +455,11 @@ function App() {
     if (nextProfile) persistProfile(nextProfile)
   }
 
+  function changeUiLanguage(code: UiLanguage) {
+    setUiLanguage(code)
+    persistProfile({ ...profileRef.current, uiLanguage: code })
+  }
+
   function changeTranslationLanguage(code: string) {
     persistProfile({ ...profileRef.current, translationLanguage: code })
   }
@@ -492,13 +486,13 @@ function App() {
       try {
         book = await uploadAccountBook(accountUser.id, book, new File([sample.content], `${sample.title}.txt`, { type: 'text/plain' }))
       } catch {
-        setNotice('Книга-пример добавлена на устройство, но не загрузилась в аккаунт.')
+        setNotice(t.notices.sampleNotUploaded)
       }
     }
     try {
       await persistBooks([book, ...books])
     } catch {
-      setNotice('Не удалось добавить книгу-пример.')
+      setNotice(t.notices.sampleFailed)
     }
   }
 
@@ -514,7 +508,7 @@ function App() {
    */
   async function createBooks(source: NewBook, file: File): Promise<{ books: BookFile[]; warning: string }> {
     const details = { author: source.author, format: source.format, language: source.language, progress: 0 }
-    const uploadFailed = ' Книга добавлена на устройство, но не загрузилась в аккаунт.'
+    const uploadFailed = ` ${t.notices.uploadFailed}`
     const parts = splitIntoParts(source.sections ?? [{ content: source.content }])
     if (parts.length === 1) {
       const book: BookFile = { id: crypto.randomUUID(), title: source.title, content: parts[0].content, ...details }
@@ -530,7 +524,7 @@ function App() {
     const collectionId = crypto.randomUUID()
     const books: BookFile[] = parts.map((part, index) => ({
       id: crypto.randomUUID(),
-      title: `Часть ${index + 1}${part.title ? ` · ${part.title}` : ''}`,
+      title: `${t.common.part(index + 1)}${part.title ? ` · ${part.title}` : ''}`,
       content: part.content,
       collectionId,
       collectionTitle: source.title,
@@ -556,7 +550,7 @@ function App() {
         const { language: detectedLanguage, sections, ...parsed } = await readBookFile(file, { fallbackLanguage: studyLanguage, onProgress: setNotice })
         const created = await createBooks({
           title: parsed.title ?? file.name.replace(/\.[^.]+$/, ''),
-          author: parsed.author ?? 'Моя библиотека',
+          author: parsed.author ?? t.common.myLibraryAuthor,
           format: file.name.split('.').pop()?.toUpperCase() ?? 'FILE',
           language: LANGUAGES.some((language) => language.code === detectedLanguage) ? detectedLanguage! : studyLanguage,
           content: parsed.content,
@@ -568,16 +562,16 @@ function App() {
       const usable = imported.filter((book) => book.content.trim())
       await persistBooks([...usable, ...books])
       if (!usable.length) {
-        setNotice('В файле не найден текст для чтения.')
+        setNotice(t.notices.noText)
         return
       }
       const otherLanguage = usable.find((book) => book.language !== studyLanguage)?.language
       if (otherLanguage && !usable.some((book) => book.language === studyLanguage)) changeStudyLanguage(otherLanguage)
       const bookCount = new Set(usable.map((book) => book.collectionId ?? book.id)).size
       const splitInto = usable.find((book) => book.partCount)?.partCount
-      setNotice(`Добавлено книг: ${bookCount}${otherLanguage ? ` · язык: ${getLanguage(otherLanguage).name}` : ''}${splitInto ? ` · большая книга разделена на ${splitInto} частей в одной папке` : ''}.${uploadWarning}`)
+      setNotice(`${t.notices.added(bookCount, otherLanguage ? getLanguage(otherLanguage).name : '', splitInto ?? 0)}${uploadWarning}`)
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Не удалось открыть файл.')
+      setNotice(error instanceof Error ? error.message : t.notices.openFailed)
     } finally {
       setIsImporting(false)
       if (fileInput.current) fileInput.current.value = ''
@@ -587,7 +581,7 @@ function App() {
   /** Deletes a book, or all parts of a split book at once. */
   async function deleteBooks(targets: BookFile[]) {
     const title = bookTitleOf(targets[0])
-    if (!window.confirm(`Удалить книгу «${title}»${targets.length > 1 ? ` (${targets.length} частей)` : ''}? Сохранённые слова останутся в словаре.`)) return
+    if (!window.confirm(t.notices.confirmDelete(title, targets.length))) return
     try {
       const synced = targets.filter((book) => book.cloudContentPath)
       if (accountUser && synced.length) await deleteAccountBooks(accountUser.id, synced)
@@ -595,7 +589,7 @@ function App() {
       await persistBooks(books.filter((item) => !ids.has(item.id)))
       setOpenCollection(null)
     } catch {
-      setNotice('Не удалось удалить книгу из аккаунта.')
+      setNotice(t.notices.deleteFailed)
     }
   }
 
@@ -610,14 +604,14 @@ function App() {
     try {
       await persistWords(nextWords)
     } catch {
-      setNotice('Не удалось сохранить слово. Проверь свободное место на устройстве.')
+      setNotice(t.notices.wordFailed)
       return
     }
     if (accountUser) {
       try {
         await saveAccountWords(accountUser.id, [nextWords[index >= 0 ? index : 0]])
       } catch {
-        setNotice('Слово сохранено на устройстве, но не синхронизировано с аккаунтом.')
+        setNotice(t.notices.wordNotSynced)
       }
     }
 
@@ -637,14 +631,14 @@ function App() {
     try {
       await persistKnown({ ...knownRef.current, [language]: [...list, ...fresh] })
     } catch {
-      setNotice('Не удалось сохранить знакомые слова.')
+      setNotice(t.notices.knownFailed)
       return
     }
     if (accountUser) {
       try {
         await saveAccountKnownWords(accountUser.id, language, fresh)
       } catch {
-        setNotice('Знакомые слова сохранены на устройстве, но не синхронизированы.')
+        setNotice(t.notices.knownNotSynced)
       }
     }
   }
@@ -654,7 +648,7 @@ function App() {
       if (accountUser) await deleteAccountWord(accountUser.id, wordId)
       await persistWords(wordsRef.current.filter((word) => word.id !== wordId))
     } catch {
-      setNotice('Не удалось удалить слово из аккаунта.')
+      setNotice(t.notices.wordDeleteFailed)
     }
   }
 
@@ -665,8 +659,8 @@ function App() {
     const nextBooks = books.map((book) => book.id === bookId ? { ...book, page, progress } : book)
     setBooks(nextBooks)
     setActiveBook((book) => book ? { ...book, page, progress } : null)
-    void saveCollection('books', `${dataScope}:books`, nextBooks).catch(() => setNotice('Не удалось сохранить прогресс чтения.'))
-    if (accountUser) void updateAccountProgress(accountUser.id, bookId, progress).catch(() => setNotice('Прогресс сохранён на устройстве, но не синхронизирован.'))
+    void saveCollection('books', `${dataScope}:books`, nextBooks).catch(() => setNotice(t.notices.progressFailed))
+    if (accountUser) void updateAccountProgress(accountUser.id, bookId, progress).catch(() => setNotice(t.notices.progressNotSynced))
   }
 
   async function openBook(book: BookFile) {
@@ -681,7 +675,7 @@ function App() {
       setActiveBook(loadedBook)
       await persistBooks(books.map((item) => item.id === book.id ? loadedBook : item))
     } catch {
-      setNotice('Не удалось загрузить книгу из аккаунта.')
+      setNotice(t.notices.bookLoadFailed)
     }
   }
 
@@ -734,10 +728,10 @@ function App() {
         void openBook(created.books[0])
         if (created.warning) setNotice(created.warning.trim())
       } else {
-        setNotice(`«${entry.title}» теперь в «Моих книгах».${created.warning}`)
+        setNotice(`${t.notices.catalogAdded(entry.title)}${created.warning}`)
       }
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Не удалось добавить книгу.')
+      setNotice(error instanceof Error ? error.message : t.notices.catalogFailed)
     } finally {
       setCatalogBusy(null)
     }
@@ -749,17 +743,48 @@ function App() {
     setActiveBook(null)
   }
 
+  function showGrammar() {
+    setPendingBook(null)
+    setView('grammar')
+    setActiveBook(null)
+  }
+
+  /** Keeps the best result of a grammar lesson; finishing a lesson counts as a study day. */
+  function saveGrammarResult(lesson: Lesson, percent: number) {
+    const current = profileRef.current
+    const best = Math.max(percent, current.grammar?.[lesson.id] ?? 0)
+    if (best !== current.grammar?.[lesson.id]) persistProfile({ ...current, grammar: { ...current.grammar, [lesson.id]: best } })
+    recordActivity(lesson.language)
+  }
+
   function showAdmin() {
     setPendingBook(null)
     setView('admin')
     setActiveBook(null)
   }
 
+  // The page language and tab title follow the interface language, on the landing page and in the app.
+  useEffect(() => {
+    document.documentElement.lang = uiLanguage
+    document.title = LANDING_TEXT[uiLanguage].pageTitle
+  }, [uiLanguage])
+
+  // An account carries its interface language to every device it signs in on.
+  const profileUiLanguage = profile.uiLanguage
+  useEffect(() => {
+    if (isUiLanguage(profileUiLanguage)) setUiLanguage(profileUiLanguage)
+  }, [profileUiLanguage])
+  // …and a language picked on the landing page replaces the one the profile kept.
+  useEffect(() => {
+    const kept = profileRef.current.uiLanguage
+    if (kept && kept !== uiLanguage) persistProfile({ ...profileRef.current, uiLanguage })
+  }, [uiLanguage]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (isLoadingData) {
     return <div className="loading-screen"><span className="brand-mark"><BookOpen size={19} /></span><LoaderCircle size={19} className="spin" /></div>
   }
 
-  const noticeBar = notice && <div className="notice-bar" role="status">{notice}<button onClick={() => setNotice('')} aria-label="Скрыть уведомление"><X size={15} /></button></div>
+  const noticeBar = notice && <div className="notice-bar" role="status">{notice}<button onClick={() => setNotice('')} aria-label={t.nav.hideNotice}><X size={15} /></button></div>
 
   // Arriving from a book page (?book=…) shows that book in the Ling Library until the visitor goes elsewhere;
   // a first-time visitor browsing the Ling Library skips the language picker, since adding a book sets its language.
@@ -786,6 +811,7 @@ function App() {
     onSubmit: (event) => void handleAuthSubmit(event),
     translationLanguage,
     onTranslationLanguageChange: changeTranslationLanguage,
+    text: LANDING_TEXT[uiLanguage].auth,
   }
   const skipWelcome = () => {
     setWelcomeSkipped(true)
@@ -797,7 +823,7 @@ function App() {
   }
 
   if (showWelcome && !authScreenOpen) {
-    const openAuth = (mode: AuthMode, landingLanguage: string) => {
+    const openAuth = (mode: AuthMode, landingLanguage: LandingLanguage) => {
       // The language the visitor read the landing page in is the best first guess for translations.
       if (!profileRef.current.translationLanguage) changeTranslationLanguage(landingLanguage)
       authForm.onModeChange(mode)
@@ -810,21 +836,22 @@ function App() {
   return (
     <div className={showWelcome || onboarding ? 'app-shell onboarding-mode' : 'app-shell'}>
       <aside className="sidebar">
-        <a className="brand" href="#library" onClick={showLibrary} aria-label="Ling, библиотека">
+        <a className="brand" href="#library" onClick={showLibrary} aria-label={t.nav.brand}>
           <span className="brand-mark"><BookOpen size={19} strokeWidth={2.2} /></span>
           <span>ling<span className="brand-period">.</span></span>
         </a>
-        <span className="side-label">ТВОЁ ПРОСТРАНСТВО</span>
-        <nav className="side-nav" aria-label="Основная навигация">
-          <button className={!activeBook && currentView === 'library' ? 'nav-item selected' : 'nav-item'} onClick={showLibrary}><Library size={18} /> Мои книги <span className="nav-count">{shelf.length}</span></button>
-          <button className={!activeBook && currentView === 'catalog' ? 'nav-item selected' : 'nav-item'} onClick={() => showCatalog()}><BookMarked size={18} /> Библиотека Ling</button>
-          <button className={!activeBook && currentView === 'training' ? 'nav-item selected' : 'nav-item'} onClick={showTraining}><Dumbbell size={18} /> Тренировка {dueCount > 0 && <span className="nav-count due">{dueCount}</span>}</button>
-          <button className={!activeBook && currentView === 'words' ? 'nav-item selected' : 'nav-item'} onClick={showWords}><Bookmark size={18} /> Мои слова <span className="nav-count">{languageWords.length}</span></button>
-          {adminUser && <button className={!activeBook && currentView === 'admin' ? 'nav-item selected' : 'nav-item'} onClick={showAdmin}><ChartColumn size={18} /> Админ-центр</button>}
+        <span className="side-label">{t.nav.space}</span>
+        <nav className="side-nav" aria-label={t.nav.main}>
+          <button className={!activeBook && currentView === 'library' ? 'nav-item selected' : 'nav-item'} onClick={showLibrary}><Library size={18} /> {t.nav.myBooks} <span className="nav-count">{shelf.length}</span></button>
+          <button className={!activeBook && currentView === 'catalog' ? 'nav-item selected' : 'nav-item'} onClick={() => showCatalog()}><BookMarked size={18} /> {t.nav.catalog}</button>
+          <button className={!activeBook && currentView === 'training' ? 'nav-item selected' : 'nav-item'} onClick={showTraining}><Dumbbell size={18} /> {t.nav.training} {dueCount > 0 && <span className="nav-count due">{dueCount}</span>}</button>
+          <button className={!activeBook && currentView === 'grammar' ? 'nav-item selected' : 'nav-item'} onClick={showGrammar}><GraduationCap size={18} /> {t.nav.grammar}</button>
+          <button className={!activeBook && currentView === 'words' ? 'nav-item selected' : 'nav-item'} onClick={showWords}><Bookmark size={18} /> {t.nav.words} <span className="nav-count">{languageWords.length}</span></button>
+          {adminUser && <button className={!activeBook && currentView === 'admin' ? 'nav-item selected' : 'nav-item'} onClick={showAdmin}><ChartColumn size={18} /> {t.nav.admin}</button>}
         </nav>
         <div className="sidebar-bottom">
-          <button className="streak-badge" onClick={showLibrary}><Flame size={17} /><span><strong>{streak} {daysLabel(streak)}</strong><small>подряд · {getLanguage(studyLanguage).name}</small></span></button>
-          <span className="side-footnote">Читай. Замечай. Запоминай.</span>
+          <button className="streak-badge" onClick={showLibrary}><Flame size={17} /><span><strong>{streak} {t.common.days(streak)}</strong><small>{t.nav.streak(getLanguage(studyLanguage).name)}</small></span></button>
+          <span className="side-footnote">{t.nav.motto}</span>
         </div>
       </aside>
 
@@ -836,7 +863,7 @@ function App() {
           </div>
         )}
         {showWelcome ? (
-          <WelcomeScreen form={authForm} onSkip={skipWelcome} onBack={() => setAuthScreenOpen(false)} note={pendingBook ? `Чтобы читать «${findCatalogBook(pendingBook)?.title}», войди или продолжи без аккаунта.` : undefined} />
+          <WelcomeScreen form={authForm} lang={uiLanguage} onSkip={skipWelcome} onBack={() => setAuthScreenOpen(false)} note={pendingBook ? LANDING_TEXT[uiLanguage].auth.bookNote(findCatalogBook(pendingBook)?.title ?? '') : undefined} />
         ) : onboarding ? (
           <LanguagePicker exclude={[translationLanguage]} onPick={addLanguage} translation={{ value: translationLanguage, onChange: changeTranslationLanguage }} />
         ) : activeBook ? (
@@ -878,6 +905,11 @@ function App() {
               onAdd={(entry) => void addCatalogBook(entry, false)}
             />
           </>
+        ) : view === 'grammar' ? (
+          <>
+            {noticeBar}
+            <GrammarPage key={studyLanguage} language={studyLanguage} progress={profile.grammar ?? {}} onResult={saveGrammarResult} />
+          </>
         ) : view === 'admin' && adminUser ? (
           <AdminPage />
         ) : view === 'training' ? (
@@ -893,27 +925,27 @@ function App() {
         ) : (
           <>
             <header className="page-header library-header">
-              <div><span className="eyebrow">ИЗУЧАЮ</span><h1>{getLanguage(studyLanguage).name}<span className="heading-period">.</span></h1><p>{languageBooks.length ? 'Читай в своём ритме — каждое новое слово остаётся с тобой.' : 'Добавь первую книгу на этом языке, чтобы начать читать.'}</p></div>
-              <button className="import-button" onClick={() => fileInput.current?.click()} disabled={isImporting}>{isImporting ? <LoaderCircle size={17} className="spin" /> : <FilePlus2 size={18} />}{isImporting ? 'Загружаем...' : 'Добавить книгу'}</button>
+              <div><span className="eyebrow">{t.home.studying}</span><h1>{getLanguage(studyLanguage).name}<span className="heading-period">.</span></h1><p>{languageBooks.length ? t.home.leadWithBooks : t.home.leadEmpty}</p></div>
+              <button className="import-button" onClick={() => fileInput.current?.click()} disabled={isImporting}>{isImporting ? <LoaderCircle size={17} className="spin" /> : <FilePlus2 size={18} />}{isImporting ? t.home.importing : t.home.addBook}</button>
               <input ref={fileInput} className="file-input" type="file" accept=".txt,.md,.epub,.pdf,text/plain,text/markdown,application/pdf,application/epub+zip" multiple onChange={(event) => void importFiles(event.target.files)} />
             </header>
-            <nav className="language-switcher" aria-label="Изучаемые языки">
+            <nav className="language-switcher" aria-label={t.home.languages}>
               {activeLanguages.map((code) => (
                 <button key={code} className={code === studyLanguage ? 'language-chip selected' : 'language-chip'} aria-current={code === studyLanguage} onClick={() => changeStudyLanguage(code)}>
                   {getLanguage(code).name}<small>{bookCountByLanguage.get(code) ?? 0}</small>
                 </button>
               ))}
-              <button className="language-chip add" onClick={() => setLanguageDialogOpen(true)}><Plus size={14} /> Добавить язык</button>
+              <button className="language-chip add" onClick={() => setLanguageDialogOpen(true)}><Plus size={14} /> {t.home.addLanguage}</button>
             </nav>
-            <section className="stats-row" aria-label="Прогресс">
-              <div className="stat-tile"><Flame size={17} /><strong>{streak}</strong><small>{daysLabel(streak)} подряд</small></div>
-              <div className="stat-tile"><CalendarDays size={17} /><strong>{activity?.days ?? 0}</strong><small>{daysLabel(activity?.days ?? 0)} занятий</small><span className="week-dots" aria-label="Занятия за неделю">{lastWeek(activity).map(({ day, active }) => <i key={day} className={active ? 'on' : ''} />)}</span></div>
-              <div className="stat-tile"><Sparkles size={17} /><strong>{knownCount.toLocaleString('ru-RU')}</strong><small>слов знаю</small></div>
-              <button className="stat-tile" onClick={showTraining}><Dumbbell size={17} /><strong>{dueCount}</strong><small>на повторении</small></button>
+            <section className="stats-row" aria-label={t.home.progress}>
+              <div className="stat-tile"><Flame size={17} /><strong>{streak}</strong><small>{t.home.inARow(streak)}</small></div>
+              <div className="stat-tile"><CalendarDays size={17} /><strong>{activity?.days ?? 0}</strong><small>{t.home.studyDays(activity?.days ?? 0)}</small><span className="week-dots" aria-label={t.home.week}>{lastWeek(activity).map(({ day, active }) => <i key={day} className={active ? 'on' : ''} />)}</span></div>
+              <div className="stat-tile"><Sparkles size={17} /><strong>{knownCount.toLocaleString(t.locale)}</strong><small>{t.home.known}</small></div>
+              <button className="stat-tile" onClick={showTraining}><Dumbbell size={17} /><strong>{dueCount}</strong><small>{t.home.due}</small></button>
             </section>
             {noticeBar}
             <section className="library-content">
-              <div className="library-toolbar"><div><span className="section-marker" /> МОЯ БИБЛИОТЕКА <span className="toolbar-count">{shelf.length}</span></div><button className="sort-button" onClick={() => void persistBooks([...books].reverse()).catch(() => setNotice('Не удалось сохранить порядок библиотеки.'))}>Недавно добавленные <ChevronDown size={15} /></button></div>
+              <div className="library-toolbar"><div><span className="section-marker" /> {t.home.myLibrary} <span className="toolbar-count">{shelf.length}</span></div><button className="sort-button" onClick={() => void persistBooks([...books].reverse()).catch(() => setNotice(t.notices.orderFailed))}>{t.home.recent} <ChevronDown size={15} /></button></div>
               {languageBooks.length > 0 ? (
                 <div className="book-grid">{shelf.map((item) => {
                   if (item.kind === 'folder') {
@@ -921,30 +953,30 @@ function App() {
                     const progress = folderProgress(item.parts)
                     return (
                       <div className={`book-slot cover-${coverIndex(item.id)}`} key={item.id}>
-                        <button className="book-card" onClick={() => setOpenCollection(item.id)}><ShelfCover book={first} folder={`${item.parts.length} ${partsLabel(item.parts.length).toUpperCase()}`} /><div className="book-card-info"><div className="book-card-title">{bookTitleOf(first)}</div><div className="book-card-author">Часть {currentPart(item.parts).part} из {item.parts.length}</div><div className="book-card-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{progress > 0 ? `${progress}%` : 'Ещё не начато'}</small></div></div></button>
-                        <button className="delete-book" onClick={() => void deleteBooks(item.parts)} aria-label={`Удалить книгу ${bookTitleOf(first)}`}><Trash2 size={15} /></button>
+                        <button className="book-card" onClick={() => setOpenCollection(item.id)}><ShelfCover book={first} folder={`${item.parts.length} ${t.common.parts(item.parts.length).toUpperCase()}`} /><div className="book-card-info"><div className="book-card-title">{bookTitleOf(first)}</div><div className="book-card-author">{t.common.partOf(currentPart(item.parts).part ?? 1, item.parts.length)}</div><div className="book-card-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{progress > 0 ? `${progress}%` : t.home.notStarted}</small></div></div></button>
+                        <button className="delete-book" onClick={() => void deleteBooks(item.parts)} aria-label={t.home.deleteBook(bookTitleOf(first))}><Trash2 size={15} /></button>
                       </div>
                     )
                   }
                   const { book } = item
                   return (
                     <div className={`book-slot cover-${coverIndex(book.id)}`} key={book.id}>
-                      <button className="book-card" onClick={() => void openBook(book)}><ShelfCover book={book} /><div className="book-card-info"><div className="book-card-title">{book.title}</div><div className="book-card-author">{book.author}</div><div className="book-card-progress"><span><i style={{ width: `${book.progress}%` }} /></span><small>{book.progress > 0 ? `${book.progress}%` : 'Ещё не начато'}</small></div></div></button>
-                      <button className="delete-book" onClick={() => void deleteBooks([book])} aria-label={`Удалить книгу ${book.title}`}><Trash2 size={15} /></button>
+                      <button className="book-card" onClick={() => void openBook(book)}><ShelfCover book={book} /><div className="book-card-info"><div className="book-card-title">{book.title}</div><div className="book-card-author">{book.author}</div><div className="book-card-progress"><span><i style={{ width: `${book.progress}%` }} /></span><small>{book.progress > 0 ? `${book.progress}%` : t.home.notStarted}</small></div></div></button>
+                      <button className="delete-book" onClick={() => void deleteBooks([book])} aria-label={t.home.deleteBook(book.title)}><Trash2 size={15} /></button>
                     </div>
                   )
                 })}</div>
-              ) : <div className="empty-library"><div className="empty-icon"><FilePlus2 size={22} /></div><h2>Полка ждёт первую книгу</h2><p>Добавь файл в формате EPUB, PDF, TXT или MD на языке {getLanguage(studyLanguage).name}, чтобы начать читать.</p><button className="import-button" onClick={() => fileInput.current?.click()}><FilePlus2 size={17} /> Добавить книгу</button></div>}
-              <button className="add-book-row" onClick={() => fileInput.current?.click()}><span><FilePlus2 size={18} /></span><strong>Добавить ещё одну книгу</strong><small>EPUB, PDF, TXT, MD</small></button>
+              ) : <div className="empty-library"><div className="empty-icon"><FilePlus2 size={22} /></div><h2>{t.home.emptyTitle}</h2><p>{t.home.emptyText(getLanguage(studyLanguage).name)}</p><button className="import-button" onClick={() => fileInput.current?.click()}><FilePlus2 size={17} /> {t.home.addBook}</button></div>}
+              <button className="add-book-row" onClick={() => fileInput.current?.click()}><span><FilePlus2 size={18} /></span><strong>{t.home.addAnother}</strong><small>EPUB, PDF, TXT, MD</small></button>
             </section>
-            <section className="reading-note"><div className="note-icon"><Dumbbell size={20} /></div><div><span>ТРЕНИРОВКА</span><strong>{dueCount ? `${dueCount} слов ждут повторения` : languageWords.length ? `${languageWords.length} слов в словаре — потренируйся` : 'Сохраняй слова прямо во время чтения'}</strong></div><button onClick={showTraining} aria-label="Перейти к тренировке"><ArrowLeft size={18} /></button></section>
+            <section className="reading-note"><div className="note-icon"><Dumbbell size={20} /></div><div><span>{t.home.trainingKicker}</span><strong>{dueCount ? t.home.trainingDue(dueCount) : languageWords.length ? t.home.trainingWords(languageWords.length) : t.home.trainingEmpty}</strong></div><button onClick={showTraining} aria-label={t.home.toTraining}><ArrowLeft size={18} /></button></section>
           </>
         )}
       </main>
 
-      <nav className="mobile-nav" aria-label="Основная навигация"><button className={!activeBook && currentView === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>Мои книги</span></button><button className={!activeBook && currentView === 'catalog' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={() => showCatalog()}><BookMarked size={20} /><span>Каталог</span></button><button className={!activeBook && currentView === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>Тренировка</span>{dueCount > 0 && <i />}</button><button className={!activeBook && currentView === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>Слова</span></button>{adminUser && <button className={!activeBook && currentView === 'admin' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showAdmin}><ChartColumn size={20} /><span>Админ</span></button>}</nav>
+      <nav className="mobile-nav" aria-label={t.nav.main}><button className={!activeBook && currentView === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>{t.nav.myBooks}</span></button><button className={!activeBook && currentView === 'catalog' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={() => showCatalog()}><BookMarked size={20} /><span>{t.nav.catalogShort}</span></button><button className={!activeBook && currentView === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>{t.nav.training}</span>{dueCount > 0 && <i />}</button><button className={!activeBook && currentView === 'grammar' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showGrammar}><GraduationCap size={20} /><span>{t.nav.grammar}</span></button><button className={!activeBook && currentView === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>{t.nav.wordsShort}</span></button>{adminUser && <button className={!activeBook && currentView === 'admin' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showAdmin}><ChartColumn size={20} /><span>{t.nav.adminShort}</span></button>}</nav>
       {languageDialogOpen && <LanguagePicker exclude={[...activeLanguages, translationLanguage]} onPick={addLanguage} onClose={() => setLanguageDialogOpen(false)} />}
-      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label="Аккаунт Ling" onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label="Закрыть"><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? 'Аккаунт подключён' : 'Твоя библиотека везде'}</h2>{(accountUser || !cloudEnabled || authMode === 'signin') && <div className="account-settings"><TranslationLanguageSelect value={translationLanguage} onChange={changeTranslationLanguage} hint="Новые слова будут переводиться на этот язык. Уже сохранённые переводы не изменятся." /></div>}{!cloudEnabled ? <div className="cloud-setup-note"><p>Подключи проект Supabase, чтобы включить вход и синхронизацию книг.</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> Книги и слова привязаны к аккаунту</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? 'Выходим...' : 'Выйти из аккаунта'}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
+      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label={t.account.label} onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label={t.common.close}><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? t.account.connected : t.account.everywhere}</h2>{(accountUser || !cloudEnabled || authMode === 'signin') && <div className="account-settings"><label className="translation-language"><span className="translation-language-label"><Globe size={15} /> {t.account.interface}</span><select value={uiLanguage} onChange={(event) => changeUiLanguage(event.target.value as UiLanguage)}>{UI_LANGUAGES.map((language) => <option key={language.code} value={language.code}>{language.name}</option>)}</select></label><TranslationLanguageSelect value={translationLanguage} onChange={changeTranslationLanguage} label={t.account.translateTo} hint={t.account.translationHint} /></div>}{!cloudEnabled ? <div className="cloud-setup-note"><p>{t.account.setup}</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> {t.account.linked}</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? t.account.signingOut : t.account.signOut}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
     </div>
   )
 }
@@ -962,23 +994,24 @@ function ShelfCover({ book, folder }: { book: BookFile; folder?: string }) {
 }
 
 function FolderView({ parts, onBack, onOpen, onDelete }: FolderViewProps) {
+  const t = useMessages()
   const first = parts[0]
   const progress = folderProgress(parts)
   const current = currentPart(parts)
   const cover = coverUrl(catalogBookOf(bookTitleOf(first), first.language))
   return (
     <section className="folder-view">
-      <button className="quiet-button folder-back" onClick={onBack}><ArrowLeft size={16} /> Библиотека</button>
+      <button className="quiet-button folder-back" onClick={onBack}><ArrowLeft size={16} /> {t.common.library}</button>
       <header className="folder-header">
         <div className={`folder-cover cover-${coverIndex(first.collectionId ?? first.id)}`}>{cover ? <div className="book-cover is-folder has-image"><img className="cover-image" src={cover} alt="" /></div> : <div className="book-cover is-folder"><BookOpen size={22} strokeWidth={1.5} /></div>}</div>
         <div className="folder-info">
-          <span className="eyebrow">ПАПКА · {parts.length} {partsLabel(parts.length).toUpperCase()} · {first.format}</span>
+          <span className="eyebrow">{t.folder.kicker(parts.length, first.format)}</span>
           <h1>{bookTitleOf(first)}</h1>
           <p>{first.author}</p>
-          <div className="folder-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{progress}% прочитано</small></div>
+          <div className="folder-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{t.common.percentRead(progress)}</small></div>
           <div className="folder-actions">
-            <button className="primary-action" onClick={() => onOpen(current)}><BookOpen size={16} /> {progress > 0 ? 'Продолжить' : 'Начать'} · часть {current.part}</button>
-            <button className="quiet-button" onClick={onDelete}><Trash2 size={15} /> Удалить книгу</button>
+            <button className="primary-action" onClick={() => onOpen(current)}><BookOpen size={16} /> {progress > 0 ? t.folder.continue : t.folder.begin} · {t.folder.part(current.part ?? 1)}</button>
+            <button className="quiet-button" onClick={onDelete}><Trash2 size={15} /> {t.folder.delete}</button>
           </div>
         </div>
       </header>
@@ -986,7 +1019,7 @@ function FolderView({ parts, onBack, onOpen, onDelete }: FolderViewProps) {
         <li key={part.id}>
           <button className={`part-row${part.id === current.id ? ' current' : ''}${part.progress >= 100 ? ' done' : ''}`} onClick={() => onOpen(part)}>
             <span className="part-number">{part.progress >= 100 ? <Check size={14} /> : part.part}</span>
-            <span className="part-title"><strong>{part.title}</strong><small>{part.progress >= 100 ? 'Прочитано' : part.id === current.id && part.progress > 0 ? 'Читаешь сейчас' : part.progress > 0 ? 'Начато' : 'Не начато'}</small></span>
+            <span className="part-title"><strong>{partTitle(part.title, part.part, t)}</strong><small>{part.progress >= 100 ? t.folder.read : part.id === current.id && part.progress > 0 ? t.folder.current : part.progress > 0 ? t.folder.started : t.folder.notStarted}</small></span>
             <span className="part-progress"><i style={{ width: `${part.progress}%` }} /></span>
             <small className="part-percent">{part.progress}%</small>
           </button>

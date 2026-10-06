@@ -1,0 +1,55 @@
+<!--
+  Ling: письмо подтверждения почты на языке интерфейса (ru, uk или en).
+  Вставляется в Supabase → Authentication → Emails → Templates → Confirm signup (поле Message body).
+  Тема письма (Subject): Ling — подтверди почту · Confirm your email
+  Язык берётся из данных регистрации: .Data.ling_profile.uiLanguage (его передаёт приложение, src/App.tsx).
+  {{ .ConfirmationURL }} Supabase подставляет сам: ссылка ведёт на Site URL / emailRedirectTo (https://ling.uno/).
+-->
+{{ $lang := "ru" }}{{ with .Data.ling_profile }}{{ with .uiLanguage }}{{ $lang = . }}{{ end }}{{ end }}
+<!doctype html>
+<html lang="{{ $lang }}">
+  <body style="margin:0;padding:0;background:#f4f6f3;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f3;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #e3eae5;border-radius:14px;">
+            <tr>
+              <td style="padding:32px 32px 8px;font-family:Georgia,'Times New Roman',serif;font-size:26px;color:#20352f;">
+                Ling<span style="color:#ee7967;">.</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#20352f;">
+                {{ if eq $lang "uk" }}
+                <p style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:22px;">Підтверди пошту</p>
+                <p style="margin:0 0 24px;color:#4e5e56;">Дякуємо за реєстрацію в Ling! Натисни на кнопку, щоб підтвердити адресу&nbsp;— після цього книжки, слова й прогрес зберігатимуться в акаунті та синхронізуватимуться між пристроями.</p>
+                {{ else if eq $lang "en" }}
+                <p style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:22px;">Confirm your email</p>
+                <p style="margin:0 0 24px;color:#4e5e56;">Thanks for signing up for Ling! Press the button to confirm your address&nbsp;— your books, words and progress will then be saved to your account and synced across your devices.</p>
+                {{ else }}
+                <p style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:22px;">Подтверди почту</p>
+                <p style="margin:0 0 24px;color:#4e5e56;">Спасибо за регистрацию в Ling! Нажми на кнопку, чтобы подтвердить адрес&nbsp;— после этого книги, слова и прогресс будут сохраняться в аккаунте и синхронизироваться между устройствами.</p>
+                {{ end }}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px;">
+                <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#315b4d;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:10px;">{{ if eq $lang "uk" }}Підтвердити пошту{{ else if eq $lang "en" }}Confirm email{{ else }}Подтвердить почту{{ end }}</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 32px 32px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#82908a;">
+                {{ if eq $lang "uk" }}Якщо кнопка не працює, відкрий посилання:{{ else if eq $lang "en" }}If the button doesn’t work, open this link:{{ else }}Если кнопка не работает, открой ссылку:{{ end }}<br />
+                <a href="{{ .ConfirmationURL }}" style="color:#315b4d;word-break:break-all;">{{ .ConfirmationURL }}</a><br /><br />
+                {{ if eq $lang "uk" }}Якщо лист прийшов помилково, просто проігноруй його.{{ else if eq $lang "en" }}If you got this email by mistake, just ignore it.{{ else }}Если письмо пришло по ошибке, просто проигнорируй его.{{ end }}
+              </td>
+            </tr>
+          </table>
+          <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#82908a;">
+            Ling · <a href="https://ling.uno" style="color:#82908a;">ling.uno</a> · <a href="mailto:hi@ling.uno" style="color:#82908a;">hi@ling.uno</a>
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -7,16 +7,17 @@ const cache = new Map<string, TranslationGroup[]>()
 /** Translation languages written in Cyrillic; all others use the Latin script. */
 const CYRILLIC = new Set(['ru', 'uk'])
 
+/** Part-of-speech keys; the interface shows them as reader.pos labels (src/i18n). */
 const POS_LABELS: [RegExp, string][] = [
-  [/сущ|существительное|noun/i, 'сущ.'],
-  [/гл|глагол|verb/i, 'гл.'],
-  [/прил|прилагательное|adj/i, 'прил.'],
-  [/нареч|наречие|adv/i, 'нареч.'],
-  [/мест|местоимение|pron/i, 'мест.'],
-  [/предл|предлог|prep/i, 'предл.'],
-  [/союз|conj/i, 'союз'],
-  [/числ|числительное|num/i, 'числ.'],
-  [/межд|междометие|interj/i, 'межд.'],
+  [/сущ|существительное|noun/i, 'noun'],
+  [/гл|глагол|verb/i, 'verb'],
+  [/прил|прилагательное|adj/i, 'adjective'],
+  [/нареч|наречие|adv/i, 'adverb'],
+  [/мест|местоимение|pron/i, 'pronoun'],
+  [/предл|предлог|prep/i, 'preposition'],
+  [/союз|conj/i, 'conjunction'],
+  [/числ|числительное|num/i, 'numeral'],
+  [/межд|междометие|interj/i, 'interjection'],
 ]
 
 function shortPos(label: string): string {
@@ -33,7 +34,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 async function fromGoogle(word: string, from: string, to: string): Promise<TranslationGroup[]> {
   type GoogleResponse = [[string, string][] | null, [string, string[]][] | null]
   const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&hl=ru&dt=t&dt=bd&q=${encodeURIComponent(word)}`
-  // hl=ru keeps the part-of-speech names in Russian, the language of the app, whatever the translation language.
+  // hl=ru keeps the part-of-speech names in one language, so shortPos can recognise them.
   const [sentences, dictionary] = await fetchJson<GoogleResponse>(url)
   const groups: TranslationGroup[] = []
   const main = sentences?.map((sentence) => sentence[0]).join('').trim()

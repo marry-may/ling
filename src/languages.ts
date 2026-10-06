@@ -1,18 +1,18 @@
-export type Language = { code: string; name: string; label: string; speech: string; ocr: string; greeting: string }
+export type Language = { code: string; name: string; speech: string; ocr: string; greeting: string }
 
 export const LANGUAGES: Language[] = [
-  { code: 'en', greeting: 'Hello', ocr: 'eng', name: 'English', label: 'АНГЛИЙСКОЕ СЛОВО', speech: 'en-US' },
-  { code: 'de', greeting: 'Hallo', ocr: 'deu', name: 'Deutsch', label: 'НЕМЕЦКОЕ СЛОВО', speech: 'de-DE' },
-  { code: 'fr', greeting: 'Bonjour', ocr: 'fra', name: 'Français', label: 'ФРАНЦУЗСКОЕ СЛОВО', speech: 'fr-FR' },
-  { code: 'es', greeting: 'Hola', ocr: 'spa', name: 'Español', label: 'ИСПАНСКОЕ СЛОВО', speech: 'es-ES' },
-  { code: 'it', greeting: 'Ciao', ocr: 'ita', name: 'Italiano', label: 'ИТАЛЬЯНСКОЕ СЛОВО', speech: 'it-IT' },
-  { code: 'pt', greeting: 'Olá', ocr: 'por', name: 'Português', label: 'ПОРТУГАЛЬСКОЕ СЛОВО', speech: 'pt-PT' },
-  { code: 'nl', greeting: 'Hoi', ocr: 'nld', name: 'Nederlands', label: 'НИДЕРЛАНДСКОЕ СЛОВО', speech: 'nl-NL' },
-  { code: 'pl', greeting: 'Cześć', ocr: 'pol', name: 'Polski', label: 'ПОЛЬСКОЕ СЛОВО', speech: 'pl-PL' },
-  { code: 'cs', greeting: 'Ahoj', ocr: 'ces', name: 'Čeština', label: 'ЧЕШСКОЕ СЛОВО', speech: 'cs-CZ' },
-  { code: 'sv', greeting: 'Hej', ocr: 'swe', name: 'Svenska', label: 'ШВЕДСКОЕ СЛОВО', speech: 'sv-SE' },
-  { code: 'tr', greeting: 'Merhaba', ocr: 'tur', name: 'Türkçe', label: 'ТУРЕЦКОЕ СЛОВО', speech: 'tr-TR' },
-  { code: 'uk', greeting: 'Привіт', ocr: 'ukr', name: 'Українська', label: 'УКРАИНСКОЕ СЛОВО', speech: 'uk-UA' },
+  { code: 'en', greeting: 'Hello', ocr: 'eng', name: 'English', speech: 'en-US' },
+  { code: 'de', greeting: 'Hallo', ocr: 'deu', name: 'Deutsch', speech: 'de-DE' },
+  { code: 'fr', greeting: 'Bonjour', ocr: 'fra', name: 'Français', speech: 'fr-FR' },
+  { code: 'es', greeting: 'Hola', ocr: 'spa', name: 'Español', speech: 'es-ES' },
+  { code: 'it', greeting: 'Ciao', ocr: 'ita', name: 'Italiano', speech: 'it-IT' },
+  { code: 'pt', greeting: 'Olá', ocr: 'por', name: 'Português', speech: 'pt-PT' },
+  { code: 'nl', greeting: 'Hoi', ocr: 'nld', name: 'Nederlands', speech: 'nl-NL' },
+  { code: 'pl', greeting: 'Cześć', ocr: 'pol', name: 'Polski', speech: 'pl-PL' },
+  { code: 'cs', greeting: 'Ahoj', ocr: 'ces', name: 'Čeština', speech: 'cs-CZ' },
+  { code: 'sv', greeting: 'Hej', ocr: 'swe', name: 'Svenska', speech: 'sv-SE' },
+  { code: 'tr', greeting: 'Merhaba', ocr: 'tur', name: 'Türkçe', speech: 'tr-TR' },
+  { code: 'uk', greeting: 'Привіт', ocr: 'ukr', name: 'Українська', speech: 'uk-UA' },
 ]
 
 export const DEFAULT_LANGUAGE = 'en'

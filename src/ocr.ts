@@ -1,5 +1,6 @@
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { createWorker } from 'tesseract.js'
+import { messages } from './i18n'
 import { detectLanguage, getLanguage } from './languages'
 
 const DETECTION_PAGES = 5
@@ -24,7 +25,7 @@ export async function recognizePdf(pdf: PDFDocumentProxy, fallbackLanguage: stri
     canvas.width = Math.ceil(viewport.width)
     canvas.height = Math.ceil(viewport.height)
     const context = canvas.getContext('2d')
-    if (!context) throw new Error('Не удалось подготовить страницу PDF к распознаванию.')
+    if (!context) throw new Error(messages().importer.pdfCanvas)
     context.fillStyle = '#fff'
     context.fillRect(0, 0, canvas.width, canvas.height)
     await page.render({ canvas, canvasContext: context, viewport }).promise
@@ -32,24 +33,24 @@ export async function recognizePdf(pdf: PDFDocumentProxy, fallbackLanguage: stri
     return canvas
   }
 
-  onProgress('В PDF нет текстового слоя. Загружаем распознавание текста...')
+  onProgress(messages().importer.pdfNoText)
   let worker
   try {
     worker = await createWorker(getLanguage(fallbackLanguage).ocr)
   } catch {
-    throw new Error('Не удалось загрузить распознавание текста. Для сканированных PDF нужен интернет.')
+    throw new Error(messages().importer.ocrFailed)
   }
   try {
     let pages: string[] = []
     let language: string | undefined
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-      onProgress(`Распознаём текст: страница ${pageNumber} из ${pdf.numPages}`)
+      onProgress(messages().importer.ocrPage(pageNumber, pdf.numPages))
       pages.push(cleanText((await worker.recognize(await renderPage(pageNumber))).data.text))
       // Title pages have few common words, so the language is guessed from up to the first DETECTION_PAGES pages.
       if (language) continue
       language = detectLanguage(pages.join('\n')) ?? (pageNumber >= DETECTION_PAGES ? fallbackLanguage : undefined)
       if (language && language !== fallbackLanguage) {
-        onProgress(`Язык книги: ${getLanguage(language).name}. Загружаем словарь распознавания...`)
+        onProgress(messages().importer.ocrLanguage(getLanguage(language).name))
         await worker.reinitialize(getLanguage(language).ocr)
         // Pages read with the wrong language model lose accented letters, so they are recognized again.
         pages = []

@@ -7,8 +7,12 @@ export type Profile = {
   activity: Record<string, LanguageActivity>
   /** The learner's own language, which words are translated into. */
   translationLanguage?: string
+  /** Interface language: ru, uk or en (src/i18n). */
+  uiLanguage?: string
   /** Languages that already received a starter book, so a deleted one does not come back. */
   samples?: string[]
+  /** Best result of each grammar lesson, in percent, by lesson id (src/grammar). */
+  grammar?: Record<string, number>
 }
 
 export const EMPTY_PROFILE: Profile = { languages: [], activity: {} }
@@ -65,8 +69,23 @@ export function normalizeProfile(value: unknown): Profile {
     languages: Array.isArray(profile?.languages) ? profile.languages.filter((code) => typeof code === 'string') : [],
     activity: profile?.activity && typeof profile.activity === 'object' ? profile.activity : {},
     translationLanguage: typeof profile?.translationLanguage === 'string' ? profile.translationLanguage : undefined,
+    uiLanguage: typeof profile?.uiLanguage === 'string' ? profile.uiLanguage : undefined,
     samples: Array.isArray(profile?.samples) ? profile.samples.filter((code) => typeof code === 'string') : undefined,
+    grammar: normalizeGrammar(profile?.grammar),
   }
+}
+
+function normalizeGrammar(value: unknown): Record<string, number> | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const entries = Object.entries(value).filter((entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1]))
+  return entries.length ? Object.fromEntries(entries) : undefined
+}
+
+function mergeGrammar(local?: Record<string, number>, remote?: Record<string, number>): Record<string, number> | undefined {
+  if (!local && !remote) return undefined
+  const merged = { ...remote }
+  for (const [lesson, score] of Object.entries(local ?? {})) merged[lesson] = Math.max(score, merged[lesson] ?? 0)
+  return merged
 }
 
 /** Combines the device copy and the account copy, keeping the furthest progress of each language. */
@@ -90,7 +109,10 @@ export function mergeProfiles(local: Profile, remote: Profile): Profile {
     activity,
     // A choice made on another device reaches this one through the account copy.
     translationLanguage: remote.translationLanguage ?? local.translationLanguage,
+    uiLanguage: remote.uiLanguage ?? local.uiLanguage,
     samples: remote.samples || local.samples ? Array.from(new Set([...(remote.samples ?? []), ...(local.samples ?? [])])) : undefined,
+    // The best result of a lesson on any device wins.
+    grammar: mergeGrammar(local.grammar, remote.grammar),
   }
 }
 

@@ -1,4 +1,5 @@
 import { unzipSync } from 'fflate'
+import { messages } from './i18n'
 import { detectLanguage } from './languages'
 import { countWords, type Section } from './text'
 
@@ -18,7 +19,7 @@ function resolveArchivePath(base: string, relative: string): string {
 
 function parseXml(source: string): XMLDocument {
   const document = new DOMParser().parseFromString(source, 'application/xml')
-  if (document.querySelector('parsererror')) throw new Error('В EPUB обнаружена ошибка структуры XML.')
+  if (document.querySelector('parsererror')) throw new Error(messages().importer.epubXml)
   return document
 }
 
@@ -56,10 +57,10 @@ export async function readBookFile(file: File, { fallbackLanguage, onProgress }:
   if (extension === 'epub') {
     const entries = unzipSync(new Uint8Array(await file.arrayBuffer()))
     const containerData = entries['META-INF/container.xml']
-    if (!containerData) throw new Error('В EPUB не найден файл META-INF/container.xml.')
+    if (!containerData) throw new Error(messages().importer.epubContainer)
     const container = parseXml(new TextDecoder().decode(containerData))
     const packagePath = container.getElementsByTagName('rootfile').item(0)?.getAttribute('full-path')
-    if (!packagePath || !entries[packagePath]) throw new Error('Не удалось найти основной файл EPUB.')
+    if (!packagePath || !entries[packagePath]) throw new Error(messages().importer.epubPackage)
 
     const packageDocument = parseXml(new TextDecoder().decode(entries[packagePath]))
     const title = packageDocument.getElementsByTagName('dc:title').item(0)?.textContent?.trim()
@@ -87,5 +88,5 @@ export async function readBookFile(file: File, { fallbackLanguage, onProgress }:
     return { content: sections.map((chapter) => chapter.content).join('\n\n'), title, author, language, sections }
   }
 
-  throw new Error('Поддерживаются TXT, MD, EPUB и PDF.')
+  throw new Error(messages().importer.unsupported)
 }

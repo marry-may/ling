@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { ArrowLeft, BookOpen, Check, ExternalLink, LoaderCircle, Plus } from 'lucide-react'
-import { CATALOG, catalogPageUrl, coverUrl, DIFFICULTY_LABELS, readingTime, shelfCopies, type CatalogBook } from './catalog'
+import { CATALOG, catalogPageUrl, coverUrl, readingTime, shelfCopies, type CatalogBook } from './catalog'
 import type { BookFile } from './domain'
+import { useMessages, useUiLanguage } from './i18n'
 import { getLanguage } from './languages'
 
 type CatalogPageProps = {
@@ -36,6 +37,8 @@ function Cover({ book }: { book: CatalogBook }) {
 }
 
 export function CatalogPage({ shelf, studyLanguage, selectedSlug, busySlug, onSelect, onStart, onAdd }: CatalogPageProps) {
+  const t = useMessages()
+  const language = useUiLanguage()
   const [filter, setFilter] = useState(() => (CATALOG_LANGUAGES.includes(studyLanguage) ? studyLanguage : 'all'))
   const visible = useMemo(() => CATALOG.filter((book) => filter === 'all' || book.language === filter), [filter])
   const selected = CATALOG.find((book) => book.slug === selectedSlug)
@@ -46,7 +49,7 @@ export function CatalogPage({ shelf, studyLanguage, selectedSlug, busySlug, onSe
     const busy = busySlug === selected.slug
     return (
       <section className="catalog-detail">
-        <button className="quiet-button folder-back" onClick={() => onSelect(null)}><ArrowLeft size={16} /> Библиотека Ling</button>
+        <button className="quiet-button folder-back" onClick={() => onSelect(null)}><ArrowLeft size={16} /> {t.common.lingLibrary}</button>
         <div className="catalog-detail-main">
           <div className={`catalog-detail-cover cover-${coverIndex(selected.slug)}`}><Cover book={selected} /></div>
           <div className="catalog-detail-info">
@@ -54,22 +57,22 @@ export function CatalogPage({ shelf, studyLanguage, selectedSlug, busySlug, onSe
             <h1 lang={selected.language}>{selected.title}</h1>
             <p className="catalog-author">{selected.author} <span>({selected.authorYears})</span></p>
             <ul className="catalog-facts">
-              <li>Сложность: <strong>{DIFFICULTY_LABELS[selected.difficulty]}</strong></li>
-              <li>{selected.words.toLocaleString('ru-RU')} слов</li>
-              <li>{selected.chapters} глав</li>
+              <li>{t.catalog.difficulty}: <strong>{t.catalog.levels[selected.difficulty]}</strong></li>
+              <li>{t.catalog.words(selected.words.toLocaleString(t.locale))}</li>
+              <li>{t.catalog.chapters(selected.chapters)}</li>
               <li>{readingTime(selected.words)}</li>
             </ul>
-            <p className="catalog-description">{selected.description.ru}</p>
-            {copies.length > 0 && <div className="folder-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{progress > 0 ? `${progress}% прочитано` : 'На полке, ещё не начата'}</small></div>}
+            <p className="catalog-description">{selected.description[language]}</p>
+            {copies.length > 0 && <div className="folder-progress"><span><i style={{ width: `${progress}%` }} /></span><small>{progress > 0 ? t.common.percentRead(progress) : t.catalog.onShelf}</small></div>}
             <div className="catalog-actions">
               <button className="primary-action" onClick={() => onStart(selected)} disabled={busy}>
                 {busy ? <LoaderCircle size={16} className="spin" /> : <BookOpen size={16} />}
-                {busy ? 'Загружаем книгу...' : copies.length ? 'Продолжить чтение' : 'Начать читать'}
+                {busy ? t.catalog.loadingBook : copies.length ? t.catalog.continue : t.catalog.start}
               </button>
               {copies.length
-                ? <span className="catalog-owned"><Check size={15} /> В моих книгах</span>
-                : <button className="secondary-action" onClick={() => onAdd(selected)} disabled={busy}><Plus size={16} /> Добавить в мои книги</button>}
-              <a className="quiet-button catalog-page-link" href={catalogPageUrl(selected)} target="_blank" rel="noreferrer">Страница книги <ExternalLink size={14} /></a>
+                ? <span className="catalog-owned"><Check size={15} /> {t.catalog.owned}</span>
+                : <button className="secondary-action" onClick={() => onAdd(selected)} disabled={busy}><Plus size={16} /> {t.catalog.add}</button>}
+              <a className="quiet-button catalog-page-link" href={catalogPageUrl(selected, language)} target="_blank" rel="noreferrer">{t.catalog.page} <ExternalLink size={14} /></a>
             </div>
           </div>
         </div>
@@ -79,9 +82,9 @@ export function CatalogPage({ shelf, studyLanguage, selectedSlug, busySlug, onSe
 
   return (
     <>
-      <header className="page-header"><div><span className="eyebrow">БИБЛИОТЕКА LING</span><h1>Книги в оригинале<span className="heading-period">.</span></h1><p>Классика в свободном доступе. Добавь книгу на свою полку и читай с переводом любого слова.</p></div></header>
-      <nav className="language-switcher" aria-label="Язык книг">
-        <button className={filter === 'all' ? 'language-chip selected' : 'language-chip'} onClick={() => setFilter('all')}>Все языки<small>{CATALOG.length}</small></button>
+      <header className="page-header"><div><span className="eyebrow">{t.catalog.kicker}</span><h1>{t.catalog.title}<span className="heading-period">.</span></h1><p>{t.catalog.lead}</p></div></header>
+      <nav className="language-switcher" aria-label={t.catalog.bookLanguage}>
+        <button className={filter === 'all' ? 'language-chip selected' : 'language-chip'} onClick={() => setFilter('all')}>{t.catalog.allLanguages}<small>{CATALOG.length}</small></button>
         {CATALOG_LANGUAGES.map((code) => (
           <button key={code} className={filter === code ? 'language-chip selected' : 'language-chip'} onClick={() => setFilter(code)}>
             {getLanguage(code).name}<small>{CATALOG.filter((book) => book.language === code).length}</small>
@@ -99,7 +102,7 @@ export function CatalogPage({ shelf, studyLanguage, selectedSlug, busySlug, onSe
                   <div className="book-card-title">{book.title}</div>
                   <div className="book-card-author">{book.author}</div>
                   <div className="catalog-card-meta">
-                    {copies.length ? <span className="catalog-owned small"><Check size={12} /> На полке · {shelfProgress(copies)}%</span> : <span>{DIFFICULTY_LABELS[book.difficulty]} · {readingTime(book.words).replace('≈ ', '')}</span>}
+                    {copies.length ? <span className="catalog-owned small"><Check size={12} /> {t.catalog.shelf(shelfProgress(copies))}</span> : <span>{t.catalog.levels[book.difficulty]} · {readingTime(book.words).replace('≈ ', '')}</span>}
                   </div>
                 </div>
               </button>
