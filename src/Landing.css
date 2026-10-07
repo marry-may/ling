@@ -581,3 +581,8 @@
     animation: none !important;
   }
 }
+
+/* The sticky bar stays below the iPhone status bar (viewport-fit=cover in index.html). */
+.landing-nav {
+  padding-top: env(safe-area-inset-top);
+}

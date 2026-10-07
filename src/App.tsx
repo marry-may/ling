@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, BookMarked, BookOpen, Bookmark, CalendarDays, Check, ChevronDown, Cloud, ChartColumn, Dumbbell, FilePlus2, Flame, Globe, GraduationCap, Library, LoaderCircle, LogOut, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
+import { Capacitor } from '@capacitor/core'
 import { AdminPage } from './AdminPage'
 import { GrammarPage } from './GrammarPage'
 import type { Lesson } from './grammar'
@@ -17,6 +18,7 @@ import { DEFAULT_LANGUAGE, defaultTranslationLanguage, getLanguage, LANGUAGES } 
 import { TranslationLanguageSelect } from './TranslationLanguageSelect'
 import { Landing } from './Landing'
 import { LanguagePicker } from './LanguagePicker'
+import { Onboarding } from './Onboarding'
 import { currentStreak, EMPTY_PROFILE, lastWeek, mergeProfiles, normalizeProfile, recordDay, sameProfile, type Profile } from './profile'
 import { Reader } from './Reader'
 import { SAMPLE_BOOKS } from './sampleBooks'
@@ -32,6 +34,18 @@ import './App.css'
 
 const LANGUAGE_STORAGE_KEY = 'ling-study-language'
 const WELCOME_SKIPPED_KEY = 'ling-welcome-skipped'
+const INTRO_SEEN_KEY = 'ling-intro-seen'
+
+/** The iOS app (Capacitor) opens with the onboarding instead of the landing page; ?app previews it in development. */
+const IS_APP = Capacitor.isNativePlatform() || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('app'))
+
+function readIntroSeen(): boolean {
+  try {
+    return localStorage.getItem(INTRO_SEEN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
 
 function readWelcomeSkipped(): boolean {
   try {
@@ -226,8 +240,9 @@ function App() {
   const pageViewTracked = useRef(false)
   const [authMode, setAuthMode] = useState<AuthMode>('signin')
   const [welcomeSkipped, setWelcomeSkipped] = useState(readWelcomeSkipped)
-  // Visitors who are not signed in see the landing page first; its buttons open the sign-in screen.
-  const [authScreenOpen, setAuthScreenOpen] = useState(() => Boolean(pendingBook))
+  // Visitors who are not signed in see the landing page (in the app, the onboarding) first; its buttons open the
+  // sign-in screen. In the app the onboarding is shown once; later launches start at sign-in.
+  const [authScreenOpen, setAuthScreenOpen] = useState(() => Boolean(pendingBook) || (IS_APP && readIntroSeen()))
   const [authEmail, setAuthEmail] = useState('')
   const [authPassword, setAuthPassword] = useState('')
   const [authMessage, setAuthMessage] = useState('')
@@ -829,7 +844,15 @@ function App() {
       authForm.onModeChange(mode)
       setAuthScreenOpen(true)
       window.scrollTo({ top: 0 })
+      if (IS_APP) {
+        try {
+          localStorage.setItem(INTRO_SEEN_KEY, '1')
+        } catch {
+          // The onboarding just shows again next time.
+        }
+      }
     }
+    if (IS_APP) return <Onboarding theme={theme} onToggleTheme={toggleTheme} onSignUp={() => openAuth('signup', uiLanguage)} onSignIn={() => openAuth('signin', uiLanguage)} />
     return <Landing theme={theme} onToggleTheme={toggleTheme} onSignUp={(language) => openAuth('signup', language)} onSignIn={(language) => openAuth('signin', language)} />
   }
 

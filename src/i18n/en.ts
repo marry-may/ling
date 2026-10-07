@@ -122,6 +122,21 @@ export const en: Messages = {
     translateTo: 'Translate into',
     theme: { dark: 'Dark theme', light: 'Light theme' },
   },
+  intro: {
+    label: 'Getting to know Ling',
+    skip: 'Skip',
+    next: 'Next',
+    start: 'Create account',
+    haveAccount: 'I already have an account',
+    step: (n, total) => `${n} of ${total}`,
+    slides: [
+      { title: 'Read books in the original', text: 'Upload an EPUB, PDF or TXT, or pick a classic from the Ling Library. Tap any word to see its translation.', alt: 'The Ling reader translating a word' },
+      { title: 'Remember new words', text: 'Save words right while you read. Short practice sessions bring them back when it is time to review.', alt: 'Word practice in Ling' },
+      { title: 'Grammar from A1 to C2', text: 'English and Spanish lessons: a rule with examples and exercises that are checked right away.', alt: 'The book library and a grammar lesson' },
+    ],
+    lessonLevel: 'B1 · lesson',
+    lessonTitle: 'Present Perfect',
+  },
   picker: {
     welcome: 'WELCOME TO LING',
     question: 'Which language are you learning',

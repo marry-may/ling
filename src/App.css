@@ -2622,6 +2622,8 @@ button.word-initial:hover {
   margin: -8px 0 26px;
 }
 .account-settings {
+  display: grid;
+  gap: 16px;
   margin: 4px 0 18px;
   border-bottom: 1px solid var(--s-e3eae5);
   padding-bottom: 18px;
@@ -2914,7 +2916,8 @@ button.word-initial:hover {
   .reader-heading strong {
     max-width: none;
   }
-  .quiet-button {
+  /* Buttons with an icon shrink to the icon; text-only ones ("Не знаю", "Попробовать без аккаунта") keep their text. */
+  .quiet-button:has(> svg) {
     width: 35px;
     height: 35px;
     justify-content: center;
@@ -3718,4 +3721,14 @@ button.word-initial:hover {
   .grammar-card-score {
     grid-column: 2;
   }
+}
+
+/* iPhone notch and home indicator: index.html sets viewport-fit=cover, so content keeps clear of them here.
+   The insets are 0 on computers and in a regular browser tab. */
+.app-shell,
+.loading-screen {
+  padding-top: env(safe-area-inset-top);
+}
+.text-settings {
+  top: calc(76px + env(safe-area-inset-top));
 }

@@ -1,0 +1,167 @@
+/* Onboarding of the mobile app (src/Onboarding.tsx): a top bar, swipeable slides and the actions below them. */
+.intro {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  min-height: 0;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  overflow: hidden;
+}
+.intro-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px 4px;
+}
+.intro-top .brand {
+  font-size: 22px;
+}
+.intro-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.intro-track {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.intro-track::-webkit-scrollbar {
+  display: none;
+}
+.intro-slide {
+  display: flex;
+  flex: 0 0 100%;
+  flex-direction: column;
+  min-height: 0;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+.intro-visual {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  place-items: center;
+  padding: 18px 24px 6px;
+  overflow: hidden;
+}
+/* The phone shows its top part; its height follows the room left on the screen. */
+.intro-phone {
+  align-self: start;
+  width: auto;
+  height: 100%;
+  max-height: 520px;
+  aspect-ratio: 780 / 1688;
+  border-bottom-width: 0;
+  border-radius: 32px 32px 0 0;
+  box-shadow: 0 24px 50px var(--s-14241d40);
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent);
+  mask-image: linear-gradient(to bottom, #000 78%, transparent);
+}
+.intro-phone img {
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.intro-collage {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 320px);
+}
+.intro-collage .illustration {
+  width: 100%;
+}
+.intro-lesson {
+  display: grid;
+  gap: 3px;
+  border: 1px solid var(--s-e3eae5);
+  border-radius: 16px;
+  padding: 12px 16px 16px;
+  background: var(--s-fbfcfa);
+  box-shadow: 0 18px 40px var(--s-14241d40);
+}
+.intro-lesson .grammar-art {
+  margin-bottom: 6px;
+}
+.intro-lesson span {
+  color: var(--t-82908a);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.intro-lesson strong {
+  color: var(--t-20352f);
+  font: 500 20px/1.2 var(--display);
+}
+
+.intro-copy {
+  padding: 14px 28px 4px;
+  text-align: center;
+}
+.intro-copy h1 {
+  margin: 8px 0 10px;
+  color: var(--t-20352f);
+  font: 500 clamp(26px, 7.4vw, 34px)/1.1 var(--display);
+}
+.intro-copy p {
+  max-width: 380px;
+  margin: 0 auto;
+  color: var(--t-667770);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.intro-bottom {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 12px 24px 16px;
+}
+.intro-dots {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.intro-dots button {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: var(--s-d3dfd6);
+  cursor: pointer;
+  transition: width 0.25s, background 0.25s;
+}
+.intro-dots button.active {
+  width: 24px;
+  background: var(--s-315b4d);
+}
+.intro-main {
+  justify-content: center;
+  width: min(100%, 380px);
+  min-height: 50px;
+  font-size: 16px;
+}
+.intro-secondary {
+  min-height: 40px;
+  color: var(--t-4e5e56, var(--t-20352f));
+}
+
+/* Short phones: a smaller picture so the text and the buttons fit. */
+@media (max-height: 700px) {
+  .intro-phone {
+    max-height: 330px;
+  }
+  .intro-copy p {
+    font-size: 14px;
+  }
+}
