@@ -34,7 +34,7 @@ const T = {
   ru: {
     library: 'Библиотека Ling', app: 'Открыть Ling', catalogTitle: 'Книги в оригинале', home: 'Главная',
     catalogLead: 'Классика на иностранных языках в свободном доступе. Читай онлайн, а в приложении Ling нажимай на любое слово, чтобы увидеть перевод, и сохраняй новые слова.',
-    catalogMeta: 'Бесплатная библиотека книг в оригинале: английский, испанский, немецкий, французский, итальянский и португальский. Читай с переводом любого слова в Ling.',
+    catalogMeta: 'Библиотека книг в оригинале: английский, испанский, немецкий, французский, итальянский и португальский. Читай с переводом любого слова в Ling.',
     read: 'Читать с переводом в Ling', start: 'Попробовать здесь', chapters: 'Оглавление', more: 'Ещё на этом языке',
     excerpt: 'Начало книги простым текстом', continueTitle: 'Продолжить чтение в Ling',
     tryTitle: 'Попробуй читать в Ling',
@@ -51,7 +51,7 @@ const T = {
   uk: {
     library: 'Бібліотека Ling', app: 'Відкрити Ling', catalogTitle: 'Книжки в оригіналі', home: 'Головна',
     catalogLead: 'Класика іноземними мовами у вільному доступі. Читай онлайн, а в застосунку Ling натискай на будь-яке слово, щоб побачити переклад, і зберігай нові слова.',
-    catalogMeta: 'Безкоштовна бібліотека книжок в оригіналі: англійська, іспанська, німецька, французька, італійська й португальська. Читай із перекладом будь-якого слова в Ling.',
+    catalogMeta: 'Бібліотека книжок в оригіналі: англійська, іспанська, німецька, французька, італійська й португальська. Читай із перекладом будь-якого слова в Ling.',
     read: 'Читати з перекладом у Ling', start: 'Спробувати тут', chapters: 'Зміст', more: 'Ще цією мовою',
     excerpt: 'Початок книжки звичайним текстом', continueTitle: 'Продовжити читання в Ling',
     tryTitle: 'Спробуй читати в Ling',
@@ -68,7 +68,7 @@ const T = {
   en: {
     library: 'Ling Library', app: 'Open Ling', catalogTitle: 'Books in the original', home: 'Home',
     catalogLead: 'Public-domain classics in foreign languages. Read online, and in the Ling app tap any word to see its translation and save new words.',
-    catalogMeta: 'A free library of books in the original: English, Spanish, German, French, Italian and Portuguese. Read with a translation of any word in Ling.',
+    catalogMeta: 'A library of books in the original: English, Spanish, German, French, Italian and Portuguese. Read with a translation of any word in Ling.',
     read: 'Read with translations in Ling', start: 'Try it here', chapters: 'Contents', more: 'More in this language',
     excerpt: 'The beginning as plain text', continueTitle: 'Keep reading in Ling',
     tryTitle: 'Try reading in Ling',
@@ -126,7 +126,7 @@ function cover(book, from) {
 function trackingScript(kind) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return ''
   const row = `{visitor_id:v,kind:${JSON.stringify(kind)},path:location.pathname.slice(0,300),referrer:r,device:matchMedia('(max-width: 760px)').matches?'mobile':'desktop'}`
-  return `<script>(function(){if(/^(localhost|127\\.|192\\.168\\.|\\[)/.test(location.hostname))return;var v;try{v=localStorage.getItem('ling-visitor');if(!v){v=crypto.randomUUID();localStorage.setItem('ling-visitor',v)}}catch(e){v=crypto.randomUUID()}var r=null;try{var u=new URL(document.referrer);if(u.host!==location.host)r=u.href.slice(0,300)}catch(e){}fetch(${JSON.stringify(`${SUPABASE_URL}/rest/v1/page_views`)},{method:'POST',keepalive:true,headers:{apikey:${JSON.stringify(SUPABASE_KEY)},Authorization:${JSON.stringify(`Bearer ${SUPABASE_KEY}`)},'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(${row})}).catch(function(){})})()</script>`
+  return `<script>(function(){if(/^(localhost|127\\.|192\\.168\\.|\\[)/.test(location.hostname))return;var v;try{if(localStorage.getItem('ling-no-stats')==='1')return}catch(e){}try{v=localStorage.getItem('ling-visitor');if(!v){v=crypto.randomUUID();localStorage.setItem('ling-visitor',v)}}catch(e){v=crypto.randomUUID()}var r=null;try{var u=new URL(document.referrer);if(u.host!==location.host)r=u.href.slice(0,300)}catch(e){}fetch(${JSON.stringify(`${SUPABASE_URL}/rest/v1/page_views`)},{method:'POST',keepalive:true,headers:{apikey:${JSON.stringify(SUPABASE_KEY)},Authorization:${JSON.stringify(`Bearer ${SUPABASE_KEY}`)},'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(${row})}).catch(function(){})})()</script>`
 }
 
 function page({ locale, path: pagePath, title, description, alternates, body, jsonLd, image }) {

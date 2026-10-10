@@ -1,10 +1,11 @@
 import { useEffect, useRef, type CSSProperties } from 'react'
 import { ArrowRight, BookOpen, Check, Cloud, FileScan, Languages, Layers, Volume2, WifiOff, type LucideIcon } from 'lucide-react'
-import { HeroDecor, ShelfIllustration, TapWordIllustration, TrainingIllustration, UploadIllustration } from './LandingIllustrations'
+import { HeroDecor, MonthPlanIllustration, ShelfIllustration, TapWordIllustration, TrainingIllustration, UploadIllustration, YearPlanIllustration } from './LandingIllustrations'
 import { BookShelf } from './BookShelf'
 import { setUiLanguage, useUiLanguage } from './i18n'
 import { LANDING_TEXT, type LandingLanguage } from './landingText'
 import type { Theme } from './theme'
+import { formatPrice, PRICES, YEARLY_SAVING } from './subscription'
 import { ThemeToggle } from './ThemeToggle'
 import './Landing.css'
 
@@ -99,17 +100,21 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
   const chooseLanguage = (next: LandingLanguage) => setUiLanguage(next)
 
   return (
-    <div className="landing" ref={root}>
+    <div className="landing" id="top" ref={root}>
       <header className="landing-nav">
         <div className="landing-container landing-nav-inner">
-          <span className="brand"><span className="brand-mark"><BookOpen size={18} strokeWidth={2.2} /></span><span>ling<span className="brand-period">.</span></span></span>
+          <a className="brand" href="#top"><span className="brand-mark"><BookOpen size={18} strokeWidth={2.2} /></span><span>ling<span className="brand-period">.</span></span></a>
+          <nav className="landing-menu" aria-label={text.menuLabel}>
+            <a href="#about">{text.aboutNav}</a>
+            <a href="#pricing">{text.pricing.nav}</a>
+            <a href={libraryPath(language)}>{text.libraryNav}</a>
+          </nav>
           <div className="landing-nav-actions">
             <div className="landing-lang" role="group" aria-label="Language">
               {LANGUAGES.map((code) => (
                 <button key={code} className={code === language ? 'selected' : ''} aria-pressed={code === language} lang={code} onClick={() => chooseLanguage(code)}>{LANDING_TEXT[code].label}</button>
               ))}
             </div>
-            <a className="landing-library-link" href={libraryPath(language)}>{text.libraryNav}</a>
             <ThemeToggle theme={theme} onToggle={onToggleTheme} className="landing-theme" />
             <button className="landing-login" onClick={() => onSignIn(language)}>{text.login}</button>
           </div>
@@ -133,7 +138,7 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
           </div>
         </section>
 
-        <section className="landing-section landing-container">
+        <section className="landing-section landing-container" id="about">
           <h2 {...reveal()}><Rich text={text.stepsTitle} /></h2>
           <ol className="landing-steps">{text.steps.map((step, index) => {
             const Illustration = STEP_ILLUSTRATIONS[index]
@@ -174,6 +179,34 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
           })}</div>
         </section>
 
+        <section className="landing-section landing-container landing-pricing" id="pricing">
+          <h2 {...reveal()}><Rich text={text.pricing.title} /></h2>
+          <p className="landing-section-lead" {...reveal(1)}>{text.pricing.lead}</p>
+          <div className="pricing-plans">
+            <article className="pricing-plan" {...reveal(2)}>
+              <MonthPlanIllustration />
+              <span className="pricing-plan-name">{text.pricing.monthly.name}</span>
+              <p className="pricing-amount"><strong>{formatPrice(PRICES.monthly)}</strong><span>{text.pricing.monthly.period}</span></p>
+              <p className="pricing-detail">{text.pricing.monthly.detail}</p>
+              <button className="pricing-cta" onClick={() => onSignUp(language)}>{text.pricing.monthly.cta}</button>
+            </article>
+            <article className="pricing-plan featured" {...reveal(3)}>
+              <span className="pricing-badge">{text.pricing.yearly.badge(YEARLY_SAVING)}</span>
+              <YearPlanIllustration />
+              <span className="pricing-plan-name">{text.pricing.yearly.name}</span>
+              <p className="pricing-amount"><strong>{formatPrice(PRICES.yearly)}</strong><span>{text.pricing.yearly.period}</span></p>
+              <p className="pricing-detail">{text.pricing.yearly.detail(formatPrice(PRICES.yearly / 12))}</p>
+              <button className="pricing-cta" onClick={() => onSignUp(language)}>{text.pricing.yearly.cta} <ArrowRight size={16} /></button>
+            </article>
+          </div>
+          <div className="pricing-included" {...reveal(4)}>
+            <span>{text.pricing.includedTitle}</span>
+            <ul>{text.pricing.included.map((item) => <li key={item}><Check size={15} /> {item}</li>)}</ul>
+          </div>
+          <p className="pricing-free" {...reveal(5)}>{text.pricing.free}</p>
+          <p className="pricing-note">{text.pricing.note}</p>
+        </section>
+
         <section className="landing-final landing-container">
           <div {...reveal()}><ShelfIllustration /></div>
           <h2 {...reveal(1)}><Rich text={text.finalTitle} /><span className="heading-period">.</span></h2>
@@ -184,7 +217,12 @@ export function Landing({ theme, onToggleTheme, onSignUp, onSignIn }: LandingPro
 
       <footer className="landing-footer landing-container">
         <span>© {YEAR} Ling</span>
-        <span>ling.uno</span>
+        <nav className="landing-legal" aria-label={text.legal.label}>
+          {(['terms', 'privacy', 'refund', 'cookies', 'notice'] as const).map((page) => (
+            <a key={page} href={`legal/${language}/${page}.html`}>{text.legal[page]}</a>
+          ))}
+        </nav>
+        <a href="mailto:hi@ling.uno">hi@ling.uno</a>
       </footer>
     </div>
   )

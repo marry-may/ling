@@ -13,6 +13,8 @@ export type AuthFormProps = {
   password: string
   busy: boolean
   message: string
+  /** info: good news such as the confirmation email being sent; error: something went wrong. */
+  messageTone?: 'info' | 'error'
   onModeChange: (mode: AuthMode) => void
   onEmailChange: (email: string) => void
   onPasswordChange: (password: string) => void
@@ -24,7 +26,7 @@ export type AuthFormProps = {
   text: AuthText
 }
 
-export function AuthForm({ mode, email, password, busy, message, onModeChange, onEmailChange, onPasswordChange, onSubmit, translationLanguage, onTranslationLanguageChange, text, showModeToggle = true }: AuthFormProps & { showModeToggle?: boolean }) {
+export function AuthForm({ mode, email, password, busy, message, messageTone = 'error', onModeChange, onEmailChange, onPasswordChange, onSubmit, translationLanguage, onTranslationLanguageChange, text, showModeToggle = true }: AuthFormProps & { showModeToggle?: boolean }) {
   return (
     <>
       <form className="auth-form" onSubmit={onSubmit}>
@@ -41,7 +43,7 @@ export function AuthForm({ mode, email, password, busy, message, onModeChange, o
           </button>
         )}
       </form>
-      {message && <p className="auth-message" role="status">{message}</p>}
+      {message && <p className={messageTone === 'info' ? 'auth-message is-info' : 'auth-message'} role="status">{message}</p>}
     </>
   )
 }

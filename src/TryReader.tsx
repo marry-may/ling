@@ -8,6 +8,7 @@ import { normalizeProfile } from './profile'
 import { Reader } from './Reader'
 import { normalizeWord } from './srs'
 import { loadCollection, saveCollection } from './storage'
+import { FREE_PAGES } from './subscription'
 import { splitIntoParts, wordKey } from './text'
 import { useTheme } from './theme'
 
@@ -25,9 +26,9 @@ if (isUiLanguage(pageLanguage)) setUiLanguage(pageLanguage, false)
 
 /** The reader's own bar speaks the library page's language, like the reader inside. */
 const TRY_TEXT = {
-  ru: { part: 'Часть 1', failed: 'Не удалось открыть книгу.', open: 'Открыть в Ling', read: 'Читать в Ling', tap: 'Нажми на любое слово, чтобы увидеть перевод.', saved: (n: number) => `Сохранено слов: ${n}. Они уже ждут тебя в Ling.` },
-  uk: { part: 'Частина 1', failed: 'Не вдалося відкрити книжку.', open: 'Відкрити в Ling', read: 'Читати в Ling', tap: 'Натисни на будь-яке слово, щоб побачити переклад.', saved: (n: number) => `Збережено слів: ${n}. Вони вже чекають на тебе в Ling.` },
-  en: { part: 'Part 1', failed: 'Could not open the book.', open: 'Open in Ling', read: 'Read in Ling', tap: 'Tap any word to see its translation.', saved: (n: number) => `Words saved: ${n}. They are waiting for you in Ling.` },
+  ru: { part: 'Часть 1', failed: 'Не удалось открыть книгу.', open: 'Открыть в Ling', read: 'Читать в Ling', tap: 'Нажми на любое слово, чтобы увидеть перевод.', saved: (n: number) => `Сохранено слов: ${n}. Они уже ждут тебя в Ling.`, limit: (n: number) => `Здесь можно прочитать первые ${n} страниц. Продолжай в Ling: сохранённые слова уже там.`, limitTitle: 'Продолжение — в Ling' },
+  uk: { part: 'Частина 1', failed: 'Не вдалося відкрити книжку.', open: 'Відкрити в Ling', read: 'Читати в Ling', tap: 'Натисни на будь-яке слово, щоб побачити переклад.', saved: (n: number) => `Збережено слів: ${n}. Вони вже чекають на тебе в Ling.`, limit: (n: number) => `Тут можна прочитати перші ${n} сторінок. Продовжуй у Ling: збережені слова вже там.`, limitTitle: 'Продовження — у Ling' },
+  en: { part: 'Part 1', failed: 'Could not open the book.', open: 'Open in Ling', read: 'Read in Ling', tap: 'Tap any word to see its translation.', saved: (n: number) => `Words saved: ${n}. They are waiting for you in Ling.`, limit: (n: number) => `The first ${n} pages can be read here. Continue in Ling: your saved words are already there.`, limitTitle: 'Continue in Ling' },
 }
 const text = TRY_TEXT[pageLanguage === 'uk' || pageLanguage === 'en' ? pageLanguage : 'ru']
 
@@ -138,6 +139,8 @@ export function TryReader() {
         onPageChange={changePage}
         onSaveWord={saveWord}
         onMarkKnown={markKnown}
+        freePages={FREE_PAGES}
+        paywall={<section className="paywall"><h2>{text.limitTitle}</h2><p>{text.limit(FREE_PAGES)}</p><button className="primary-action paywall-subscribe" onClick={openInApp}>{text.read} <ArrowRight size={15} /></button></section>}
       />
       <div className="try-bar">
         <span>{savedHere > 0 ? text.saved(savedHere) : text.tap}</span>

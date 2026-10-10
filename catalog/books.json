@@ -477,5 +477,466 @@
     },
     "words": 51404,
     "chapters": 17
+  },
+  {
+    "slug": "a-first-spanish-reader",
+    "gutenbergId": 15353,
+    "title": "A First Spanish Reader",
+    "author": "Erwin W. Roessler, Alfred Remy",
+    "authorYears": "1926 / 1937",
+    "year": 1904,
+    "language": "es",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Настоящая книга для чтения для самых начинающих: короткие тексты о школе, семье, доме, временах года, городе, а потом — простые сказки и анекдоты. Каждый текст на страницу, слова повторяются, грамматика усложняется постепенно. Хорошо подходит, если вы только начали учить испанский.",
+      "uk": "Справжня книжка для читання для тих, хто тільки почав: короткі тексти про школу, родину, дім, пори року, місто, а далі — прості казки й анекдоти. Кожен текст на сторінку, слова повторюються, граматика ускладнюється поступово. Добре підходить, якщо ви щойно почали вчити іспанську.",
+      "en": "A true reader for absolute beginners: short texts about school, family, home, the seasons and the city, followed by simple tales and anecdotes. Each text fits on a page, words come back again and again, and the grammar builds up gradually. A good start if you have just begun Spanish."
+    },
+    "words": 19631,
+    "chapters": 68
+  },
+  {
+    "slug": "spanish-tales-for-beginners",
+    "gutenbergId": 36805,
+    "title": "Spanish Tales for Beginners",
+    "author": "Elijah C. Hills (ed.)",
+    "authorYears": "1867–1932",
+    "year": 1909,
+    "language": "es",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Сборник коротких рассказов и басен испанских писателей XIX века — Беккера, Пардо Басан, Аларкона, Паласио Вальдеса — отобранный для тех, кто начинает читать по-испански. Рассказы короткие, с живыми диалогами и простым сюжетом: можно прочитать один за раз.",
+      "uk": "Збірка коротких оповідань і байок іспанських письменників XIX століття — Беккера, Пардо Басан, Аларкона, Паласіо Вальдеса, — дібрана для тих, хто починає читати іспанською. Оповідання короткі, з живими діалогами й простим сюжетом: одне можна прочитати за раз.",
+      "en": "Short stories and fables by nineteenth-century Spanish writers such as Bécquer, Pardo Bazán, Alarcón and Palacio Valdés, chosen for readers starting out in Spanish. The stories are short, with lively dialogue and simple plots, so one makes a good single sitting."
+    },
+    "cover": true,
+    "words": 32372,
+    "chapters": 31
+  },
+  {
+    "slug": "la-edad-de-oro",
+    "gutenbergId": 19898,
+    "title": "La Edad de Oro",
+    "author": "José Martí",
+    "authorYears": "1853–1895",
+    "year": 1889,
+    "language": "es",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Журнал, который кубинский поэт Хосе Марти писал для детей Латинской Америки: сказки, стихи, рассказы о героях, истории вещей и путешествия. Тёплый, ясный язык и короткие главы делают его хорошим чтением для начального и среднего уровня.",
+      "uk": "Журнал, який кубинський поет Хосе Марті писав для дітей Латинської Америки: казки, вірші, розповіді про героїв, історії речей і подорожі. Тепла, ясна мова й короткі розділи роблять його добрим читанням для початкового й середнього рівня.",
+      "en": "The magazine the Cuban poet José Martí wrote for the children of Latin America: tales, poems, stories of heroes, the history of everyday things and travels. Its warm, clear language and short chapters make it good reading at beginner and intermediate level."
+    },
+    "words": 66549,
+    "chapters": 28
+  },
+  {
+    "slug": "contes-et-legendes",
+    "gutenbergId": 18873,
+    "title": "Contes et légendes",
+    "author": "H. A. Guerber",
+    "authorYears": "1859–1929",
+    "year": 1895,
+    "language": "fr",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Сказки и легенды разных народов — «Три медведя», «Белоснежка», «Золотая рыбка», «Пряничный домик» — пересказанные простым французским для начинающих. Знакомые сюжеты помогают понимать текст, даже когда встречаются новые слова.",
+      "uk": "Казки й легенди різних народів — «Три ведмеді», «Білосніжка», «Золота рибка», «Пряниковий будиночок», — переказані простою французькою для початківців. Знайомі сюжети допомагають розуміти текст, навіть коли трапляються нові слова.",
+      "en": "Tales and legends from many countries, including The Three Bears, Snow White, The Golden Fish and the gingerbread house, retold in simple French for beginners. Familiar plots help you follow the text even when new words appear."
+    },
+    "words": 34610,
+    "chapters": 24
+  },
+  {
+    "slug": "abc-petits-contes",
+    "gutenbergId": 30117,
+    "title": "ABC. Petits contes",
+    "author": "Jules Lemaître",
+    "authorYears": "1853–1914",
+    "year": 1919,
+    "language": "fr",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Азбука в сказках: на каждую букву — маленькая история о животном или предмете, от «Âne» до «Zèbre». Очень короткие тексты простым языком, написанные для детей академиком Жюлем Леметром. Отличное первое чтение по-французски.",
+      "uk": "Абетка в казках: на кожну літеру — маленька історія про тварину чи річ, від «Âne» до «Zèbre». Дуже короткі тексти простою мовою, написані для дітей академіком Жулем Леметром. Чудове перше читання французькою.",
+      "en": "An alphabet of tales: a little story about an animal or object for each letter, from Âne to Zèbre. Very short texts in simple language, written for children by the academician Jules Lemaître. A lovely first read in French."
+    },
+    "cover": true,
+    "words": 5641,
+    "chapters": 25
+  },
+  {
+    "slug": "maerchen-und-erzaehlungen-1",
+    "gutenbergId": 35794,
+    "title": "Märchen und Erzählungen für Anfänger. Erster Teil",
+    "author": "H. A. Guerber",
+    "authorYears": "1859–1929",
+    "year": 1896,
+    "language": "de",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Немецкие сказки и легенды, пересказанные для начинающих: «Дом, который построил Джек», «Гамельнский крысолов», «Принцесса, которая не смеялась». Тексты начинаются совсем просто и постепенно становятся длиннее, а трудные слова иногда поясняются прямо в скобках по-немецки.",
+      "uk": "Німецькі казки й легенди, переказані для початківців: «Дім, який збудував Джек», «Гамельнський щуролов», «Принцеса, яка не сміялася». Тексти починаються зовсім просто й поступово стають довшими, а складні слова інколи пояснено просто в дужках німецькою.",
+      "en": "German fairy tales and legends retold for beginners, including The House That Jack Built, The Pied Piper of Hamelin and The Princess Who Would Not Laugh. The texts start very simply and grow longer step by step, and hard words are sometimes explained in German in brackets."
+    },
+    "words": 20029,
+    "chapters": 15
+  },
+  {
+    "slug": "maerchen-und-erzaehlungen-2",
+    "gutenbergId": 45189,
+    "title": "Märchen und Erzählungen für Anfänger. Zweiter Teil",
+    "author": "H. A. Guerber",
+    "authorYears": "1859–1929",
+    "year": 1896,
+    "language": "de",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Продолжение книги для начинающих: рождественские истории, сказки о Барбароссе и Рюбецале, «Столик, накройся», анекдоты о Фридрихе Великом. Рассказы чуть длиннее, чем в первой части, но язык по-прежнему простой.",
+      "uk": "Продовження книжки для початківців: різдвяні історії, казки про Барбароссу й Рюбецаля, «Столик, накрийся», анекдоти про Фрідріха Великого. Оповідання трохи довші, ніж у першій частині, але мова так само проста.",
+      "en": "The second part of the beginners’ reader: Christmas stories, tales of Barbarossa and Rübezahl, the magic table, and anecdotes about Frederick the Great. The stories are a little longer than in the first part, but the language stays simple."
+    },
+    "words": 28066,
+    "chapters": 13
+  },
+  {
+    "slug": "lezioni-e-racconti",
+    "gutenbergId": 17805,
+    "title": "Lezioni e racconti per i bambini",
+    "author": "Ida Baccini",
+    "authorYears": "1850–1911",
+    "year": 1882,
+    "language": "it",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Короткие рассказы для детей из итальянской школьной книги XIX века: о семье, животных, играх и вещах вокруг — от вола и рыб до бумаги и мыла. Простые фразы и повседневная лексика делают её хорошим первым чтением по-итальянски.",
+      "uk": "Короткі оповідання для дітей з італійської шкільної книжки XIX століття: про родину, тварин, ігри й речі довкола — від вола й риб до паперу й мила. Прості речення й повсякденна лексика роблять її добрим першим читанням італійською.",
+      "en": "Short stories for children from a nineteenth-century Italian school book: family, animals, games and everyday things, from oxen and fish to paper and soap. Simple sentences and everyday vocabulary make it a good first read in Italian."
+    },
+    "words": 31091,
+    "chapters": 35
+  },
+  {
+    "slug": "contos-para-a-infancia",
+    "gutenbergId": 16429,
+    "title": "Contos para a infância",
+    "author": "Guerra Junqueiro (ed.)",
+    "authorYears": "1850–1923",
+    "year": 1877,
+    "language": "pt",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Короткие детские сказки и притчи, собранные португальским поэтом Герра Жункейру из лучших авторов. Каждая история на одну-две страницы, с простым сюжетом и моралью. Написано в старой орфографии XIX века, но язык простой.",
+      "uk": "Короткі дитячі казки й притчі, зібрані португальським поетом Геррою Жункейру з найкращих авторів. Кожна історія на одну-дві сторінки, з простим сюжетом і мораллю. Написано старою орфографією XIX століття, але мова проста.",
+      "en": "Short children’s tales and parables collected from the best authors by the Portuguese poet Guerra Junqueiro. Each story is a page or two, with a simple plot and a moral. It uses nineteenth-century spelling, but the language is simple."
+    },
+    "words": 28587,
+    "chapters": 44
+  },
+  {
+    "slug": "treasure-island",
+    "gutenbergId": 120,
+    "title": "Treasure Island",
+    "author": "Robert Louis Stevenson",
+    "authorYears": "1850–1894",
+    "year": 1883,
+    "language": "en",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Юный Джим Хокинс находит карту пиратского клада и отправляется в плавание — но половина команды оказывается пиратами во главе с одноногим Джоном Сильвером. Классический приключенческий роман: напряжённый сюжет, короткие главы и живые диалоги.",
+      "uk": "Юний Джим Гокінс знаходить мапу піратського скарбу й вирушає в плавання — але половина команди виявляється піратами на чолі з одноногим Джоном Сільвером. Класичний пригодницький роман: напружений сюжет, короткі розділи й живі діалоги.",
+      "en": "Young Jim Hawkins finds a pirate’s treasure map and sets sail, only to discover that half the crew are pirates led by the one-legged Long John Silver. The classic adventure novel, with a gripping plot, short chapters and lively dialogue."
+    },
+    "words": 69872,
+    "chapters": 34
+  },
+  {
+    "slug": "the-jungle-book",
+    "gutenbergId": 236,
+    "title": "The Jungle Book",
+    "author": "Rudyard Kipling",
+    "authorYears": "1865–1936",
+    "year": 1894,
+    "language": "en",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Истории о Маугли, воспитанном волками, о мангусте Рикки-Тикки-Тави, белом котике и мальчике-погонщике слонов. Каждый рассказ — отдельная история, а между ними — песни джунглей. Удобно читать по одной истории за раз.",
+      "uk": "Історії про Мауглі, вихованого вовками, про мангуста Ріккі-Тіккі-Таві, білого котика й хлопчика-погонича слонів. Кожне оповідання — окрема історія, а між ними — пісні джунглів. Зручно читати по одній історії за раз.",
+      "en": "Stories of Mowgli, raised by wolves, of Rikki-Tikki-Tavi the mongoose, the White Seal and the boy who drove elephants. Each tale stands on its own, with jungle songs in between, so you can read one story at a time."
+    },
+    "words": 52261,
+    "chapters": 7
+  },
+  {
+    "slug": "the-secret-garden",
+    "gutenbergId": 113,
+    "title": "The Secret Garden",
+    "author": "Frances Hodgson Burnett",
+    "authorYears": "1849–1924",
+    "year": 1911,
+    "language": "en",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Капризная сирота Мэри попадает в мрачное поместье в Йоркшире и находит запертый сад, о котором никто не говорит. Тёплая история о дружбе и о том, как люди оживают вместе с садом. Простой, ясный язык.",
+      "uk": "Вередлива сирота Мері потрапляє до похмурого маєтку в Йоркширі й знаходить замкнений сад, про який ніхто не говорить. Тепла історія про дружбу й про те, як люди оживають разом із садом. Проста, ясна мова.",
+      "en": "Spoilt orphan Mary is sent to a gloomy Yorkshire manor and finds a locked garden nobody will talk about. A warm story of friendship and of people coming back to life along with the garden, told in simple, clear language."
+    },
+    "words": 82832,
+    "chapters": 27
+  },
+  {
+    "slug": "anne-of-green-gables",
+    "gutenbergId": 45,
+    "title": "Anne of Green Gables",
+    "author": "L. M. Montgomery",
+    "authorYears": "1874–1942",
+    "year": 1908,
+    "language": "en",
+    "difficulty": "easy",
+    "description": {
+      "ru": "Пожилые брат и сестра ждали мальчика из приюта, а к ним приехала рыжая болтливая фантазёрка Энн. Добрый и смешной роман о взрослении на острове Принца Эдуарда, который любят уже больше ста лет.",
+      "uk": "Літні брат і сестра чекали хлопчика з притулку, а до них приїхала руда балакуча фантазерка Енн. Добрий і смішний роман про дорослішання на острові Принца Едварда, який люблять уже понад сто років.",
+      "en": "An elderly brother and sister expected a boy from the orphanage, but red-haired, talkative, imaginative Anne arrives instead. A kind and funny novel about growing up on Prince Edward Island, loved for over a hundred years."
+    },
+    "words": 106589,
+    "chapters": 38
+  },
+  {
+    "slug": "arsene-lupin-gentleman-cambrioleur",
+    "gutenbergId": 32854,
+    "title": "Arsène Lupin, gentleman-cambrioleur",
+    "author": "Maurice Leblanc",
+    "authorYears": "1864–1941",
+    "year": 1907,
+    "language": "fr",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Первые приключения Арсена Люпена — элегантного вора, который грабит богачей, сбегает из тюрьмы и даже встречается с Херлоком Шолмсом. Девять коротких детективных рассказов с неожиданными развязками.",
+      "uk": "Перші пригоди Арсена Люпена — елегантного злодія, який грабує багатіїв, тікає з в’язниці й навіть зустрічається з Герлоком Шолмсом. Дев’ять коротких детективних оповідань із несподіваними розв’язками.",
+      "en": "The first adventures of Arsène Lupin, the elegant thief who robs the rich, escapes from prison and even crosses paths with Herlock Sholmès. Nine short detective stories with surprise endings."
+    },
+    "words": 57892,
+    "chapters": 9
+  },
+  {
+    "slug": "le-fantome-de-l-opera",
+    "gutenbergId": 62215,
+    "title": "Le Fantôme de l'Opéra",
+    "author": "Gaston Leroux",
+    "authorYears": "1868–1927",
+    "year": 1910,
+    "language": "fr",
+    "difficulty": "hard",
+    "description": {
+      "ru": "В подземельях Парижской оперы живёт таинственный Призрак, влюблённый в молодую певицу Кристину. Готический роман, детектив и история любви в одном — оригинал знаменитого мюзикла.",
+      "uk": "У підземеллях Паризької опери живе таємничий Привид, закоханий у молоду співачку Крістіну. Готичний роман, детектив і історія кохання водночас — оригінал знаменитого мюзиклу.",
+      "en": "Beneath the Paris Opera lives a mysterious Phantom in love with the young singer Christine. A gothic novel, a mystery and a love story in one: the original behind the famous musical."
+    },
+    "words": 107915,
+    "chapters": 28
+  },
+  {
+    "slug": "le-mystere-de-la-chambre-jaune",
+    "gutenbergId": 13765,
+    "title": "Le mystère de la chambre jaune",
+    "author": "Gaston Leroux",
+    "authorYears": "1868–1927",
+    "year": 1907,
+    "language": "fr",
+    "difficulty": "medium",
+    "description": {
+      "ru": "На дочь учёного нападают в комнате, запертой изнутри, а преступник бесследно исчезает. Расследование ведёт юный журналист Рультабий. Один из первых и самых известных детективов «запертой комнаты».",
+      "uk": "На доньку вченого нападають у кімнаті, замкненій зсередини, а злочинець безслідно зникає. Розслідування веде юний журналіст Рультабій. Один із перших і найвідоміших детективів «замкненої кімнати».",
+      "en": "A scientist’s daughter is attacked in a room locked from the inside, and the attacker vanishes without a trace. Young reporter Rouletabille investigates in one of the first and most famous locked-room mysteries."
+    },
+    "words": 89325,
+    "chapters": 29
+  },
+  {
+    "slug": "cuentos-de-amor-de-locura-y-de-muerte",
+    "gutenbergId": 13507,
+    "title": "Cuentos de amor de locura y de muerte",
+    "author": "Horacio Quiroga",
+    "authorYears": "1878–1937",
+    "year": 1917,
+    "language": "es",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Знаменитые рассказы уругвайского мастера: любовь, безумие и смерть в сельве и в городе. Короткие, напряжённые истории вроде «Подушки из перьев» и «Обезглавленной курицы» — латиноамериканский Эдгар По.",
+      "uk": "Знамениті оповідання уругвайського майстра: кохання, божевілля й смерть у сельві та в місті. Короткі, напружені історії на кшталт «Подушки з пір’я» та «Обезголовленої курки» — латиноамериканський Едгар По.",
+      "en": "The famous stories of the Uruguayan master: love, madness and death in the jungle and the city. Short, tense tales such as The Feather Pillow and The Decapitated Chicken, the Latin American Edgar Allan Poe."
+    },
+    "words": 49783,
+    "chapters": 18
+  },
+  {
+    "slug": "el-capitan-veneno",
+    "gutenbergId": 29731,
+    "title": "El Capitán Veneno",
+    "author": "Pedro Antonio de Alarcón",
+    "authorYears": "1833–1891",
+    "year": 1881,
+    "language": "es",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Раненого грубияна-капитана, ненавидящего женщин, выхаживают мать и дочь — и он постепенно влюбляется. Короткий, очень смешной роман с живыми диалогами, который часто читают изучающие испанский.",
+      "uk": "Пораненого грубіяна-капітана, який ненавидить жінок, виходжують мати й донька — і він поступово закохується. Короткий, дуже смішний роман із живими діалогами, який часто читають ті, хто вивчає іспанську.",
+      "en": "A wounded, woman-hating captain is nursed back to health by a mother and daughter and slowly falls in love. A short, very funny novel full of lively dialogue, often read by learners of Spanish."
+    },
+    "words": 21194,
+    "chapters": 27
+  },
+  {
+    "slug": "lazarillo-de-tormes",
+    "gutenbergId": 320,
+    "title": "Lazarillo de Tormes",
+    "author": "Anónimo",
+    "authorYears": "",
+    "year": 1554,
+    "language": "es",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Мальчик Ласарильо служит слепому, скупому священнику, нищему идальго и другим хозяевам — и учится выживать хитростью. Первый плутовской роман, короткий и остроумный. Язык XVI века, поэтому книга для продвинутых.",
+      "uk": "Хлопчик Ласарильо служить сліпому, скупому священикові, бідному ідальго та іншим господарям — і вчиться виживати хитрістю. Перший шахрайський роман, короткий і дотепний. Мова XVI століття, тож книжка для просунутих.",
+      "en": "Young Lazarillo serves a blind man, a stingy priest, a penniless nobleman and other masters, learning to survive by his wits. The first picaresque novel, short and witty. Its sixteenth-century Spanish makes it one for advanced readers."
+    },
+    "words": 19959,
+    "chapters": 8
+  },
+  {
+    "slug": "der-schimmelreiter",
+    "gutenbergId": 74008,
+    "title": "Der Schimmelreiter",
+    "author": "Theodor Storm",
+    "authorYears": "1817–1888",
+    "year": 1888,
+    "language": "de",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Легенда о смотрителе плотин Хауке Хайене, который строит новую дамбу на Северном море и становится призраком на белом коне. Мрачная и красивая новелла — одна из самых известных в немецкой литературе.",
+      "uk": "Легенда про доглядача гребель Гауке Гайєна, який будує нову дамбу на Північному морі й стає привидом на білому коні. Похмура й красива новела — одна з найвідоміших у німецькій літературі.",
+      "en": "The legend of dike-reeve Hauke Haien, who builds a new dike on the North Sea coast and becomes a ghost on a white horse. A dark, beautiful novella, one of the best known in German literature."
+    },
+    "words": 38469,
+    "chapters": 1
+  },
+  {
+    "slug": "der-prozess",
+    "gutenbergId": 69327,
+    "title": "Der Prozess",
+    "author": "Franz Kafka",
+    "authorYears": "1883–1924",
+    "year": 1925,
+    "language": "de",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Однажды утром банковского служащего Йозефа К. арестовывают, не объясняя, в чём его обвиняют. Он пытается разобраться в бесконечном и абсурдном суде. Главный роман Кафки, написанный ясным, но тревожным языком.",
+      "uk": "Одного ранку банківського службовця Йозефа К. заарештовують, не пояснюючи, у чому його звинувачують. Він намагається розібратися в нескінченному й абсурдному суді. Головний роман Кафки, написаний ясною, але тривожною мовою.",
+      "en": "One morning bank clerk Josef K. is arrested without being told what he is accused of, and tries to find his way through an endless, absurd court. Kafka’s great novel, written in clear yet unsettling prose."
+    },
+    "words": 71687,
+    "chapters": 10
+  },
+  {
+    "slug": "maerchen-almanach-1826",
+    "gutenbergId": 6638,
+    "title": "Märchen-Almanach auf das Jahr 1826",
+    "author": "Wilhelm Hauff",
+    "authorYears": "1802–1827",
+    "year": 1826,
+    "language": "de",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Купцы в караване рассказывают друг другу восточные сказки: «Калиф-аист», «Маленький Мук», «Корабль-призрак». Сказки Гауфа — классика немецкого детского чтения, увлекательные и не слишком длинные.",
+      "uk": "Купці в караван-сараї розповідають одне одному східні казки: «Каліф-лелека», «Маленький Мук», «Корабель-привид». Казки Гауфа — класика німецького дитячого читання, захопливі й не надто довгі.",
+      "en": "Merchants in a caravan tell each other oriental tales: Caliph Stork, Little Muck, The Ghost Ship. Hauff’s fairy tales are classics of German children’s reading, gripping and not too long."
+    },
+    "words": 41399,
+    "chapters": 8
+  },
+  {
+    "slug": "i-robinson-italiani",
+    "gutenbergId": 61209,
+    "title": "I Robinson italiani",
+    "author": "Emilio Salgari",
+    "authorYears": "1862–1911",
+    "year": 1896,
+    "language": "it",
+    "difficulty": "medium",
+    "description": {
+      "ru": "После кораблекрушения четверо итальянцев оказываются на необитаемом острове и учатся выживать: строят хижину на дереве, охотятся, отбиваются от тигров и пиратов. Приключенческий роман Сальгари с короткими главами.",
+      "uk": "Після корабельної аварії четверо італійців опиняються на безлюдному острові й учаться виживати: будують хатину на дереві, полюють, відбиваються від тигрів і піратів. Пригодницький роман Сальгарі з короткими розділами.",
+      "en": "After a shipwreck four Italians are stranded on a desert island and learn to survive: they build a tree house, hunt, and fight off tigers and pirates. An adventure novel by Salgari with short chapters."
+    },
+    "words": 68152,
+    "chapters": 35
+  },
+  {
+    "slug": "ricordi-d-infanzia-e-di-scuola",
+    "gutenbergId": 61885,
+    "title": "Ricordi d'infanzia e di scuola",
+    "author": "Edmondo De Amicis",
+    "authorYears": "1846–1908",
+    "year": 1901,
+    "language": "it",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Автор «Сердца» вспоминает своё детство, школу, игрушки и театр марионеток, пишет о детях и подростках. Тёплые, добрые очерки простым языком — хорошее чтение для среднего уровня.",
+      "uk": "Автор «Серця» згадує своє дитинство, школу, іграшки й театр маріонеток, пише про дітей і підлітків. Теплі, добрі нариси простою мовою — добре читання для середнього рівня.",
+      "en": "The author of Heart remembers his childhood, school, toys and puppet theatre, and writes about children and teenagers. Warm, gentle sketches in simple language, good reading at intermediate level."
+    },
+    "words": 99604,
+    "chapters": 14
+  },
+  {
+    "slug": "helena",
+    "gutenbergId": 67162,
+    "title": "Helena",
+    "author": "Machado de Assis",
+    "authorYears": "1839–1908",
+    "year": 1876,
+    "language": "pt",
+    "difficulty": "medium",
+    "description": {
+      "ru": "После смерти советника выясняется, что у него была внебрачная дочь Елена, которую семья должна принять в доме. Ранний роман Машаду де Ассиса — история любви и семейной тайны, написанная проще его поздних книг.",
+      "uk": "Після смерті радника з’ясовується, що він мав позашлюбну доньку Гелену, яку родина має прийняти в домі. Ранній роман Машаду де Ассіса — історія кохання й родинної таємниці, написана простіше за його пізні книжки.",
+      "en": "When a councillor dies, his family learns he had a daughter, Helena, whom they must take into their home. An early novel by Machado de Assis, a story of love and a family secret, simpler in style than his later books."
+    },
+    "words": 57534,
+    "chapters": 28
+  },
+  {
+    "slug": "papeis-avulsos",
+    "gutenbergId": 57001,
+    "title": "Papéis avulsos",
+    "author": "Machado de Assis",
+    "authorYears": "1839–1908",
+    "year": 1882,
+    "language": "pt",
+    "difficulty": "hard",
+    "description": {
+      "ru": "Сборник рассказов, в который входит «Психиатр» — ироничная история о докторе, запершем в сумасшедший дом почти весь город, — и знаменитое «Зеркало». Остроумная классическая бразильская проза.",
+      "uk": "Збірка оповідань, до якої входить «Психіатр» — іронічна історія про лікаря, що замкнув у божевільні майже все місто, — і знамените «Дзеркало». Дотепна класична бразильська проза.",
+      "en": "A collection of stories including The Psychiatrist, the ironic tale of a doctor who locks up almost an entire town in his asylum, and the famous The Mirror. Witty classic Brazilian prose."
+    },
+    "words": 54308,
+    "chapters": 25
+  },
+  {
+    "slug": "contos-eca-de-queiroz",
+    "gutenbergId": 31347,
+    "title": "Contos",
+    "author": "Eça de Queiroz",
+    "authorYears": "1845–1900",
+    "year": 1902,
+    "language": "pt",
+    "difficulty": "medium",
+    "description": {
+      "ru": "Рассказы великого португальского писателя: от иронических историй о городе до притч вроде «Кормилицы» и «Чуда». Каждый рассказ — законченная история, их удобно читать по одному.",
+      "uk": "Оповідання великого португальського письменника: від іронічних історій про місто до притч на кшталт «Годувальниці» та «Дива». Кожне оповідання — завершена історія, їх зручно читати по одному.",
+      "en": "Stories by the great Portuguese writer, from ironic tales of city life to parables such as The Nursemaid and The Sweet Miracle. Each story stands on its own, so they are easy to read one at a time."
+    },
+    "words": 69807,
+    "chapters": 12
   }
 ]

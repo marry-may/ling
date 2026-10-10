@@ -18,7 +18,7 @@ type CatalogPageProps = {
 
 const CATALOG_LANGUAGES = Array.from(new Set(CATALOG.map((book) => book.language)))
 
-function coverIndex(id: string): number {
+export function catalogCoverIndex(id: string): number {
   let hash = 0
   for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) | 0
   return Math.abs(hash) % 4
@@ -28,7 +28,8 @@ function shelfProgress(copies: BookFile[]): number {
   return Math.round(copies.reduce((sum, copy) => sum + copy.progress, 0) / Math.max(1, copies.length))
 }
 
-function Cover({ book }: { book: CatalogBook }) {
+/** A Ling Library book's cover: the edition's scan, otherwise a drawn one. */
+export function CatalogCover({ book }: { book: CatalogBook }) {
   const image = coverUrl(book)
   if (image) return <div className="book-cover has-image"><img className="cover-image" src={image} alt="" loading="lazy" /></div>
   return (
@@ -51,7 +52,7 @@ export function CatalogPage({ shelf, studyLanguage, selectedSlug, busySlug, onSe
       <section className="catalog-detail">
         <button className="quiet-button folder-back" onClick={() => onSelect(null)}><ArrowLeft size={16} /> {t.common.lingLibrary}</button>
         <div className="catalog-detail-main">
-          <div className={`catalog-detail-cover cover-${coverIndex(selected.slug)}`}><Cover book={selected} /></div>
+          <div className={`catalog-detail-cover cover-${catalogCoverIndex(selected.slug)}`}><CatalogCover book={selected} /></div>
           <div className="catalog-detail-info">
             <span className="eyebrow">{getLanguage(selected.language).name.toUpperCase()} · {selected.year}</span>
             <h1 lang={selected.language}>{selected.title}</h1>
@@ -95,9 +96,9 @@ export function CatalogPage({ shelf, studyLanguage, selectedSlug, busySlug, onSe
         <div className="book-grid">{visible.map((book) => {
           const copies = shelfCopies(book, shelf)
           return (
-            <div className={`book-slot cover-${coverIndex(book.slug)}`} key={book.slug}>
+            <div className={`book-slot cover-${catalogCoverIndex(book.slug)}`} key={book.slug}>
               <button className="book-card" onClick={() => onSelect(book.slug)}>
-                <Cover book={book} />
+                <CatalogCover book={book} />
                 <div className="book-card-info">
                   <div className="book-card-title">{book.title}</div>
                   <div className="book-card-author">{book.author}</div>

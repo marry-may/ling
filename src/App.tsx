@@ -12,6 +12,7 @@ import { isUiLanguage, messages, partTitle, setUiLanguage, UI_LANGUAGES, useMess
 import { readBookFile } from './bookImport'
 import { catalogBookOf, coverUrl, findCatalogBook, loadCatalogChapters, shelfCopies, type CatalogBook } from './catalog'
 import { CatalogPage } from './CatalogPage'
+import { LibraryPicks } from './LibraryPicks'
 import { deleteAccountBooks, deleteAccountKnownWord, deleteAccountWord, downloadAccountBookContent, getAccountBooks, getAccountKnownWords, getAccountProfile, getAccountWords, saveAccountKnownWords, saveAccountProfile, saveAccountWords, PARTS_MIGRATION_MESSAGE, updateAccountProgress, uploadAccountBook, uploadAccountCollection, uploadGuestLibrary } from './cloud'
 import { bookTitleOf, type BookFile, type KnownWords, type SavedWord } from './domain'
 import { DEFAULT_LANGUAGE, defaultTranslationLanguage, getLanguage, LANGUAGES } from './languages'
@@ -19,12 +20,14 @@ import { TranslationLanguageSelect } from './TranslationLanguageSelect'
 import { Landing } from './Landing'
 import { LanguagePicker } from './LanguagePicker'
 import { Onboarding } from './Onboarding'
+import { Paywall, SubscriptionPanel } from './Paywall'
 import { currentStreak, EMPTY_PROFILE, lastWeek, mergeProfiles, normalizeProfile, recordDay, sameProfile, type Profile } from './profile'
 import { Reader } from './Reader'
 import { SAMPLE_BOOKS } from './sampleBooks'
 import { isDue, normalizeWord } from './srs'
 import { loadCollection, saveCollection } from './storage'
 import { cloudEnabled, siteUrl, supabase } from './supabase'
+import { FREE_PAGES, isActive, loadSubscription, type Subscription } from './subscription'
 import { splitIntoParts, wordKey, type Section } from './text'
 import { useTheme } from './theme'
 import { ThemeToggle } from './ThemeToggle'
@@ -235,6 +238,9 @@ function App() {
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [dataScope, setDataScope] = useState('anonymous')
   const [accountUser, setAccountUser] = useState<User | null>(null)
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  // Square brings the buyer back to /?payment=done; the subscription is then looked up in Square (square_sync).
+  const paymentReturn = useRef(new URLSearchParams(window.location.search).get('payment') === 'done')
   const [accountOpen, setAccountOpen] = useState(false)
   const [adminId, setAdminId] = useState<string | null>(null)
   const pageViewTracked = useRef(false)
@@ -246,6 +252,7 @@ function App() {
   const [authEmail, setAuthEmail] = useState('')
   const [authPassword, setAuthPassword] = useState('')
   const [authMessage, setAuthMessage] = useState('')
+  const [authMessageTone, setAuthMessageTone] = useState<'info' | 'error'>('error')
   const [authBusy, setAuthBusy] = useState(false)
   const authFlowRef = useRef(false)
   const activeScopeRef = useRef('')
@@ -404,6 +411,7 @@ function App() {
         })
       if (result.error) throw result.error
       if (!result.data.session || !result.data.user) {
+        setAuthMessageTone('info')
         setAuthMessage(text.checkEmail(authEmail.trim(), new URL(siteUrl).host))
         return
       }
@@ -420,6 +428,7 @@ function App() {
       setAuthPassword('')
       setNotice(`${t.notices.connected}${migrationMessage}`)
     } catch (error) {
+      setAuthMessageTone('error')
       setAuthMessage(authErrorText(error, text))
     } finally {
       authFlowRef.current = false
@@ -795,6 +804,43 @@ function App() {
     if (kept && kept !== uiLanguage) persistProfile({ ...profileRef.current, uiLanguage })
   }, [uiLanguage]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** Reloads the signed-in user's subscription; null when signed out or when there is none. */
+  async function refreshSubscription(): Promise<Subscription | null> {
+    if (!accountUser) return null
+    const next = await loadSubscription().catch(() => null)
+    setSubscription(next)
+    return next
+  }
+
+  const accountId = accountUser?.id
+  useEffect(() => {
+    if (accountId) void loadSubscription().then(setSubscription, () => setSubscription(null))
+  }, [accountId])
+  // A subscription belongs to the signed-in account; after signing out it no longer applies.
+  const currentSubscription = accountUser ? subscription : null
+
+  // Back from the payment page: check a few times until the payment's callback has extended the subscription.
+  useEffect(() => {
+    if (!accountId || !paymentReturn.current) return
+    paymentReturn.current = false
+    window.history.replaceState(null, '', window.location.pathname)
+    let attempts = 0
+    let timer = 0
+    const poll = async () => {
+      const next = await loadSubscription().catch(() => null)
+      setSubscription(next)
+      if (isActive(next) && next && next.periodEnd.getTime() - Date.now() > 20 * 86400000) {
+        setNotice(messages().subscription.paymentDone)
+        return
+      }
+      if (attempts === 0) setNotice(messages().subscription.paymentPending)
+      if (++attempts < 10) timer = window.setTimeout(() => void poll(), 3000)
+      else setNotice(messages().subscription.paymentNotYet)
+    }
+    void poll()
+    return () => window.clearTimeout(timer)
+  }, [accountId])
+
   if (isLoadingData) {
     return <div className="loading-screen"><span className="brand-mark"><BookOpen size={19} /></span><LoaderCircle size={19} className="spin" /></div>
   }
@@ -817,6 +863,7 @@ function App() {
     password: authPassword,
     busy: authBusy,
     message: authMessage,
+    messageTone: authMessageTone,
     onModeChange: (mode) => {
       setAuthMode(mode)
       setAuthMessage('')
@@ -908,6 +955,9 @@ function App() {
               onPageChange={(page, pageCount) => updatePage(activeBook.id, page, pageCount)}
               onSaveWord={saveWord}
               onMarkKnown={(keys) => markKnown(activeBook.language, keys)}
+              // Past the free pages of a book (all of its later parts) reading needs a subscription.
+              freePages={!cloudEnabled || isActive(currentSubscription) ? undefined : (activeBook.part ?? 1) > 1 ? 0 : FREE_PAGES}
+              paywall={<Paywall mode={IS_APP ? 'app' : accountUser ? 'web' : 'guest'} onSignIn={() => { setAuthMode('signup'); openAccount() }} onRefresh={refreshSubscription} />}
             />
           </>
         ) : view === 'words' ? (
@@ -949,6 +999,7 @@ function App() {
           <>
             <header className="page-header library-header">
               <div><span className="eyebrow">{t.home.studying}</span><h1>{getLanguage(studyLanguage).name}<span className="heading-period">.</span></h1><p>{languageBooks.length ? t.home.leadWithBooks : t.home.leadEmpty}</p></div>
+              <button className="secondary-action library-button" onClick={() => showCatalog()}><BookMarked size={17} /> {t.home.library}</button>
               <button className="import-button" onClick={() => fileInput.current?.click()} disabled={isImporting}>{isImporting ? <LoaderCircle size={17} className="spin" /> : <FilePlus2 size={18} />}{isImporting ? t.home.importing : t.home.addBook}</button>
               <input ref={fileInput} className="file-input" type="file" accept=".txt,.md,.epub,.pdf,text/plain,text/markdown,application/pdf,application/epub+zip" multiple onChange={(event) => void importFiles(event.target.files)} />
             </header>
@@ -969,6 +1020,7 @@ function App() {
             {noticeBar}
             <section className="library-content">
               <div className="library-toolbar"><div><span className="section-marker" /> {t.home.myLibrary} <span className="toolbar-count">{shelf.length}</span></div><button className="sort-button" onClick={() => void persistBooks([...books].reverse()).catch(() => setNotice(t.notices.orderFailed))}>{t.home.recent} <ChevronDown size={15} /></button></div>
+              {languageBooks.length === 0 && <LibraryPicks shelf={books} studyLanguage={studyLanguage} busySlug={catalogBusy} onOpen={(slug) => showCatalog(slug)} onAdd={(entry) => void addCatalogBook(entry, false)} onAll={() => showCatalog()} />}
               {languageBooks.length > 0 ? (
                 <div className="book-grid">{shelf.map((item) => {
                   if (item.kind === 'folder') {
@@ -990,6 +1042,7 @@ function App() {
                   )
                 })}</div>
               ) : <div className="empty-library"><div className="empty-icon"><FilePlus2 size={22} /></div><h2>{t.home.emptyTitle}</h2><p>{t.home.emptyText(getLanguage(studyLanguage).name)}</p><button className="import-button" onClick={() => fileInput.current?.click()}><FilePlus2 size={17} /> {t.home.addBook}</button></div>}
+              {languageBooks.length > 0 && <LibraryPicks shelf={books} studyLanguage={studyLanguage} busySlug={catalogBusy} onOpen={(slug) => showCatalog(slug)} onAdd={(entry) => void addCatalogBook(entry, false)} onAll={() => showCatalog()} />}
               <button className="add-book-row" onClick={() => fileInput.current?.click()}><span><FilePlus2 size={18} /></span><strong>{t.home.addAnother}</strong><small>EPUB, PDF, TXT, MD</small></button>
             </section>
             <section className="reading-note"><div className="note-icon"><Dumbbell size={20} /></div><div><span>{t.home.trainingKicker}</span><strong>{dueCount ? t.home.trainingDue(dueCount) : languageWords.length ? t.home.trainingWords(languageWords.length) : t.home.trainingEmpty}</strong></div><button onClick={showTraining} aria-label={t.home.toTraining}><ArrowLeft size={18} /></button></section>
@@ -999,7 +1052,7 @@ function App() {
 
       <nav className="mobile-nav" aria-label={t.nav.main}><button className={!activeBook && currentView === 'library' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showLibrary}><Library size={20} /><span>{t.nav.myBooks}</span></button><button className={!activeBook && currentView === 'catalog' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={() => showCatalog()}><BookMarked size={20} /><span>{t.nav.catalogShort}</span></button><button className={!activeBook && currentView === 'training' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showTraining}><Dumbbell size={20} /><span>{t.nav.training}</span>{dueCount > 0 && <i />}</button><button className={!activeBook && currentView === 'grammar' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showGrammar}><GraduationCap size={20} /><span>{t.nav.grammar}</span></button><button className={!activeBook && currentView === 'words' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showWords}><Bookmark size={20} /><span>{t.nav.wordsShort}</span></button>{adminUser && <button className={!activeBook && currentView === 'admin' ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={showAdmin}><ChartColumn size={20} /><span>{t.nav.adminShort}</span></button>}</nav>
       {languageDialogOpen && <LanguagePicker exclude={[...activeLanguages, translationLanguage]} onPick={addLanguage} onClose={() => setLanguageDialogOpen(false)} />}
-      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label={t.account.label} onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label={t.common.close}><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? t.account.connected : t.account.everywhere}</h2>{(accountUser || !cloudEnabled || authMode === 'signin') && <div className="account-settings"><label className="translation-language"><span className="translation-language-label"><Globe size={15} /> {t.account.interface}</span><select value={uiLanguage} onChange={(event) => changeUiLanguage(event.target.value as UiLanguage)}>{UI_LANGUAGES.map((language) => <option key={language.code} value={language.code}>{language.name}</option>)}</select></label><TranslationLanguageSelect value={translationLanguage} onChange={changeTranslationLanguage} label={t.account.translateTo} hint={t.account.translationHint} /></div>}{!cloudEnabled ? <div className="cloud-setup-note"><p>{t.account.setup}</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> {t.account.linked}</span><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? t.account.signingOut : t.account.signOut}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
+      {accountOpen && <div className="translation-scrim account-scrim" onClick={() => setAccountOpen(false)}><section className="account-panel" role="dialog" aria-modal="true" aria-label={t.account.label} onClick={(event) => event.stopPropagation()}><button className="icon-button panel-close" onClick={() => setAccountOpen(false)} aria-label={t.common.close}><X size={18} /></button><span className="account-panel-icon"><Cloud size={21} /></span><span className="panel-kicker">LING ACCOUNT</span><h2>{accountUser ? t.account.connected : t.account.everywhere}</h2>{(accountUser || !cloudEnabled || authMode === 'signin') && <div className="account-settings"><label className="translation-language"><span className="translation-language-label"><Globe size={15} /> {t.account.interface}</span><select value={uiLanguage} onChange={(event) => changeUiLanguage(event.target.value as UiLanguage)}>{UI_LANGUAGES.map((language) => <option key={language.code} value={language.code}>{language.name}</option>)}</select></label><TranslationLanguageSelect value={translationLanguage} onChange={changeTranslationLanguage} label={t.account.translateTo} hint={t.account.translationHint} /></div>}{!cloudEnabled ? <div className="cloud-setup-note"><p>{t.account.setup}</p><code>VITE_SUPABASE_URL</code><code>VITE_SUPABASE_ANON_KEY</code></div> : accountUser ? <div className="account-connected"><p>{accountUser.email}</p><span><Check size={15} /> {t.account.linked}</span><SubscriptionPanel subscription={currentSubscription} isApp={IS_APP} onRefresh={refreshSubscription} /><button className="account-signout" onClick={() => void handleSignOut()} disabled={authBusy}><LogOut size={16} />{authBusy ? t.account.signingOut : t.account.signOut}</button></div> : <AuthForm {...authForm} />}{accountUser && authMessage && <p className="auth-message" role="status">{authMessage}</p>}</section></div>}
     </div>
   )
 }

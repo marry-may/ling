@@ -2,6 +2,8 @@ import { supabase } from './supabase'
 
 /** Shared with the Ling Library pages (scripts/build-library.mjs), which count their visits under the same id. */
 const VISITOR_KEY = 'ling-visitor'
+/** Set on the cookie page (public/legal/<language>/cookies.html) when the visitor turns statistics off. */
+const NO_STATS_KEY = 'ling-no-stats'
 // Read at startup: the app drops ?book= from the address once it has picked the book up.
 const INITIAL_SEARCH = window.location.search
 
@@ -33,6 +35,11 @@ function externalReferrer(): string | null {
 /** Counts one page load for the admin center. Only the published site counts; failures are ignored. */
 export function trackPageView(kind: PageKind, userId: string | null): void {
   if (!supabase || !import.meta.env.PROD) return
+  try {
+    if (localStorage.getItem(NO_STATS_KEY) === '1') return
+  } catch {
+    // Storage blocked: nothing is stored either way.
+  }
   const params = new URLSearchParams(INITIAL_SEARCH)
   const book = params.get('book')
   void supabase.from('page_views').insert({

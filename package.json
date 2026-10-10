@@ -16,7 +16,12 @@
     "predev": "npm run library",
     "prebuild": "npm run library",
     "catalog:fetch": "node scripts/catalog-fetch.mjs",
-    "deploy": "bash scripts/deploy.sh"
+    "deploy": "bash scripts/deploy.sh",
+    "payments:configure": "bash scripts/payments-configure.sh",
+    "legal": "node scripts/legal-pages.mjs",
+    "payments:square": "node scripts/square-setup.mjs",
+    "payments:lemonsqueezy": "node scripts/lemonsqueezy-setup.mjs",
+    "payments:stripe": "node scripts/stripe-setup.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.3",

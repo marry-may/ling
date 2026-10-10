@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Política de cookies y almacenamiento local — Ling</title>
+<style>
+:root { color-scheme: light dark; --ink: #20352f; --muted: #667770; --line: #e3eae5; --bg: #fbfcfa; --accent: #315b4d; --soft: #f0f4f1; }
+@media (prefers-color-scheme: dark) { :root { --ink: #e4ebe6; --muted: #9aa69f; --line: #2c3a33; --bg: #121815; --accent: #7fb59d; --soft: #1a2420; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 12px; padding-bottom: 12px; color: var(--muted); font-size: 14px; }
+nav + nav { padding-top: 0; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+a { color: var(--accent); }
+h1 { margin: 28px 0 6px; font: 600 30px/1.2 Georgia, serif; }
+h2 { margin: 28px 0 6px; font-size: 18px; }
+.updated { color: var(--muted); font-size: 14px; }
+blockquote { margin: 12px 0; padding: 4px 18px; border-left: 3px solid var(--line); background: var(--soft); }
+.stats { padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; }
+.stats p { margin: 0 0 10px; }
+.stats button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="../../">Ling</a> · <a href="terms.html">Condiciones</a> · <a href="privacy.html">Privacidad</a> · <a href="refund.html">Cancelación y reembolsos</a> · <strong>Cookies</strong> · <a href="notice.html">Aviso legal</a></nav>
+<nav><a href="../en/cookies.html" lang="en">English</a> · <a href="../uk/cookies.html" lang="uk">Українська</a> · <a href="../ru/cookies.html" lang="ru">Русский</a></nav>
+<h1>Política de cookies y almacenamiento local</h1>
+<p class="updated">Actualizado el 10 de octubre de 2026</p>
+<p>Ling no usa cookies propias ni cookies de publicidad. Para funcionar guarda algunos datos en el almacenamiento local de tu navegador (localStorage), que la ley trata igual que las cookies (art. 22.2 de la Ley 34/2002, LSSI-CE).</p>
+<h2>Almacenamiento técnico (necesario)</h2>
+<p>No necesita tu consentimiento porque sin él el Servicio no funciona o no recuerda lo que has elegido:</p>
+<ul>
+<li>la sesión de tu cuenta, para que no tengas que iniciar sesión en cada visita;</li>
+<li>el idioma de la interfaz, los ajustes y si ya has visto la introducción;</li>
+<li>los libros, palabras y el progreso de lectura en el navegador, sobre todo si usas Ling sin cuenta.</li>
+</ul>
+<h2>Estadísticas de visitas (propias)</h2>
+<p>Guardamos un identificador aleatorio (<code>ling-visitor</code>) para contar visitas y visitantes únicos. Los datos los tratamos solo nosotros, con fines estadísticos y de forma agregada; no se comparten con terceros ni se usan para publicidad. Puedes desactivarlas en este navegador:</p>
+<div class="stats" data-stats></div>
+<h2>Terceros</h2>
+<ul>
+<li>La página de pago de Stripe (checkout.stripe.com) usa sus propias cookies para procesar el pago y prevenir el fraude: consulta stripe.com/cookies-policy.</li>
+<li>Google Fonts sirve las fuentes del sitio; no instala cookies, pero recibe tu dirección IP.</li>
+</ul>
+<h2>Cómo borrar estos datos</h2>
+<p>Puedes borrar el almacenamiento local en la configuración de tu navegador (datos de sitios). Se cerrará tu sesión y se perderán los ajustes guardados en ese navegador.</p>
+</main>
+<script>(function(){var box=document.querySelector('[data-stats]');if(!box)return;var key="ling-no-stats",t={"on":"Las estadísticas de visitas están activadas en este navegador.","off":"Las estadísticas de visitas están desactivadas en este navegador.","disable":"Desactivar estadísticas","enable":"Activar estadísticas"};function off(){try{return localStorage.getItem(key)==='1'}catch(e){return false}}function render(){var o=off();box.innerHTML='';var p=document.createElement('p');p.textContent=o?t.off:t.on;var b=document.createElement('button');b.type='button';b.textContent=o?t.enable:t.disable;b.onclick=function(){try{if(off())localStorage.removeItem(key);else{localStorage.setItem(key,'1');localStorage.removeItem('ling-visitor')}}catch(e){}render()};box.appendChild(p);box.appendChild(b)}render()})()</script>
+</body>
+</html>

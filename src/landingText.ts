@@ -35,7 +35,12 @@ export type LandingText = {
   /** The words the hero greets with, in this language among others. */
   greeting: string
   auth: AuthText
+  /** Footer links to the legal pages (public/legal, `npm run legal`). */
+  legal: { label: string; terms: string; privacy: string; refund: string; cookies: string; notice: string }
   login: string
+  /** Top menu: the sections of the page and the library. */
+  menuLabel: string
+  aboutNav: string
   eyebrow: string
   title: string
   lead: string
@@ -53,6 +58,18 @@ export type LandingText = {
   finalText: string
   libraryNav: string
   libraryTitle: string
+  /** The pricing section: two plans; prices come from src/subscription.ts. */
+  pricing: {
+    nav: string
+    title: string
+    lead: string
+    monthly: { name: string; period: string; detail: string; cta: string }
+    yearly: { name: string; period: string; detail: (perMonth: string) => string; badge: (percent: number) => string; cta: string }
+    includedTitle: string
+    included: string[]
+    free: string
+    note: string
+  }
   libraryText: string
   libraryAll: string
   /** The moving shelf of Ling Library books. */
@@ -64,7 +81,10 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
   uk: {
     label: 'UA',
     login: 'Увійти',
+    menuLabel: 'Розділи',
+    aboutNav: 'Про застосунок',
     pageTitle: 'Ling — читай і вивчай слова',
+    legal: { label: 'Документи', terms: 'Умови', privacy: 'Конфіденційність', refund: 'Скасування й повернення', cookies: 'Cookies', notice: 'Юридична інформація' },
     greeting: 'привіт',
     auth: {
       back: 'Про застосунок',
@@ -127,12 +147,23 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
       { title: 'Озвучення', text: 'Послухай, як звучить слово, одним натиском.' },
     ],
     libraryNav: 'Бібліотека',
-    libraryTitle: 'Книжки *в оригіналі* — безкоштовно',
+    libraryTitle: 'Класика *в оригіналі*',
+    pricing: {
+      nav: 'Ціна',
+      title: 'Проста *ціна*',
+      lead: 'Перші 5 сторінок кожної книжки — безкоштовно. Підписка відкриває всі книжки повністю.',
+      monthly: { name: 'Місяць', period: 'на місяць', detail: 'Оплата щомісяця', cta: 'Обрати місяць' },
+      yearly: { name: 'Рік', period: 'на рік', detail: (perMonth) => `Лише ${perMonth} на місяць`, badge: (percent) => `Вигідніше на ${percent}%`, cta: 'Обрати рік' },
+      includedTitle: 'У підписку входить',
+      included: ['Усі книжки повністю', 'Бібліотека Ling і твої книжки', 'Переклад будь-якого слова', 'Синхронізація на всіх пристроях'],
+      free: 'Без підписки безкоштовно: перші 5 сторінок кожної книжки, словник, тренування та граматика.',
+      note: 'Підписка подовжується автоматично й скасовується будь-коли. Оплата карткою, Apple Pay, Google Pay або PayPal.',
+    },
     libraryText: 'Бібліотека Ling: класика англійською, іспанською, німецькою, французькою, італійською та португальською. Почни читати онлайн або додай книжку до себе.',
     libraryAll: 'Уся бібліотека',
     shelf: { open: 'Відкрити книжку', previous: 'Попередня книжка', next: 'Наступна книжка', difficulty: { easy: 'легка', medium: 'середня', hard: 'складна' } },
     finalTitle: 'Відкрий першу книжку *вже сьогодні*',
-    finalText: 'Реєстрація займає хвилину. Книжки й слова збережуться в акаунті.',
+    finalText: 'Реєстрація займає хвилину, а перші 5 сторінок кожної книжки — безкоштовно.',
     imageAlt: {
       reader: 'Читання книжки в Ling: нові слова підсвічені синім, слова, що вивчаються, — жовтим',
       readerPhone: 'Переклад слова в Ling на телефоні',
@@ -144,7 +175,10 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
   ru: {
     label: 'RU',
     login: 'Войти',
+    menuLabel: 'Разделы',
+    aboutNav: 'О приложении',
     pageTitle: 'Ling — читай и учи слова',
+    legal: { label: 'Документы', terms: 'Условия', privacy: 'Конфиденциальность', refund: 'Отмена и возврат', cookies: 'Cookies', notice: 'Юридическая информация' },
     greeting: 'привет',
     auth: {
       back: 'О приложении',
@@ -207,12 +241,23 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
       { title: 'Озвучка', text: 'Послушай, как звучит слово, одним нажатием.' },
     ],
     libraryNav: 'Библиотека',
-    libraryTitle: 'Книги *в оригинале* — бесплатно',
+    libraryTitle: 'Классика *в оригинале*',
+    pricing: {
+      nav: 'Цена',
+      title: 'Простая *цена*',
+      lead: 'Первые 5 страниц каждой книги — бесплатно. Подписка открывает все книги целиком.',
+      monthly: { name: 'Месяц', period: 'в месяц', detail: 'Оплата каждый месяц', cta: 'Выбрать месяц' },
+      yearly: { name: 'Год', period: 'в год', detail: (perMonth) => `Всего ${perMonth} в месяц`, badge: (percent) => `Выгоднее на ${percent}%`, cta: 'Выбрать год' },
+      includedTitle: 'В подписку входит',
+      included: ['Все книги целиком', 'Библиотека Ling и свои книги', 'Перевод любого слова', 'Синхронизация на всех устройствах'],
+      free: 'Без подписки бесплатно: первые 5 страниц каждой книги, словарь, тренировки и грамматика.',
+      note: 'Подписка продлевается автоматически и отменяется в любой момент. Оплата картой, Apple Pay, Google Pay или PayPal.',
+    },
     libraryText: 'Библиотека Ling: классика на английском, испанском, немецком, французском, итальянском и португальском. Начни читать онлайн или добавь книгу себе.',
     libraryAll: 'Вся библиотека',
     shelf: { open: 'Открыть книгу', previous: 'Предыдущая книга', next: 'Следующая книга', difficulty: { easy: 'лёгкая', medium: 'средняя', hard: 'сложная' } },
     finalTitle: 'Открой первую книгу *уже сегодня*',
-    finalText: 'Регистрация займёт минуту. Книги и слова сохранятся в аккаунте.',
+    finalText: 'Регистрация займёт минуту, а первые 5 страниц каждой книги — бесплатно.',
     imageAlt: {
       reader: 'Чтение книги в Ling: новые слова подсвечены синим, изучаемые — жёлтым',
       readerPhone: 'Перевод слова в Ling на телефоне',
@@ -224,7 +269,10 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
   en: {
     label: 'EN',
     login: 'Log in',
+    menuLabel: 'Sections',
+    aboutNav: 'About',
     pageTitle: 'Ling — read books, learn words',
+    legal: { label: 'Documents', terms: 'Terms', privacy: 'Privacy', refund: 'Cancellation & refunds', cookies: 'Cookies', notice: 'Legal notice' },
     greeting: 'bonjour',
     auth: {
       back: 'About the app',
@@ -287,12 +335,23 @@ export const LANDING_TEXT: Record<LandingLanguage, LandingText> = {
       { title: 'Pronunciation', text: 'Hear how a word sounds with one tap.' },
     ],
     libraryNav: 'Library',
-    libraryTitle: 'Books *in the original*, for free',
+    libraryTitle: 'Classics *in the original*',
+    pricing: {
+      nav: 'Pricing',
+      title: 'Simple *pricing*',
+      lead: 'The first 5 pages of every book are free. A subscription opens every book in full.',
+      monthly: { name: 'Monthly', period: 'a month', detail: 'Billed every month', cta: 'Choose monthly' },
+      yearly: { name: 'Yearly', period: 'a year', detail: (perMonth) => `Just ${perMonth} a month`, badge: (percent) => `Save ${percent}%`, cta: 'Choose yearly' },
+      includedTitle: 'Every subscription includes',
+      included: ['Every book in full', 'The Ling Library and your own books', 'A translation of any word', 'Sync across all your devices'],
+      free: 'Free without a subscription: the first 5 pages of every book, the dictionary, practice and grammar.',
+      note: 'The subscription renews automatically and can be cancelled any time. Pay by card, Apple Pay, Google Pay or PayPal.',
+    },
     libraryText: 'The Ling Library: classics in English, Spanish, German, French, Italian and Portuguese. Start reading online or add a book to your shelf.',
     libraryAll: 'The whole library',
     shelf: { open: 'Open the book', previous: 'Previous book', next: 'Next book', difficulty: { easy: 'easy', medium: 'intermediate', hard: 'advanced' } },
     finalTitle: 'Open your first book *today*',
-    finalText: 'Signing up takes a minute. Your books and words are kept in your account.',
+    finalText: 'Signing up takes a minute, and the first 5 pages of every book are free.',
     imageAlt: {
       reader: 'Reading a book in Ling: new words highlighted in blue, words being learned in yellow',
       readerPhone: 'A word translation in Ling on a phone',

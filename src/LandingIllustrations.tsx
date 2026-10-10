@@ -139,3 +139,33 @@ export function HeroDecor({ greeting }: { greeting: string }) {
     </>
   )
 }
+
+/** The monthly plan: one book. */
+export function MonthPlanIllustration() {
+  return (
+    <svg className="illustration pricing-illustration" viewBox="0 0 96 96" aria-hidden="true">
+      <g transform="rotate(8 48 56)">
+        <rect className="ill-blue ill-outline" x={30} y={18} width={36} height={64} rx={5} />
+        <rect className="ill-paper" x={38} y={30} width={22} height={7} rx={2.5} />
+        <path className="ill-stroke" d="M35 18 V82" />
+      </g>
+      <Sparkle x={78} y={18} size={0.75} />
+    </svg>
+  )
+}
+
+/** The yearly plan: a full shelf of books. */
+export function YearPlanIllustration() {
+  return (
+    <svg className="illustration pricing-illustration" viewBox="0 0 96 96" aria-hidden="true">
+      {([[12, 'ill-gold', 54], [26, 'ill-paper', 62], [40, 'ill-blue', 50], [54, 'ill-yellow', 58]] as const).map(([x, tone, height]) => (
+        <rect key={x} className={tone} x={x} y={84 - height} width={12} height={height} rx={3} />
+      ))}
+      <rect className="ill-coral" x={69} y={32} width={12} height={52} rx={3} transform="rotate(10 75 84)" />
+      <rect className="ill-white-soft" x={6} y={84} width={84} height={5} rx={2.5} />
+      <Sparkle x={84} y={16} size={0.8} />
+      <Sparkle x={14} y={18} size={0.5} />
+    </svg>
+  )
+}
+

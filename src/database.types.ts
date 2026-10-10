@@ -1,6 +1,20 @@
 export type Database = {
   public: {
     Tables: {
+      subscriptions: {
+        Row: {
+          user_id: string
+          plan: 'monthly' | 'yearly' | 'promo'
+          provider: 'wayforpay' | 'promo' | 'apple' | 'square' | 'lemonsqueezy' | 'stripe'
+          current_period_end: string
+          order_reference: string | null
+          canceled_at: string | null
+          updated_at: string
+        }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       books: {
         Row: {
           id: string
@@ -130,6 +144,15 @@ export type Database = {
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean }
       admin_stats: { Args: { days?: number }; Returns: unknown }
+      redeem_promo: { Args: { p_code: string }; Returns: string }
+      lemonsqueezy_checkout: { Args: { p_plan: 'monthly' | 'yearly' }; Returns: string }
+      stripe_checkout: { Args: { p_plan: 'monthly' | 'yearly' }; Returns: string }
+      lemonsqueezy_sync: { Args: Record<string, never>; Returns: { plan: 'monthly' | 'yearly' | 'promo'; provider: 'wayforpay' | 'promo' | 'apple' | 'square' | 'lemonsqueezy' | 'stripe'; current_period_end: string; canceled_at: string | null } | null }
+      stripe_sync: { Args: Record<string, never>; Returns: { plan: 'monthly' | 'yearly' | 'promo'; provider: 'wayforpay' | 'promo' | 'apple' | 'square' | 'lemonsqueezy' | 'stripe'; current_period_end: string; canceled_at: string | null } | null }
+      square_checkout: { Args: { p_plan: 'monthly' | 'yearly' }; Returns: string }
+      square_sync: { Args: Record<string, never>; Returns: { plan: 'monthly' | 'yearly' | 'promo'; provider: 'wayforpay' | 'promo' | 'apple' | 'square'; current_period_end: string; canceled_at: string | null } | null }
+      wayforpay_checkout: { Args: { p_plan: 'monthly' | 'yearly'; p_language?: string }; Returns: { url: string; orderReference: string; fields: [string, string][] } }
+      cancel_subscription: { Args: Record<string, never>; Returns: string }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>

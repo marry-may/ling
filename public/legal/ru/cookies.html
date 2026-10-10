@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Политика в отношении cookies и локального хранилища — Ling</title>
+<style>
+:root { color-scheme: light dark; --ink: #20352f; --muted: #667770; --line: #e3eae5; --bg: #fbfcfa; --accent: #315b4d; --soft: #f0f4f1; }
+@media (prefers-color-scheme: dark) { :root { --ink: #e4ebe6; --muted: #9aa69f; --line: #2c3a33; --bg: #121815; --accent: #7fb59d; --soft: #1a2420; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 12px; padding-bottom: 12px; color: var(--muted); font-size: 14px; }
+nav + nav { padding-top: 0; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+a { color: var(--accent); }
+h1 { margin: 28px 0 6px; font: 600 30px/1.2 Georgia, serif; }
+h2 { margin: 28px 0 6px; font-size: 18px; }
+.updated { color: var(--muted); font-size: 14px; }
+blockquote { margin: 12px 0; padding: 4px 18px; border-left: 3px solid var(--line); background: var(--soft); }
+.stats { padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; }
+.stats p { margin: 0 0 10px; }
+.stats button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="../../">Ling</a> · <a href="terms.html">Условия</a> · <a href="privacy.html">Конфиденциальность</a> · <a href="refund.html">Отмена и возврат</a> · <strong>Cookies</strong> · <a href="notice.html">Юридическая информация</a></nav>
+<nav><a href="../es/cookies.html" lang="es">Español</a> · <a href="../en/cookies.html" lang="en">English</a> · <a href="../uk/cookies.html" lang="uk">Українська</a></nav>
+<h1>Политика в отношении cookies и локального хранилища</h1>
+<p class="updated">Обновлено 10 октября 2026 г.</p>
+<p>Ling не использует собственных и рекламных cookies. Для работы он хранит некоторые данные в локальном хранилище браузера (localStorage), которое закон приравнивает к cookies (ст. 22.2 испанского Закона 34/2002, LSSI-CE).</p>
+<h2>Техническое хранилище (необходимое)</h2>
+<p>Согласие не нужно, потому что без него Сервис не работает или не помнит твой выбор:</p>
+<ul>
+<li>сессия аккаунта, чтобы не входить каждый раз;</li>
+<li>язык интерфейса, настройки и то, видел ли ты уже вступление;</li>
+<li>книги, слова и прогресс чтения в браузере, особенно если ты пользуешься Ling без аккаунта.</li>
+</ul>
+<h2>Статистика посещений (собственная)</h2>
+<p>Мы храним случайный идентификатор (<code>ling-visitor</code>), чтобы считать посещения и уникальных посетителей. Эти данные обрабатываем только мы, для статистики и в сводном виде; они не передаются третьим лицам и не используются для рекламы. Выключить статистику в этом браузере:</p>
+<div class="stats" data-stats></div>
+<h2>Третьи стороны</h2>
+<ul>
+<li>Страница оплаты Stripe (checkout.stripe.com) использует собственные cookies для обработки платежа и защиты от мошенничества: см. stripe.com/cookies-policy.</li>
+<li>Google Fonts отдаёт шрифты сайта; cookies не устанавливает, но получает IP-адрес.</li>
+</ul>
+<h2>Как удалить эти данные</h2>
+<p>Локальное хранилище можно очистить в настройках браузера (данные сайтов). После этого сессия завершится, а сохранённые в этом браузере настройки пропадут.</p>
+</main>
+<script>(function(){var box=document.querySelector('[data-stats]');if(!box)return;var key="ling-no-stats",t={"on":"Статистика посещений в этом браузере включена.","off":"Статистика посещений в этом браузере выключена.","disable":"Выключить статистику","enable":"Включить статистику"};function off(){try{return localStorage.getItem(key)==='1'}catch(e){return false}}function render(){var o=off();box.innerHTML='';var p=document.createElement('p');p.textContent=o?t.off:t.on;var b=document.createElement('button');b.type='button';b.textContent=o?t.enable:t.disable;b.onclick=function(){try{if(off())localStorage.removeItem(key);else{localStorage.setItem(key,'1');localStorage.removeItem('ling-visitor')}}catch(e){}render()};box.appendChild(p);box.appendChild(b)}render()})()</script>
+</body>
+</html>

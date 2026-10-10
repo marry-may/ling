@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ArrowLeft, Bookmark, Check, ChevronLeft, ChevronRight, LoaderCircle, Minus, Plus, Sparkles, Type, Volume2, X } from 'lucide-react'
 import { bookTitleOf, type BookFile, type SavedWord } from './domain'
 import { partTitle, useMessages } from './i18n'
@@ -35,11 +35,14 @@ type ReaderProps = {
   onPageChange: (page: number, pageCount: number) => void
   onSaveWord: (word: SavedWord) => Promise<void>
   onMarkKnown: (keys: string[]) => Promise<void>
+  /** Pages readable without a subscription; from this page on `paywall` replaces the text. Unlimited when absent. */
+  freePages?: number
+  paywall?: ReactNode
 }
 
 const LEVELS = Array.from({ length: MAX_LEVEL }, (_, index) => index + 1)
 
-export function Reader({ book, words, known, onBack, onNextPart, theme, onToggleTheme, translationLanguage, onOpenWords, onPageChange, onSaveWord, onMarkKnown }: ReaderProps) {
+export function Reader({ book, words, known, onBack, onNextPart, theme, onToggleTheme, translationLanguage, onOpenWords, onPageChange, onSaveWord, onMarkKnown, freePages, paywall }: ReaderProps) {
   const t = useMessages()
   const [panel, setPanel] = useState<Panel | null>(null)
   const [busy, setBusy] = useState(false)
@@ -51,7 +54,10 @@ export function Reader({ book, words, known, onBack, onNextPart, theme, onToggle
   const totalWords = useMemo(() => countWords(book.content), [book.content])
   const pageCount = Math.max(1, pages.length)
   const page = Math.min(pageCount - 1, Math.max(0, book.page ?? Math.round((book.progress / 100) * pageCount) - 1))
-  const paragraphs = useMemo(() => pages[page] ?? [], [pages, page])
+  // The reader may turn to the first locked page, which shows the paywall, but not past it.
+  const lastOpenPage = freePages === undefined ? pageCount - 1 : Math.min(pageCount - 1, freePages)
+  const locked = freePages !== undefined && page >= freePages
+  const paragraphs = useMemo(() => (locked ? [] : pages[page] ?? []), [pages, page, locked])
   const pageTokens = useMemo(() => paragraphs.map(tokenize), [paragraphs])
   const savedByKey = useMemo(() => new Map(words.map((word) => [wordKey(word.word), word])), [words])
 
@@ -73,7 +79,7 @@ export function Reader({ book, words, known, onBack, onNextPart, theme, onToggle
   const bookWordCount = useMemo(() => words.filter((word) => word.bookTitle === title).length, [words, title])
 
   function goTo(nextPage: number) {
-    if (nextPage < 0 || nextPage >= pageCount || nextPage === page) return
+    if (nextPage < 0 || nextPage > lastOpenPage || nextPage === page) return
     setPanel(null)
     onPageChange(nextPage, pageCount)
     textRef.current?.scrollTo({ top: 0 })
@@ -218,7 +224,7 @@ export function Reader({ book, words, known, onBack, onNextPart, theme, onToggle
             <span className="legend legend-learning">{t.reader.legendLearning}</span>
             <span>{t.reader.tapHint}</span>
           </div>
-          <div className="book-text" ref={textRef} style={readerTextStyle(settings)}>
+          {locked ? <div className="reader-paywall">{paywall}</div> : <div className="book-text" ref={textRef} style={readerTextStyle(settings)}>
             {book.content ? pageTokens.map((tokens, paragraphIndex) => (
               <p key={`${page}-${paragraphIndex}`}>
                 {tokens.map((token, index) => {
@@ -230,16 +236,16 @@ export function Reader({ book, words, known, onBack, onNextPart, theme, onToggle
                 })}
               </p>
             )) : <div className="book-loading"><LoaderCircle size={17} className="spin" /> {t.reader.loading}</div>}
-          </div>
+          </div>}
           {book.content && (
             <div className="page-controls">
               <button className="icon-button" onClick={() => goTo(page - 1)} disabled={page === 0} aria-label={t.reader.previous}><ChevronLeft size={19} /></button>
               <span>{t.reader.page(page + 1, pageCount)}</span>
               {newKeys.length > 0
                 ? <button className="finish-page" onClick={() => void finishPage()} disabled={busy}><Check size={16} />{isLastPage ? t.reader.knowAll(newKeys.length) : t.reader.knowAndNext(newKeys.length)}</button>
-                : isLastPage && onNextPart
+                : isLastPage && onNextPart && !locked
                   ? <button className="finish-page" onClick={onNextPart}>{t.reader.nextPart} <ChevronRight size={16} /></button>
-                  : <button className="icon-button" onClick={() => goTo(page + 1)} disabled={isLastPage} aria-label={t.reader.next}><ChevronRight size={19} /></button>}
+                  : <button className="icon-button" onClick={() => goTo(page + 1)} disabled={isLastPage || page >= lastOpenPage} aria-label={t.reader.next}><ChevronRight size={19} /></button>}
             </div>
           )}
           <div className="reading-footer"><span>{t.reader.totalWords(totalWords.toLocaleString(t.locale))}</span><span>{t.common.percentRead(book.progress)}</span></div>
