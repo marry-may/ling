@@ -1,6 +1,6 @@
 import { ArrowRight, LoaderCircle, Plus } from 'lucide-react'
-import { CATALOG, readingTime, shelfCopies, type CatalogBook } from './catalog'
-import { CatalogCover, catalogCoverIndex } from './CatalogPage'
+import { CATALOG, catalogCoverIndex, readingTime, shelfCopies, type CatalogBook } from './catalog'
+import { CatalogCover } from './CatalogPage'
 import type { BookFile } from './domain'
 import { useMessages } from './i18n'
 import { getLanguage } from './languages'

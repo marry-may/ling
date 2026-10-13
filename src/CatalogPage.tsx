@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowLeft, BookOpen, Check, ExternalLink, LoaderCircle, Plus } from 'lucide-react'
-import { CATALOG, catalogPageUrl, coverUrl, readingTime, shelfCopies, type CatalogBook } from './catalog'
+import { CATALOG, catalogCoverIndex, catalogPageUrl, coverUrl, readingTime, shelfCopies, type CatalogBook } from './catalog'
 import type { BookFile } from './domain'
 import { useMessages, useUiLanguage } from './i18n'
 import { getLanguage } from './languages'
@@ -17,12 +17,6 @@ type CatalogPageProps = {
 }
 
 const CATALOG_LANGUAGES = Array.from(new Set(CATALOG.map((book) => book.language)))
-
-export function catalogCoverIndex(id: string): number {
-  let hash = 0
-  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) | 0
-  return Math.abs(hash) % 4
-}
 
 function shelfProgress(copies: BookFile[]): number {
   return Math.round(copies.reduce((sum, copy) => sum + copy.progress, 0) / Math.max(1, copies.length))

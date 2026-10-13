@@ -22,6 +22,13 @@ export type CatalogBook = {
 
 export const CATALOG = catalogData as CatalogBook[]
 
+/** Which of the four drawn cover colours a book gets. */
+export function catalogCoverIndex(id: string): number {
+  let hash = 0
+  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) | 0
+  return Math.abs(hash) % 4
+}
+
 export function findCatalogBook(slug: string): CatalogBook | undefined {
   return CATALOG.find((book) => book.slug === slug)
 }
