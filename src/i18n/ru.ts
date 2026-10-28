@@ -101,6 +101,7 @@ export const ru = {
     sampleNotUploaded: 'Книга-пример добавлена на устройство, но не загрузилась в аккаунт.',
     sampleFailed: 'Не удалось добавить книгу-пример.',
     uploadFailed: 'Книга добавлена на устройство, но не загрузилась в аккаунт.',
+    appUpdated: 'Ling обновился. Выбери файл ещё раз.',
     noText: 'В файле не найден текст для чтения.',
     added: (count: number, otherLanguage: string, splitInto: number) =>
       `Добавлено книг: ${count}${otherLanguage ? ` · язык: ${otherLanguage}` : ''}${splitInto ? ` · большая книга разделена на ${splitInto} ${p(splitInto, 'часть', 'части', 'частей')} в одной папке` : ''}.`,

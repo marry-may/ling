@@ -101,6 +101,7 @@ export const uk: Messages = {
     sampleNotUploaded: 'Книжку-приклад додано на пристрій, але вона не завантажилася в акаунт.',
     sampleFailed: 'Не вдалося додати книжку-приклад.',
     uploadFailed: 'Книжку додано на пристрій, але вона не завантажилася в акаунт.',
+    appUpdated: 'Ling оновився. Вибери файл ще раз.',
     noText: 'У файлі не знайдено тексту для читання.',
     added: (count, otherLanguage, splitInto) =>
       `Додано книжок: ${count}${otherLanguage ? ` · мова: ${otherLanguage}` : ''}${splitInto ? ` · велику книжку поділено на ${splitInto} ${p(splitInto, 'частину', 'частини', 'частин')} в одній теці` : ''}.`,

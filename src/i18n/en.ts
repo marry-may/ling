@@ -93,6 +93,7 @@ export const en: Messages = {
     sampleNotUploaded: 'The sample book was added to this device but not uploaded to your account.',
     sampleFailed: 'Could not add the sample book.',
     uploadFailed: 'The book was added to this device but not uploaded to your account.',
+    appUpdated: 'Ling has been updated. Please pick the file again.',
     noText: 'No readable text was found in the file.',
     added: (count, otherLanguage, splitInto) =>
       `Books added: ${count}${otherLanguage ? ` · language: ${otherLanguage}` : ''}${splitInto ? ` · the long book was split into ${splitInto} ${p(splitInto, 'part', 'parts')} in one folder` : ''}.`,

@@ -33,6 +33,7 @@ import { useTheme } from './theme'
 import { ThemeToggle } from './ThemeToggle'
 import { Training } from './Training'
 import { WordsPage } from './WordsPage'
+import { takeReloadedForUpdate } from './appUpdate'
 import './App.css'
 
 const LANGUAGE_STORAGE_KEY = 'ling-study-language'
@@ -240,7 +241,7 @@ function App() {
     const slug = new URLSearchParams(window.location.search).get('book')
     return slug && findCatalogBook(slug) ? slug : null
   })
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(() => takeReloadedForUpdate() ? t.notices.appUpdated : '')
   const [isImporting, setIsImporting] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [dataScope, setDataScope] = useState('anonymous')

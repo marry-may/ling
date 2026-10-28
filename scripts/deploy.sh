@@ -40,9 +40,16 @@ if grep -rlE "postgresql://|SUPABASE_DB_URL|service_role" dist >/dev/null; then
   exit 1
 fi
 
-# .well-known holds the hosting's SSL verification files and is never deleted.
-rsync -rlptv --delete $DRY_RUN --exclude '.well-known' \
-  -e "ssh -i $KEY -o IdentitiesOnly=yes -o BatchMode=yes -p $PORT" \
+SSH="ssh -i $KEY -o IdentitiesOnly=yes -o BatchMode=yes -p $PORT"
+
+# .well-known holds the hosting's SSL verification files and is never deleted. Files of earlier builds in assets/
+# are kept too: a page opened before this deploy still loads its PDF and OCR modules from there, and fails with
+# "Importing a module script failed" when they are gone. They are deleted once they are 30 days old.
+rsync -rlptv --delete $DRY_RUN --exclude '.well-known' --filter 'P assets/**' \
+  -e "$SSH" \
   dist/ "$TARGET:$REMOTE_PATH/"
+if [ -z "$DRY_RUN" ]; then
+  $SSH "$TARGET" "find '$REMOTE_PATH/assets' -type f -mtime +30 -print -delete"
+fi
 
 [ -n "$DRY_RUN" ] && echo "Dry run: nothing was uploaded." || echo "Deployed to https://ling.uno/"
