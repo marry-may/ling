@@ -52,6 +52,20 @@ export function storageContentType(fileName: string): string {
   return CONTENT_TYPES[fileName.split('.').pop()?.toLowerCase() ?? ''] ?? 'text/plain;charset=utf-8'
 }
 
+/**
+ * The text of a PDF page, read from pdf.js's stream with a reader. page.getTextContent() iterates the stream with
+ * `for await`, which Safari on iOS does not support for streams ("undefined is not a function").
+ */
+export async function readPageText(stream: ReadableStream<{ items: object[] }>): Promise<string> {
+  const reader = stream.getReader()
+  const parts: string[] = []
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) return parts.join(' ')
+    for (const item of value.items) if ('str' in item) parts.push(String(item.str))
+  }
+}
+
 type ReadOptions = { fallbackLanguage: string; onProgress: (message: string) => void }
 
 export async function readBookFile(file: File, { fallbackLanguage, onProgress }: ReadOptions): Promise<ParsedBook> {
@@ -71,8 +85,7 @@ export async function readBookFile(file: File, { fallbackLanguage, onProgress }:
     const pages: string[] = []
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber)
-      const content = await page.getTextContent()
-      pages.push(content.items.map((item) => 'str' in item ? item.str : '').join(' '))
+      pages.push(await readPageText(page.streamTextContent()))
     }
     const text = pages.join('\n\n')
     // PDFs from scanners or "Print to PDF" often have no text layer: the letters are images or outlines.

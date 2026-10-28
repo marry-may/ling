@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { strToU8, zipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
-import { readBookFile, storageContentType } from './bookImport'
+import { readBookFile, readPageText, storageContentType } from './bookImport'
 
 const options = { fallbackLanguage: 'en', onProgress: () => {} }
 
@@ -60,6 +60,21 @@ describe('EPUB import', () => {
     const book = await readBookFile(epub({ 'one.xhtml': xhtml('<p>Text.</p>') }, '<dc:title>Tom&nbsp;Sawyer</dc:title><dc:creator>Mark Twain</dc:creator>'), options)
     expect(book.title).toBe('Tom Sawyer')
     expect(book.author).toBe('Mark Twain')
+  })
+})
+
+describe('PDF text', () => {
+  // Safari on iOS cannot iterate a ReadableStream with `for await`, which pdf.js's getTextContent() relies on.
+  it('reads a page without async iteration of the stream', async () => {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue({ items: [{ str: 'Hola' }, { str: 'mundo' }] })
+        controller.enqueue({ items: [{ type: 'beginMarkedContent' }, { str: 'otra vez' }] })
+        controller.close()
+      },
+    })
+    Object.defineProperty(stream, Symbol.asyncIterator, { value: undefined })
+    expect(await readPageText(stream)).toBe('Hola mundo otra vez')
   })
 })
 
