@@ -1,3 +1,4 @@
+import { storageContentType } from './bookImport'
 import type { BookFile, KnownWords, SavedWord } from './domain'
 import { normalizeProfile, type Profile } from './profile'
 import { supabase } from './supabase'
@@ -111,7 +112,7 @@ export async function uploadAccountBook(ownerId: string, book: BookFile, origina
   const contentPath = `${ownerId}/${book.id}/reader.txt`
   const bucket = client.storage.from(BOOK_BUCKET)
   const originalUpload = await bucket.upload(originalPath, originalFile, {
-    contentType: originalFile.type || 'application/octet-stream',
+    contentType: storageContentType(originalFile.name),
     upsert: true,
   })
   if (originalUpload.error) throw originalUpload.error
@@ -143,7 +144,7 @@ export async function uploadAccountCollection(ownerId: string, parts: BookFile[]
   const originalPath = `${folder}/source.${extension}`
   const uploaded: string[] = []
   try {
-    const originalUpload = await bucket.upload(originalPath, originalFile, { contentType: originalFile.type || 'application/octet-stream', upsert: true })
+    const originalUpload = await bucket.upload(originalPath, originalFile, { contentType: storageContentType(originalFile.name), upsert: true })
     if (originalUpload.error) throw originalUpload.error
     uploaded.push(originalPath)
     const contentPaths = parts.map((part) => `${folder}/part-${String(part.part).padStart(3, '0')}.txt`)

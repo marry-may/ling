@@ -194,6 +194,13 @@ async function loadScopeCollections(userId: string | null): Promise<LoadedScope>
 
 const guestMigrationKey = (userId: string) => `ling-guest-migrated:${userId}`
 
+/** The server's reason for a failed upload, shown after the notice so that the cause can be told apart. */
+function uploadReason(error: unknown): string {
+  console.error(error)
+  const message = error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String(error.message) : ''
+  return message ? ` (${message})` : ''
+}
+
 /**
  * Copies the guest library into the account. Runs on every password sign-in (`force`) and once per
  * account otherwise, because confirming the email link signs in without going through the form.
@@ -539,8 +546,8 @@ function App() {
       if (!accountUser || !book.content.trim()) return { books: [book], warning: '' }
       try {
         return { books: [await uploadAccountBook(accountUser.id, book, file)], warning: '' }
-      } catch {
-        return { books: [book], warning: uploadFailed }
+      } catch (error) {
+        return { books: [book], warning: `${uploadFailed}${uploadReason(error)}` }
       }
     }
 
@@ -560,7 +567,7 @@ function App() {
     try {
       return { books: await uploadAccountCollection(accountUser.id, books, file), warning: '' }
     } catch (error) {
-      return { books, warning: error instanceof Error && error.message === PARTS_MIGRATION_MESSAGE ? ` ${error.message}` : uploadFailed }
+      return { books, warning: error instanceof Error && error.message === PARTS_MIGRATION_MESSAGE ? ` ${error.message}` : `${uploadFailed}${uploadReason(error)}` }
     }
   }
 
@@ -570,7 +577,8 @@ function App() {
     setNotice('')
     try {
       let uploadWarning = ''
-      const imported = (await Promise.all(Array.from(files).map(async (file): Promise<BookFile[]> => {
+      // Each file is imported on its own, so that one broken file does not lose the others.
+      const results = await Promise.allSettled(Array.from(files).map(async (file): Promise<BookFile[]> => {
         const { language: detectedLanguage, sections, ...parsed } = await readBookFile(file, { fallbackLanguage: studyLanguage, onProgress: setNotice })
         const created = await createBooks({
           title: parsed.title ?? file.name.replace(/\.[^.]+$/, ''),
@@ -582,18 +590,23 @@ function App() {
         }, file)
         uploadWarning ||= created.warning
         return created.books
-      }))).flat()
-      const usable = imported.filter((book) => book.content.trim())
+      }))
+      const failures = results.flatMap((result, index) => result.status === 'rejected'
+        ? [`${files[index].name}: ${result.reason instanceof Error ? result.reason.message : t.notices.openFailed}`]
+        : [])
+      for (const result of results) if (result.status === 'rejected') console.error(result.reason)
+      const failed = failures.length ? ` ${failures.join(' ')}` : ''
+      const usable = results.flatMap((result) => result.status === 'fulfilled' ? result.value : []).filter((book) => book.content.trim())
       await persistBooks([...usable, ...books])
       if (!usable.length) {
-        setNotice(t.notices.noText)
+        setNotice(failed.trim() || t.notices.noText)
         return
       }
       const otherLanguage = usable.find((book) => book.language !== studyLanguage)?.language
       if (otherLanguage && !usable.some((book) => book.language === studyLanguage)) changeStudyLanguage(otherLanguage)
       const bookCount = new Set(usable.map((book) => book.collectionId ?? book.id)).size
       const splitInto = usable.find((book) => book.partCount)?.partCount
-      setNotice(`${t.notices.added(bookCount, otherLanguage ? getLanguage(otherLanguage).name : '', splitInto ?? 0)}${uploadWarning}`)
+      setNotice(`${t.notices.added(bookCount, otherLanguage ? getLanguage(otherLanguage).name : '', splitInto ?? 0)}${uploadWarning}${failed}`)
     } catch (error) {
       setNotice(error instanceof Error ? error.message : t.notices.openFailed)
     } finally {

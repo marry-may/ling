@@ -368,7 +368,6 @@ export const en: Messages = {
     ocrFailed: 'Could not load text recognition. Scanned PDFs need an internet connection.',
     ocrPage: (n, total) => `Recognising text: page ${n} of ${total}`,
     ocrLanguage: (language) => `Book language: ${language}. Loading the recognition dictionary...`,
-    epubXml: 'The EPUB has an XML structure error.',
     epubContainer: 'The EPUB has no META-INF/container.xml file.',
     epubPackage: 'Could not find the main EPUB file.',
     unsupported: 'TXT, MD, EPUB and PDF are supported.',

@@ -376,7 +376,6 @@ export const uk: Messages = {
     ocrFailed: 'Не вдалося завантажити розпізнавання тексту. Для сканованих PDF потрібен інтернет.',
     ocrPage: (n, total) => `Розпізнаємо текст: сторінка ${n} з ${total}`,
     ocrLanguage: (language) => `Мова книжки: ${language}. Завантажуємо словник розпізнавання...`,
-    epubXml: 'В EPUB виявлено помилку структури XML.',
     epubContainer: 'В EPUB не знайдено файл META-INF/container.xml.',
     epubPackage: 'Не вдалося знайти основний файл EPUB.',
     unsupported: 'Підтримуються TXT, MD, EPUB і PDF.',

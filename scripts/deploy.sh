@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds the site and uploads dist/ to ling.uno over SSH with the deploy key (~/.ssh/ling_deploy).
 #
-#   npm run deploy                 build, check and upload
+#   npm run deploy                 lint, test, build, check and upload
 #   npm run deploy -- --dry-run    build and list what would change, without uploading
 #
 # Settings come from .env.local: DEPLOY_SSH (user@host), DEPLOY_SSH_PORT, DEPLOY_PATH. The SSH account also hosts
@@ -30,6 +30,9 @@ case "$REMOTE_PATH" in
 esac
 [ -f "$KEY" ] || { echo "Deploy key $KEY is missing." >&2; exit 1; }
 
+# Lint and the import tests guard against shipping a version that cannot open or upload books.
+npm run lint
+npm test
 npm run build
 [ -f dist/index.html ] || { echo "dist/index.html is missing; build failed?" >&2; exit 1; }
 if grep -rlE "postgresql://|SUPABASE_DB_URL|service_role" dist >/dev/null; then

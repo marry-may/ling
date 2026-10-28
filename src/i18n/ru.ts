@@ -377,7 +377,6 @@ export const ru = {
     ocrFailed: 'Не удалось загрузить распознавание текста. Для сканированных PDF нужен интернет.',
     ocrPage: (n: number, total: number) => `Распознаём текст: страница ${n} из ${total}`,
     ocrLanguage: (language: string) => `Язык книги: ${language}. Загружаем словарь распознавания...`,
-    epubXml: 'В EPUB обнаружена ошибка структуры XML.',
     epubContainer: 'В EPUB не найден файл META-INF/container.xml.',
     epubPackage: 'Не удалось найти основной файл EPUB.',
     unsupported: 'Поддерживаются TXT, MD, EPUB и PDF.',
